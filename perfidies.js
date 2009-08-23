@@ -28,6 +28,8 @@ var parseVersion = function(v) {
     var currentVersionPart = "";
     function isNumeric(c) { return ! isNaN(parseInt(c, 10)); }
     
+    function isChar(c) { return "abcdefghijklmnopqrstuvwxyz".indexOf(c.toLowerCase())  >= 0; }
+    
     function isSeperator(c) { return c === '.'; }
 
     function startVersion(token, j) {
@@ -62,9 +64,18 @@ var parseVersion = function(v) {
         for(var j=0; j < token.length; j++) {            
             if (inVersion) {
                 if (isNumeric(token[j])) {
+                    if (inCharVersion) {
+                        finishVersionPart();
+                    }
                     inNumericVersion = true;
+                    currentVersionPart += token[j];                
+                } else if(j != 0 && isChar(token[j])) {
+                    //    j != 0 - We are mid-token right? 3.0pre OK 3.0 Pre BAD
+                    if (inNumericVersion) {
+                        finishVersionPart();
+                    }
+                    inCharVersion = true;
                     currentVersionPart += token[j];
-                //TODO isChar...
                 } else if(isSeperator(token[j])) {
                     finishVersionPart();
                 } else {
