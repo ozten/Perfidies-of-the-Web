@@ -32,35 +32,23 @@ function parseVersion(v) {
         if (token.length == 0) {
             continue;
         }
-        console.info('outter loop ', i, token, inVersion);
-        if (inVersion) {
-            if (isNumeric(token[j])) {
-                inNumericVersion = true;
-                currentVersionPart += token[j];
-            } else if(isSeperator(token[j])) {
-                finishVersionPart();
-            } else {
-                return versionChain;
-            }
-        } else {
-            for(var j=0; j < token.length; j++) {
-                console.info('inner loop ', j, inVersion);
-                if (inVersion) {
-                    if (isNumeric(token[j])) {
-                        inNumericVersion = true;
-                        currentVersionPart += token[j];
-                    //TODO isChar...
-                    } else if(isSeperator(token[j])) {
-                        finishVersionPart();
-                    } else {
-                        return versionChain;
-                    }
+        for(var j=0; j < token.length; j++) {            
+            if (inVersion) {
+                if (isNumeric(token[j])) {
+                    inNumericVersion = true;
+                    currentVersionPart += token[j];
+                //TODO isChar...
+                } else if(isSeperator(token[j])) {
+                    finishVersionPart();
                 } else {
-                    startVersion(token, j);
+                    return versionChain;
                 }
+            } else {
+                startVersion(token, j);
             }
         }
         if (inVersion) {
+            //clean up previous token
             finishVersionPart();
         }
     }
@@ -73,14 +61,12 @@ function parseVersion(v) {
             inVersion = true;
             inNumericVersion = true;
             currentVersionPart += token[j];
-        } else {
-            //skip we are in the description
-            //console.info(token[j]);
-        }
+        } /* else {
+            skip we are in the description
+        }*/
     }
     function finishVersionPart() {
-        //cleanup this versionPart
-        console.info("Pushing", currentVersionPart, versionChain);
+        //cleanup this versionPart        
         if (inNumericVersion) {
             versionChain.push(parseInt(currentVersionPart));
             inNumericVersion = false;
@@ -89,8 +75,7 @@ function parseVersion(v) {
             inCharVersion = false;
         } else {
             if (window.console) console.error("This should never happen", currentVersionPart, inNumericVersion, inCharVersion);
-        }
-        console.info("Pushed", currentVersionPart, versionChain);
+        }        
         currentVersionPart = "";
     }
 }

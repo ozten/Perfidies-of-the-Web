@@ -29,6 +29,8 @@ test("compare", function(){
            "QuickTime Plug-in 7.6.2 should give us a version chain 7 major 6 minor 2 just for the fun of it");
     same(parseVersion("QuickTime Plug-in 7.6.2 Extra Edition"), [7, 6, 2],
            "A version may have a descriptin and a comment");
+    /*same(parseVersion("QuickTime Plug-in 7.6.2pre"), [7, 6, 2, "pre"],
+           "pre or other codes should be part of the version component, but comments aren't");*/
 });
 
 module("Module Perfidious");    
