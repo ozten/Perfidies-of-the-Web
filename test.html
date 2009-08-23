@@ -2,7 +2,7 @@
                     "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
-  <script src="http://code.jquery.com/jquery-latest.js"></script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
   <script src="perfidies.js"></script>
   <link rel="stylesheet" href="http://jqueryjs.googlecode.com/svn/trunk/qunit/testsuite.css" type="text/css" media="screen" />
 
@@ -22,6 +22,12 @@ function isNull(o) {
     }
 }
   $(document).ready(function(){
+module("General Comparison");
+test("compare", function(){
+    //ok(compare("QuickTime Plug-in 7.6.2", "QuickTime Plug-in 7.6.1") >= 1, "Comparing a newer plugin should return a 1");
+    same(parseVersion("QuickTime Plug-in 7.6.2"), [7, 6, 2],
+           "QuickTime Plug-in 7.6.2 should give us a version chain 7 major 6 minor 2 just for the fun of it");
+});
 
 module("Module Perfidious");    
 test("process pfs2 callback", function() {
