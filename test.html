@@ -1,0 +1,60 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+                    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <script src="http://code.jquery.com/jquery-latest.js"></script>
+  <script src="perfidies.js"></script>
+  <link rel="stylesheet" href="http://jqueryjs.googlecode.com/svn/trunk/qunit/testsuite.css" type="text/css" media="screen" />
+
+  <script>
+function notNull(o) {
+    if (o) {
+        return true;
+    } else {
+        return false;
+    }
+}
+function isNull(o) {
+    if (o) {
+        return false;
+    } else {
+        return true;
+    }
+}
+  $(document).ready(function(){
+
+module("Module Perfidious");    
+test("process pfs2 callback", function() {
+  //expect(2)
+  var r = pluginData([{"id":2,"name":"Adobe Flash Player","description":"","latest_version":"","vendor":"Adobe","url":"http:\/\/www.adobe.com\/go\/getflashplayer","icon_url":"","license_url":"http:\/\/www.adobe.com\/go\/eula_flashplayer","plugin_id":1,"guid":"{4cfaef8a-a6c9-41a0-8e6f-967eb8f49143}","filename":"","version":"10.0.22.87","xpi_location":"http:\/\/fpdownload.macromedia.com\/get\/flashplayer\/xpi\/current\/flashplayer-win.xpi","installer_location":"","installer_hash":"","installer_shows_ui":0,"manual_installation_url":"http:\/\/www.adobe.com\/go\/getflashplayer","needs_restart":0,"min":"","max":"","xpcomabi":"","created":"2009-03-27 21:00:07","modified":"2009-03-27 21:00:07"}]);
+  ok( true, "this test is fine" );
+  var value = "hello";
+  equals( "hello", value, "We expect value to be hello" );
+});
+test("inspect the navigation object", function(){
+  ok(notNull(window.navigator), "We have a navigator object");
+  ok(notNull(window.navigator.plugins), "We have a plugins object");
+  var plugins = window.navigator.plugins;
+  for(var i=0; i< plugins.length; i++) {
+      equals((typeof plugins[i].name), "string", "We can access all plugins names");
+      $('#debug').append("<li>" + plugins[i].name + "</li>");
+      ok(notNull(plugins[i][0]), "We can grab it's details " + plugins[i].name);
+      ok(notNull(plugins[i][0].type), "We can grab it's mimetypes " + plugins[i].name);
+      equals(typeof plugins[i][0].type, "string", "And it's a string " + plugins[i].name + " " + plugins[i][0].type);
+      $('#debug').append("<li>" + plugins[i][0].type + "</li>");
+  }
+});
+  });
+  </script>
+</head>
+<body>
+  
+<script type="text/javascript" src="http://jqueryjs.googlecode.com/svn/trunk/qunit/testrunner.js"></script>
+ <h1>PerFidieS Unit Tests</h1>
+ <h2 id="banner"></h2>
+ <h2 id="userAgent"></h2>
+ <ol id="tests"></ol>
+ <div id="main"></div>
+ <div id="debug"></div>
+</body>
+</html>
