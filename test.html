@@ -27,6 +27,8 @@ test("compare", function(){
     //ok(compare("QuickTime Plug-in 7.6.2", "QuickTime Plug-in 7.6.1") >= 1, "Comparing a newer plugin should return a 1");
     same(parseVersion("QuickTime Plug-in 7.6.2"), [7, 6, 2],
            "QuickTime Plug-in 7.6.2 should give us a version chain 7 major 6 minor 2 just for the fun of it");
+    same(parseVersion("QuickTime Plug-in 7.6.2 Extra Edition"), [7, 6, 2],
+           "A version may have a descriptin and a comment");
 });
 
 module("Module Perfidious");    

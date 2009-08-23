@@ -32,7 +32,7 @@ function parseVersion(v) {
         if (token.length == 0) {
             continue;
         }
-        //console.info('outter loop ', i, token, inVersion);
+        console.info('outter loop ', i, token, inVersion);
         if (inVersion) {
             if (isNumeric(token[j])) {
                 inNumericVersion = true;
@@ -44,7 +44,7 @@ function parseVersion(v) {
             }
         } else {
             for(var j=0; j < token.length; j++) {
-                //console.info('inner loop ', j, inVersion);
+                console.info('inner loop ', j, inVersion);
                 if (inVersion) {
                     if (isNumeric(token[j])) {
                         inNumericVersion = true;
@@ -60,11 +60,11 @@ function parseVersion(v) {
                 }
             }
         }
+        if (inVersion) {
+            finishVersionPart();
+        }
     }
-    if (inVersion) {
-        finishVersionPart();
-        console.info("Looking good", versionChain);
-    } else {
+    if (! inVersion) {        
         if (window.console) console.warn("Unable to parseVersion from " + v);
     }
     return versionChain;
