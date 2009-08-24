@@ -139,6 +139,38 @@ var Pfs = {
         }
         return 0;
     },
+    hasVersionInfo: function(description) {
+        return this.parseVersion(description).length > 0
+    },
+    /**
+     * @param plugins {object} The window.navigator.plugins object
+     */
+    browserPlugins: function(plugins) {
+        var p = [];
+        for (var i=0; i < plugins.length; i++) {
+            var pluginInfo;
+            if (plugins[i].name && this.hasVersionInfo(plugins[i].name)) {
+                pluginInfo = plugins[i].name;
+            } else if (plugins[i].description && this.hasVersionInfo(plugins[i].description)) {
+                pluginInfo = plugins[i].description;
+            } else {                
+                if (plugins[i].name) {
+                    pluginInfo = plugins[i].name;    
+                } else {
+                    pluginInfo = plugins[i].description;
+                }
+            }
+            var mimes = [];
+            for (var j=0; j < plugins[i].length; j++) {
+                var mimeType = plugins[i][j].type;
+                if (mimeType) {
+                    mimes.push(mimeType);                    
+                }                
+            }
+            p.push({plugin: pluginInfo, mimes: mimes});
+        }
+        return p;
+    },
     pluginData: function() {
         
     }
