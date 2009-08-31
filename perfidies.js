@@ -7,6 +7,11 @@
 */
 var Pfs = {
     /**
+     * A list of well known plugins that are *always* up to date.
+     */
+    skipPluginsNamed: ["Default Plugin"],
+    
+    /**
      * Compares the description of two plugin versions and returns
      * either 1, 0, or -1 to indicate:
      * newer = 1
@@ -142,22 +147,51 @@ var Pfs = {
     hasVersionInfo: function(description) {
         return this.parseVersion(description).length > 0
     },
+    shouldSkipPluginNamed: function(name) {
+        this.skipPluginsNamed.indexOf(name) >= 0
+    },
+    hasPluginNameHook: function(name) {
+        return /Java.*/.test(name);
+    },
+    doPluginNameHook: function(name) {
+        return "Java " + PluginDetect.getVersion('Java', 'getJavaInfo.jar').replace(/,/g, '.').replace(/_/g, '.');
+    },
     /**
+     * Cleans up the navigator.plugins object into a list of plugin2mimeTypes
+     * Each plugin2mimeTypes has two fields
+     * * plugins - the plugin Description including Version information if available
+     * * mimes - An array of mime types
+     * Eample: [{plugin: "QuickTime Plug-in 7.6.2", mimes: ["image/tiff', "image/jpeg"]}]
+     *
+     * Cleanup includes
+     * * filtering out *always* up to date plugins
+     * * Special handling of plugin names for well known plugins like Java
+     * 
      * @param plugins {object} The window.navigator.plugins object
+     * @returns {array} A list of plugin2mimeTypes
      */
     browserPlugins: function(plugins) {
         var p = [];
         for (var i=0; i < plugins.length; i++) {
             var pluginInfo;
-            if (plugins[i].name && this.hasVersionInfo(plugins[i].name)) {
-                pluginInfo = plugins[i].name;
-            } else if (plugins[i].description && this.hasVersionInfo(plugins[i].description)) {
-                pluginInfo = plugins[i].description;
-            } else {                
-                if (plugins[i].name) {
-                    pluginInfo = plugins[i].name;    
-                } else {
+            if (this.shouldSkipPluginNamed(plugins[i].name)) {
+                console.info("Skipping Gecko");
+                continue;
+            } else if (this.hasPluginNameHook(plugins[i].name)) {
+                console.info("Doing Java");
+                pluginInfo = this.doPluginNameHook(plugins[i].name);
+            } else {
+                
+                if (plugins[i].name && this.hasVersionInfo(plugins[i].name)) {
+                    pluginInfo = plugins[i].name;
+                } else if (plugins[i].description && this.hasVersionInfo(plugins[i].description)) {
                     pluginInfo = plugins[i].description;
+                } else {                
+                    if (plugins[i].name) {
+                        pluginInfo = plugins[i].name;    
+                    } else {
+                        pluginInfo = plugins[i].description;
+                    }
                 }
             }
             var mimes = [];
@@ -171,9 +205,24 @@ var Pfs = {
         }
         return p;
     },
-    pluginData: function() {
-        
+    callPfs2: function(mimeType, successFn, errorFn) {
+        //var mimeType = "application/x-shockwave-flash";
+	    var endpoint = "http://pfs2.ubuntu/?appID={ec8030f7-c20a-464f-9b0e-13a3a9e97384}&mimetype=" +
+		            mimeType + "&appVersion=2008052906&appRelease=3.0&clientOS=Windows%20NT%205.1&chromeLocale=en-US";
+
+        $.ajax({
+            //Mother of Pearl, you can't do async false and JSONP
+            async: false,
+		    url: endpoint,
+            dataType: "jsonp",
+            success: successFn,
+            error: errorFn
+        });
     }
+    // TODO plugin specific version detection...
+    // http://www.pinlady.net/PluginDetect/PluginDet%20Generator.htm
+    //var JavaVersion = PluginDetect.getVersion('Java', 'getJavaInfo.jar');
+    
 }
 /*
   findPluginQueue: [],    
