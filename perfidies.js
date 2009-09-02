@@ -161,7 +161,8 @@ var Pfs = {
      * Each plugin2mimeTypes has two fields
      * * plugins - the plugin Description including Version information if available
      * * mimes - An array of mime types
-     * Eample: [{plugin: "QuickTime Plug-in 7.6.2", mimes: ["image/tiff', "image/jpeg"]}]
+     * * classified - Do we know the plugins status from pfs2
+     * Eample: [{plugin: "QuickTime Plug-in 7.6.2", mimes: ["image/tiff', "image/jpeg"], classified: false}]
      *
      * Cleanup includes
      * * filtering out *always* up to date plugins
@@ -200,7 +201,7 @@ var Pfs = {
                 }                
             }
             
-            p.push({plugin: pluginInfo, mimes: mimes});
+            p.push({plugin: pluginInfo, mimes: mimes, classified: false});
         }
         
         return p;
@@ -218,31 +219,50 @@ var Pfs = {
             error: errorFn
         });
     },
-    findPluginQueue: [],    
-    currentPlugins: [],
+    // A list of plugin2mimeTypes
+    findPluginQueue: [],
+    // A plugin2mimeTypes
+    currentPlugin: null,
     currentMime: -1,
+    // A list of plugin2mimeTypes
+    currentPlugins: [],
+    // A list of plugin2mimeTypes
     outdatedPlugins: [],
+    // A list of plugin2mimeTypes
     vulnerablePlugins: [],
+    // A list of plugin2mimeTypes
     unknownPlugins: [],
-    findPluginInfos: function(pluginInfos) {
+    /**
+     * The user supplied callback for when finding plugin information is complete
+     */
+    finishedFn: function(current, outdated, vulnerable, unknown){ },
+    findPluginInfos: function(pluginInfos, callbackFn) {
+        this.finishedFn = callbackFn;
         // Walk through the plugins and get the metadata from PFS2
         // PFS2 is JSONP and can't be called async using jQuery.ajax
         // We'll create a queue and manage our requests
-        for(var i=0; i< 2; i++) {//plugins.length; i++) {
+        for(var i=0; i< pluginInfos.length; i++) {
             this.findPluginQueue.push(pluginInfos[i]);
         }
         this.startFindingNextPlugin();
     },
     startFindingNextPlugin: function() {
+        //Note unknown plugins before we start the next one
+        if (this.currentPlugin !== null &&
+            ! this.currentPlugin.classified) {
+            this.unknownPlugins.push(this.currentPlugin);
+        }
         if (this.findPluginQueue.length > 0) {
-            this.currentPlugins = this.findPluginQueue.pop();
+            this.currentPlugin = this.findPluginQueue.pop();
             this.currentMime = 0;
             
             this.findPluginInfo();
+        } else {
+            this.finishedFn(this.currentPlugins, this.outdatedPlugins, this.vulnerablePlugins, this.unknownPlugins);
         }
     },
     findPluginInfo: function() {
-        var mime = this.currentPlugins.mimes[this.currentMime];
+        var mime = this.currentPlugin.mimes[this.currentMime];
             
         var that = this;
         this.callPfs2(mime, function(){ that.pfs2Success.apply(that, arguments);},
@@ -250,7 +270,7 @@ var Pfs = {
     },
     startFindingNextMimetypeOnCurrentPlugin: function() {
         this.currentMime += 1;
-        if (this.currentMime < this.currentPlugins.mimes.length) {
+        if (this.currentMime < this.currentPlugin.mimes.length) {
             this.findPluginInfo();
         } else {
             if (window.console) { console.warn("Exhausted Mime-Types..."); }
@@ -260,16 +280,45 @@ var Pfs = {
     },
     pfs2Success: function(data, status){
         window.d = data;
-        if (data.length > 0) {            
-            console.info("success calling pfs2", data);
-            //TODO compare version and add to either current, outofdate, or vulnerable
-            this.startFindingNextPlugin();
+        if (data.length > 0) {
+            var pluginMatch = false;
+            var pluginInfo;
+            for (var i=0; i < data.length; i++) {
+                console.info("Trying to match----", this.currentPlugin.plugin, "---", data[i].name);
+                if (this.currentPlugin.plugin.toLowerCase().indexOf(data[i].name.toLowerCase()) >= 0) {
+                    pluginMatch = true;
+                    pluginInfo = data[i];
+                    break;
+                }
+            }
+            
+            if (pluginMatch) {
+                //TODO Are unknown plugins implicit or explicit? If explicit, when do we create the list?
+                this.classifyPlugin(pluginInfo, this.currentPlugin);
+                this.startFindingNextPlugin();    
+            } else {
+                //none of the plugins for this mime-type were a match... try the next mime-type
+                this.startFindingNextMimetypeOnCurrentPlugin();
+            }
+            
         } else {
-            if (window.console) { console.info("Unknown mime type:", this.currentPlugins.mimes[this.currentMime], this.currentPlugins) };
+            if (window.console) { console.info("Unknown mime type:", this.currentPlugin.mimes[this.currentMime], this.currentPlugin) };
             this.startFindingNextMimetypeOnCurrentPlugin();
         }
     },
     pfs2Error: function(xhr, textStatus, errorThrown){
-        if (window.console) { console.error("Doh failed on mime/plugin ", this.currentPlugins.mimes[this.currentMime], this.currentPlugins) };
-    }
+        if (window.console) { console.error("Doh failed on mime/plugin ", this.currentPlugin.mimes[this.currentMime], this.currentPlugin) };
+    },
+    classifyPlugin: function(pluginInfo, plugin2mimeTypes) {
+        console.info("classifyPlugin", pluginInfo, plugin2mimeTypes);
+        if (this.compVersion(pluginInfo.version, plugin2mimeTypes.plugin) > 0) {
+            if (window.console) { console.warn("newer, weird", pluginInfo.name, "----", plugin2mimeTypes.plugin); }
+            this.currentPlugins.push(plugin2mimeTypes);
+        } else if(this.compVersion(pluginInfo.name, plugin2mimeTypes.plugin) == 0){
+            this.currentPlugins.push(plugin2mimeTypes);
+        } else {
+            this.outdatedPlugins.push(plugin2mimeTypes);
+        }
+        plugin2mimeTypes.classified = true;
+    }   
 }

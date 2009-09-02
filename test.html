@@ -85,11 +85,11 @@ $(document).ready(function(){
         },
     };
     
-    var testPluginInfos = [  { "plugin": "Shockwave Flash 10.0 r12", "mimes": [ "application/x-shockwave-flash", "application/futuresplash" ] },
-                          { "plugin": "Default Plugin", "mimes": [ "*" ] },
-                          { "plugin": "QuickTime Plug-in 7.6.2", "mimes": [ "application/sdp", "application/x-sdp", "application/x-rtsp", "video/quicktime", "video/x-msvideo", "video/msvideo", "video/avi", "video/flc", "application/x-ogg", "application/ogg", "video/x-ogg", "video/ogg", "application/x-annodex", "application/annodex", "video/x-annodex", "video/annodex", "audio/x-wav", "audio/wav", "audio/aiff", "audio/x-aiff", "audio/basic", "audio/mid", "audio/x-midi", "audio/midi", "audio/vnd.qcelp", "audio/x-gsm", "audio/AMR", "audio/aac", "audio/x-aac", "audio/x-caf", "audio/vnd.qcelp", "audio/ac3", "audio/x-ac3", "audio/x-ogg", "audio/ogg", "audio/x-speex", "audio/speex", "audio/x-annodex", "audio/annodex", "video/x-mpeg", "video/mpeg", "audio/mpeg", "audio/x-mpeg", "video/3gpp", "audio/3gpp", "video/3gpp2", "audio/3gpp2", "video/sd-video", "application/x-mpeg", "video/mp4", "audio/mp4", "audio/x-m4a", "audio/x-m4p", "audio/x-m4b", "video/x-m4v", "audio/mpeg", "audio/x-mpeg", "audio/mp3", "audio/x-mp3", "audio/mpeg3", "audio/x-mpeg3", "image/x-bmp", "image/x-macpaint", "image/pict", "image/x-pict", "image/png", "image/x-png", "image/x-quicktime", "image/x-sgi", "image/x-targa", "image/tiff", "image/x-tiff", "image/jp2", "image/jpeg2000", "image/jpeg2000-image", "image/x-jpeg2000-image" ] },
-                          { "plugin": "iPhoto6", "mimes": ["application/photo"] },
-                          { "plugin": "Java 1.5.0.19", "mimes": ["application/x-java-applet;version=1.3", "application/x-java-applet;version=1.5"]}
+    var testPluginInfos = [  { "plugin": "Shockwave Flash 10.0 r12", "mimes": [ "application/x-shockwave-flash", "application/futuresplash" ], classified: false },
+                          { "plugin": "Default Plugin", "mimes": [ "*" ], classified: false },
+                          { "plugin": "QuickTime Plug-in 7.6.2", "mimes": [ "application/sdp", "application/x-sdp", "application/x-rtsp", "video/quicktime", "video/x-msvideo", "video/msvideo", "video/avi", "video/flc", "application/x-ogg", "application/ogg", "video/x-ogg", "video/ogg", "application/x-annodex", "application/annodex", "video/x-annodex", "video/annodex", "audio/x-wav", "audio/wav", "audio/aiff", "audio/x-aiff", "audio/basic", "audio/mid", "audio/x-midi", "audio/midi", "audio/vnd.qcelp", "audio/x-gsm", "audio/AMR", "audio/aac", "audio/x-aac", "audio/x-caf", "audio/vnd.qcelp", "audio/ac3", "audio/x-ac3", "audio/x-ogg", "audio/ogg", "audio/x-speex", "audio/speex", "audio/x-annodex", "audio/annodex", "video/x-mpeg", "video/mpeg", "audio/mpeg", "audio/x-mpeg", "video/3gpp", "audio/3gpp", "video/3gpp2", "audio/3gpp2", "video/sd-video", "application/x-mpeg", "video/mp4", "audio/mp4", "audio/x-m4a", "audio/x-m4p", "audio/x-m4b", "video/x-m4v", "audio/mpeg", "audio/x-mpeg", "audio/mp3", "audio/x-mp3", "audio/mpeg3", "audio/x-mpeg3", "image/x-bmp", "image/x-macpaint", "image/pict", "image/x-pict", "image/png", "image/x-png", "image/x-quicktime", "image/x-sgi", "image/x-targa", "image/tiff", "image/x-tiff", "image/jp2", "image/jpeg2000", "image/jpeg2000-image", "image/x-jpeg2000-image" ], classified: false },
+                          { "plugin": "iPhoto6", "mimes": ["application/photo"], classified: false },
+                          { "plugin": "Java 1.5.0.19", "mimes": ["application/x-java-applet;version=1.3", "application/x-java-applet;version=1.5"], classified: false}
                         ];
     
     test("browserPlugins", function(){
@@ -108,8 +108,28 @@ $(document).ready(function(){
       //expect(2)
       
         var plugins = Pfs.browserPlugins(navigator.plugins);
-        
-        Pfs.findPluginInfos(plugins);
+        /* There are known knowns.
+             These are things we know that we know. 
+           There are known unknowns.
+             That is to say, there are things that we know we don't know.
+           But there are also unknown unknowns.
+             There are things we don't know we don't know
+              -- Donald Rumsfeld US Secretary of Defense */
+        var expected = plugins.length;
+        Pfs.findPluginInfos(plugins, function(knownKnowns, knowThatWeKnow, knownUnknowns, unknownUnknowns){
+            if (window.console) {console.info("current", knownKnowns);}
+            if (window.console) {console.warn("outdated", knowThatWeKnow);}
+            if (window.console) {console.error("vulnerable", knownUnknowns);}
+            if (window.console) {console.info("unknown", unknownUnknowns);}
+            
+            //If this testing is failing... I edited the PFS2 database Plugin Name to be 'QuickTime'
+            same(knowThatWeKnow[0], plugins[2], "QuickTime is out of date");
+            
+            var actual = knownKnowns.length + knowThatWeKnow.length + knownUnknowns.length + unknownUnknowns.length;            
+            equals(actual, expected, "All plugins should be in atleast one of these four categories");
+            start();
+          });
+        stop(3000);
         
         //var r = Pfs.pluginData([{"id":2,"name":"Adobe Flash Player","description":"","latest_version":"","vendor":"Adobe","url":"http:\/\/www.adobe.com\/go\/getflashplayer","icon_url":"","license_url":"http:\/\/www.adobe.com\/go\/eula_flashplayer","plugin_id":1,"guid":"{4cfaef8a-a6c9-41a0-8e6f-967eb8f49143}","filename":"","version":"10.0.22.87","xpi_location":"http:\/\/fpdownload.macromedia.com\/get\/flashplayer\/xpi\/current\/flashplayer-win.xpi","installer_location":"","installer_hash":"","installer_shows_ui":0,"manual_installation_url":"http:\/\/www.adobe.com\/go\/getflashplayer","needs_restart":0,"min":"","max":"","xpcomabi":"","created":"2009-03-27 21:00:07","modified":"2009-03-27 21:00:07"}]);
         
