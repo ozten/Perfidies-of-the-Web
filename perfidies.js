@@ -175,10 +175,8 @@ var Pfs = {
         for (var i=0; i < plugins.length; i++) {
             var pluginInfo;
             if (this.shouldSkipPluginNamed(plugins[i].name)) {
-                console.info("Skipping Gecko");
                 continue;
             } else if (this.hasPluginNameHook(plugins[i].name)) {
-                console.info("Doing Java");
                 pluginInfo = this.doPluginNameHook(plugins[i].name);
             } else {
                 
@@ -201,33 +199,77 @@ var Pfs = {
                     mimes.push(mimeType);                    
                 }                
             }
+            
             p.push({plugin: pluginInfo, mimes: mimes});
         }
+        
         return p;
     },
+    
+    /************* PFS2 below *************/
     callPfs2: function(mimeType, successFn, errorFn) {
         //var mimeType = "application/x-shockwave-flash";
 	    var endpoint = "http://pfs2.ubuntu/?appID={ec8030f7-c20a-464f-9b0e-13a3a9e97384}&mimetype=" +
 		            mimeType + "&appVersion=2008052906&appRelease=3.0&clientOS=Windows%20NT%205.1&chromeLocale=en-US";
-
         $.ajax({
-            //Mother of Pearl, you can't do async false and JSONP
-            async: false,
-		    url: endpoint,
+            url: endpoint,
             dataType: "jsonp",
             success: successFn,
             error: errorFn
         });
-    }
-    // TODO plugin specific version detection...
-    // http://www.pinlady.net/PluginDetect/PluginDet%20Generator.htm
-    //var JavaVersion = PluginDetect.getVersion('Java', 'getJavaInfo.jar');
-    
-}
-/*
-  findPluginQueue: [],    
+    },
+    findPluginQueue: [],    
     currentPlugins: [],
+    currentMime: -1,
     outdatedPlugins: [],
     vulnerablePlugins: [],
-    unknownPlugins: []
-*/
+    unknownPlugins: [],
+    findPluginInfos: function(pluginInfos) {
+        // Walk through the plugins and get the metadata from PFS2
+        // PFS2 is JSONP and can't be called async using jQuery.ajax
+        // We'll create a queue and manage our requests
+        for(var i=0; i< 2; i++) {//plugins.length; i++) {
+            this.findPluginQueue.push(pluginInfos[i]);
+        }
+        this.startFindingNextPlugin();
+    },
+    startFindingNextPlugin: function() {
+        if (this.findPluginQueue.length > 0) {
+            this.currentPlugins = this.findPluginQueue.pop();
+            this.currentMime = 0;
+            
+            this.findPluginInfo();
+        }
+    },
+    findPluginInfo: function() {
+        var mime = this.currentPlugins.mimes[this.currentMime];
+            
+        var that = this;
+        this.callPfs2(mime, function(){ that.pfs2Success.apply(that, arguments);},
+                            function(){ that.pfs2Error.apply(that, arguments);});  
+    },
+    startFindingNextMimetypeOnCurrentPlugin: function() {
+        this.currentMime += 1;
+        if (this.currentMime < this.currentPlugins.mimes.length) {
+            this.findPluginInfo();
+        } else {
+            if (window.console) { console.warn("Exhausted Mime-Types..."); }
+            //TODO Add plugin to unknown
+            this.startFindingNextPlugin();
+        }
+    },
+    pfs2Success: function(data, status){
+        window.d = data;
+        if (data.length > 0) {            
+            console.info("success calling pfs2", data);
+            //TODO compare version and add to either current, outofdate, or vulnerable
+            this.startFindingNextPlugin();
+        } else {
+            if (window.console) { console.info("Unknown mime type:", this.currentPlugins.mimes[this.currentMime], this.currentPlugins) };
+            this.startFindingNextMimetypeOnCurrentPlugin();
+        }
+    },
+    pfs2Error: function(xhr, textStatus, errorThrown){
+        if (window.console) { console.error("Doh failed on mime/plugin ", this.currentPlugins.mimes[this.currentMime], this.currentPlugins) };
+    }
+}
