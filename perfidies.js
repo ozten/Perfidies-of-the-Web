@@ -1,9 +1,10 @@
-/* perfidies.js
+/**
+   perfidies.js
   There are two layers - The UI and the PFS2 API
   
   This file will (evetually) only host the PFS API. Other JS files will host
   the MoCo whatsnew UI, the SFx Up Your Plug Badges, etc
-  
+  @author ozten
 */
 var Pfs = {
     /**
@@ -320,5 +321,58 @@ var Pfs = {
             this.outdatedPlugins.push(plugin2mimeTypes);
         }
         plugin2mimeTypes.classified = true;
-    }   
+    },
+    /**
+     * PFS2 supports loading plugin data that is encoded in
+     * JSON files. This function can be used to export a plugin
+     * to serve as a template for that service.
+     * 
+     * @param plugin {object} A plugin
+     * @returns {string} The JSON dump of the plugin
+     */
+    dumpPlugin2Pfs2: function(plugin) {
+        var info = { "meta": { "pfs_id": "", "vendor": "", "name": "", "platform": { "app_id": "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}" }, 
+                               "url": "", "manual_installation_url": "", "version": "",  "license_url": "", "installer_shows_ui": ""}, 
+                     "releases": [{ "guid": "", "license_url": "", "os_name": "", "xpi_location": "" }], 
+                     "mimes": []};
+        var addMime = function (suffix, name, description) {
+            suffix = suffix ? suffix : "";            
+            name = name ? name : "";
+            description = description ? description : "" ;
+            return {"suffixes": suffix, "name": name,"description": description};
+        }
+        if (plugin.description) {            
+            info.description = plugin.description;
+        }
+        if (plugin.name) {info.meta.name = plugin.name;}
+        
+        var rawVersion;
+        if (plugin.name && this.hasVersionInfo(plugin.name)) {
+            rawVersion = plugin.name;
+        } else if (plugin.description && this.hasVersionInfo(plugin.description)) {
+            rawVersion = plugin.description;
+        }
+        if (rawVersion) {
+            info.meta.version = this.parseVersion(rawVersion).join('.');    
+        }
+        
+        if (navigator.oscpu){info.releases[0].os_name =  this.pluginOsName2Pfs2OsName(navigator.oscpu);}
+        for (var i=0; i < plugin.length; i++) {
+            var mime = plugin[i];
+            if (mime) {
+                info.mimes[info.mimes.length] = addMime(mime.suffixes, mime.type, mime.description);
+            }
+        }
+        return JSON.stringify(info);
+    },
+    pluginOsName2Pfs2OsName: function(osCpu) {
+        if (/Mac OS X/.test(osCpu)) {
+            return "mac";
+        // return win
+        } else if (/Linux/.test(osCpu)) {
+            return "lin";
+        } else {
+            return "unknown";
+        }
+    }
 }

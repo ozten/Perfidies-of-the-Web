@@ -137,8 +137,17 @@ $(document).ready(function(){
     test("inspect the navigation object", function(){
       ok(notNull(window.navigator), "We have a navigator object");
       ok(notNull(window.navigator.plugins), "We have a plugins object");
+      
     });
+    
   });
+      $('#json').click(function(){
+        console.info("Clicked");
+        for(var i=0; i<= window.navigator.plugins.length; i++) {
+            $('#debuz').append("<textarea cols=80 rows=7>" + Pfs.dumpPlugin2Pfs2(window.navigator.plugins[i]) + "</textarea>");
+        }
+        return false;
+      });
   </script>
 </head>
 <body>
@@ -150,5 +159,6 @@ $(document).ready(function(){
  <ol id="tests"></ol>
  <div id="main"></div>
  <div id="debug"></div>
+ <a id="json" href="#">Show JSON for all plugins</a>
 </body>
 </html>
