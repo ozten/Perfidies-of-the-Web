@@ -31,6 +31,9 @@ $(document).ready(function(){
                "A version may have a descriptin and a comment");
         same(Pfs.parseVersion("QuickTime Plug-in 7.6.2pre"), [7, 6, 2, "pre"],
                "pre or other codes should be part of the version component, but comments aren't");
+        
+        same(Pfs.parseVersion("VLC Multimedia Plugin (compatible Totem 2.26.1)"), [2, 26, 1],
+               "Weird characters around the version won't break us");
     
         
     });
@@ -140,14 +143,7 @@ $(document).ready(function(){
       
     });
     
-  });
-      $('#json').click(function(){
-        console.info("Clicked");
-        for(var i=0; i<= window.navigator.plugins.length; i++) {
-            $('#debuz').append("<textarea cols=80 rows=7>" + Pfs.dumpPlugin2Pfs2(window.navigator.plugins[i]) + "</textarea>");
-        }
-        return false;
-      });
+  });      
   </script>
 </head>
 <body>
@@ -159,6 +155,5 @@ $(document).ready(function(){
  <ol id="tests"></ol>
  <div id="main"></div>
  <div id="debug"></div>
- <a id="json" href="#">Show JSON for all plugins</a>
 </body>
 </html>

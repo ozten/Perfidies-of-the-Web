@@ -100,6 +100,9 @@ var Pfs = {
                     } else if(isSeperator(token[j])) {
                         finishVersionPart();
                     } else {
+                        if (inNumericVersion) {
+                            finishVersionPart();
+                        }
                         return versionChain;
                     }
                 } else {
