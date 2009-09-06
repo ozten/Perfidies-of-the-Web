@@ -23,8 +23,16 @@ var Pfs = {
      * @returns {integer} The comparison results
      */
     compVersion: function(v1, v2) {
-        return this.compVersionChain( this.parseVersion(v1),
-                                      this.parseVersion(v2));
+        if (v1 && v2) {
+            return this.compVersionChain( this.parseVersion(v1),
+                                          this.parseVersion(v2));
+        } else if (v1) {
+            if(window.console) {window.console.warn("compVersion v1, v2, v2 is undefined v1=", v1, " v2=", v2);}
+            return 1;
+        } else {
+            if(window.console) {window.console.warn("compVersion v1, v2, either v1 or v2 or both is undefined v1=", v1, " v2=", v2);}
+            return -1;
+        }
     },
     
     /**
@@ -149,7 +157,11 @@ var Pfs = {
         return 0;
     },
     hasVersionInfo: function(description) {
-        return this.parseVersion(description).length > 0
+        if (description) {
+            return this.parseVersion(description).length > 0;
+        } else {
+            return false;
+        }
     },
     shouldSkipPluginNamed: function(name) {
         this.skipPluginsNamed.indexOf(name) >= 0
@@ -314,11 +326,13 @@ var Pfs = {
         if (window.console) { console.error("Doh failed on mime/plugin ", this.currentPlugin.mimes[this.currentMime], this.currentPlugin) };
     },
     classifyPlugin: function(pluginInfo, plugin2mimeTypes) {
-        console.info("classifyPlugin", pluginInfo, plugin2mimeTypes);
-        if (this.compVersion(pluginInfo.version, plugin2mimeTypes.plugin) > 0) {
+        console.info("classifyPlugin", pluginInfo, plugin2mimeTypes);        
+        if (pluginInfo.version &&
+            this.compVersion(pluginInfo.version, plugin2mimeTypes.plugin) > 0) {
             if (window.console) { console.warn("newer, weird", pluginInfo.name, "----", plugin2mimeTypes.plugin); }
             this.currentPlugins.push(plugin2mimeTypes);
-        } else if(this.compVersion(pluginInfo.name, plugin2mimeTypes.plugin) == 0){
+        } else if(pluginInfo.name &&
+                  this.compVersion(pluginInfo.name, plugin2mimeTypes.plugin) == 0){
             this.currentPlugins.push(plugin2mimeTypes);
         } else {
             this.outdatedPlugins.push(plugin2mimeTypes);
