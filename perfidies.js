@@ -370,6 +370,9 @@ var Pfs = {
             rawVersion = plugin.description;
         }
         if (rawVersion) {
+            if (this.hasPluginNameHook(plugin.name)) {
+                rawVersion = this.doPluginNameHook(plugin.name);
+            }
             info.meta.version = this.parseVersion(rawVersion).join('.');    
         }
         
