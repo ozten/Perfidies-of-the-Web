@@ -295,49 +295,102 @@ var Pfs = {
         }
     },
     pfs2Success: function(data, status){
-        window.d = data;
-        if (data.length > 0) {
-            var pluginMatch = false;
-            var pluginInfo;
-            for (var i=0; i < data.length; i++) {
-                console.info("Trying to match----", this.currentPlugin.plugin, "---", data[i].name);
-                if (this.currentPlugin.plugin.toLowerCase().indexOf(data[i].name.toLowerCase()) >= 0) {
-                    pluginMatch = true;
-                    pluginInfo = data[i];
-                    break;
+        console.info("=============== pfs2Success=========", data);
+        var searchingResults = true;
+        var pluginMatch = false;
+        var pluginInfo;
+                    
+        for (var el in data) {
+            if (! searchingResults) {
+                break;
+            }
+            console.info("=============== " + el + "=========", data[el]);
+            //data[el] has releases, aliases
+            if (data[el].releases && data[el].aliases) {
+                var releases = data[el].releases;
+                var aliases = data[el].aliases;
+                if (aliases.length > 0) {
+                    for (var i=0; i < aliases.length; i++) {
+                        console.info("Trying to match----", this.currentPlugin.plugin, "---", aliases[i]);
+                        //if (this.currentPlugin.plugin.toLowerCase().indexOf(aliases[i].toLowerCase()) >= 0) {
+                        if (new RegExp(aliases[i]).test(this.currentPlugin.plugin)) {
+                            console.info("========== MATCH ==========", aliases[i]);
+                            pluginMatch = true;
+                            pluginInfo = data[el]
+                            searchingResults = false;
+                            break;
+                        } else {
+                            console.error("Couldn't match", new RegExp(aliases[i]), this.currentPlugin.plugin.toLowerCase());
+                        }
+                    }
                 }
-            }
-            
-            if (pluginMatch) {
-                //TODO Are unknown plugins implicit or explicit? If explicit, when do we create the list?
-                this.classifyPlugin(pluginInfo, this.currentPlugin);
-                this.startFindingNextPlugin();    
             } else {
-                //none of the plugins for this mime-type were a match... try the next mime-type
-                this.startFindingNextMimetypeOnCurrentPlugin();
+                console.error("No releases or aliases");
             }
-            
+        }//for el in data which are the plugin infoss
+        if (pluginMatch) {
+            searchingResults = false;
+            //TODO Are unknown plugins implicit or explicit? If explicit, when do we create the list?
+            this.classifyPlugin(pluginInfo, this.currentPlugin);
+            this.startFindingNextPlugin();    
         } else {
-            if (window.console) { console.info("Unknown mime type:", this.currentPlugin.mimes[this.currentMime], this.currentPlugin) };
+            //none of the plugins for this mime-type were a match... try the next mime-type
             this.startFindingNextMimetypeOnCurrentPlugin();
         }
+        /*} else {
+                    if (window.console) { console.info("Unknown mime type:", this.currentPlugin.mimes[this.currentMime], this.currentPlugin, aliases) };
+                    this.startFindingNextMimetypeOnCurrentPlugin();
+                }*/
     },
     pfs2Error: function(xhr, textStatus, errorThrown){
         if (window.console) { console.error("Doh failed on mime/plugin ", this.currentPlugin.mimes[this.currentMime], this.currentPlugin) };
     },
     classifyPlugin: function(pluginInfo, plugin2mimeTypes) {
-        console.info("classifyPlugin", pluginInfo, plugin2mimeTypes);        
-        if (pluginInfo.version &&
-            this.compVersion(pluginInfo.version, plugin2mimeTypes.plugin) > 0) {
-            if (window.console) { console.warn("newer, weird", pluginInfo.name, "----", plugin2mimeTypes.plugin); }
-            this.currentPlugins.push(plugin2mimeTypes);
-        } else if(pluginInfo.name &&
-                  this.compVersion(pluginInfo.name, plugin2mimeTypes.plugin) == 0){
-            this.currentPlugins.push(plugin2mimeTypes);
+        console.info("classifyPlugin", pluginInfo, plugin2mimeTypes);
+        console.info("TODO, iterate through releases?");
+        
+        // grab latest version
+        // walk through releases and grab corresponding release
+        // classify
+        if (pluginInfo.latest_release) {
+            var latest = pluginInfo.latest_release;
+            var latestInfo;
+            if (pluginInfo.releases) {
+                //for(var i=0; i <= pluginInfo.releases.length; i++) {
+                    //var rel = pluginInfo.releases[i];
+                    //console.info("examinging release", rel);
+                    for(var el in pluginInfo.releases) {
+                        var rel = pluginInfo.releases;
+                        console.info("examinging release", el, rel[el]);
+                        if (el == latest) {
+                            console.info("Found the latest relase info", rel[el]);
+                            latestInfo = rel[el];
+                            break;
+                        }
+                    }
+                //}
+                if (latestInfo) {
+                    var compVal = this.compVersion(plugin2mimeTypes.plugin, latest);//Pfs.compVersion("11.1.18.12", 'Shockwave Flash 10.0 r12")
+                    if (compVal > 0) {
+                        if (window.console) { console.warn("newer than our db, weird ours=", latest, "---browser=", plugin2mimeTypes.plugin); }
+                        this.currentPlugins.push(plugin2mimeTypes);
+                    } else if(compVal == 0){
+                        this.currentPlugins.push(plugin2mimeTypes);
+                    } else {
+                        // are we vulnerable?
+                        //TODO
+                        this.outdatedPlugins.push(plugin2mimeTypes);
+                    }
+                    plugin2mimeTypes.classified = true;
+                } else {
+                    if (window.console) { console.error("Couldn't find " + latest + " in the list of releases", pluginInfo.releases) };
+                }
+            } else {
+                if (window.console) { console.error("Expected a releases property, but there isn't one", pluginInfo) };
+            }
         } else {
-            this.outdatedPlugins.push(plugin2mimeTypes);
+            if (window.console) { console.error("Expected a latest_release property, but there isn't one", pluginInfo) };
         }
-        plugin2mimeTypes.classified = true;
     },
     /**
      * PFS2 supports loading plugin data that is encoded in

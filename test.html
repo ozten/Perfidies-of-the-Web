@@ -90,7 +90,8 @@ $(document).ready(function(){
     
     var testPluginInfos = [  { "plugin": "Shockwave Flash 10.0 r12", "mimes": [ "application/x-shockwave-flash", "application/futuresplash" ], classified: false },
                           { "plugin": "Default Plugin", "mimes": [ "*" ], classified: false },
-                          { "plugin": "QuickTime Plug-in 7.6.2", "mimes": [ "application/sdp", "application/x-sdp", "application/x-rtsp", "video/quicktime", "video/x-msvideo", "video/msvideo", "video/avi", "video/flc", "application/x-ogg", "application/ogg", "video/x-ogg", "video/ogg", "application/x-annodex", "application/annodex", "video/x-annodex", "video/annodex", "audio/x-wav", "audio/wav", "audio/aiff", "audio/x-aiff", "audio/basic", "audio/mid", "audio/x-midi", "audio/midi", "audio/vnd.qcelp", "audio/x-gsm", "audio/AMR", "audio/aac", "audio/x-aac", "audio/x-caf", "audio/vnd.qcelp", "audio/ac3", "audio/x-ac3", "audio/x-ogg", "audio/ogg", "audio/x-speex", "audio/speex", "audio/x-annodex", "audio/annodex", "video/x-mpeg", "video/mpeg", "audio/mpeg", "audio/x-mpeg", "video/3gpp", "audio/3gpp", "video/3gpp2", "audio/3gpp2", "video/sd-video", "application/x-mpeg", "video/mp4", "audio/mp4", "audio/x-m4a", "audio/x-m4p", "audio/x-m4b", "video/x-m4v", "audio/mpeg", "audio/x-mpeg", "audio/mp3", "audio/x-mp3", "audio/mpeg3", "audio/x-mpeg3", "image/x-bmp", "image/x-macpaint", "image/pict", "image/x-pict", "image/png", "image/x-png", "image/x-quicktime", "image/x-sgi", "image/x-targa", "image/tiff", "image/x-tiff", "image/jp2", "image/jpeg2000", "image/jpeg2000-image", "image/x-jpeg2000-image" ], classified: false },
+                          /* { "plugin": "QuickTime Plug-in 7.6.2", "mimes": [ "application/sdp", "application/x-sdp", "application/x-rtsp", "video/quicktime", "video/x-msvideo", "video/msvideo", "video/avi", "video/flc", "application/x-ogg", "application/ogg", "video/x-ogg", "video/ogg", "application/x-annodex", "application/annodex", "video/x-annodex", "video/annodex", "audio/x-wav", "audio/wav", "audio/aiff", "audio/x-aiff", "audio/basic", "audio/mid", "audio/x-midi", "audio/midi", "audio/vnd.qcelp", "audio/x-gsm", "audio/AMR", "audio/aac", "audio/x-aac", "audio/x-caf", "audio/vnd.qcelp", "audio/ac3", "audio/x-ac3", "audio/x-ogg", "audio/ogg", "audio/x-speex", "audio/speex", "audio/x-annodex", "audio/annodex", "video/x-mpeg", "video/mpeg", "audio/mpeg", "audio/x-mpeg", "video/3gpp", "audio/3gpp", "video/3gpp2", "audio/3gpp2", "video/sd-video", "application/x-mpeg", "video/mp4", "audio/mp4", "audio/x-m4a", "audio/x-m4p", "audio/x-m4b", "video/x-m4v", "audio/mpeg", "audio/x-mpeg", "audio/mp3", "audio/x-mp3", "audio/mpeg3", "audio/x-mpeg3", "image/x-bmp", "image/x-macpaint", "image/pict", "image/x-pict", "image/png", "image/x-png", "image/x-quicktime", "image/x-sgi", "image/x-targa", "image/tiff", "image/x-tiff", "image/jp2", "image/jpeg2000", "image/jpeg2000-image", "image/x-jpeg2000-image" ], classified: false },*/
+                          { "plugin": "Shockwave Flash 10.0 r12", "mimes": [ "application/x-shockwave-flash", "application/futuresplash" ], "classified": true },
                           { "plugin": "iPhoto6", "mimes": ["application/photo"], classified: false },
                           { "plugin": "Java 1.5.0.19", "mimes": ["application/x-java-applet;version=1.3", "application/x-java-applet;version=1.5"], classified: false}
                         ];
@@ -120,13 +121,17 @@ $(document).ready(function(){
               -- Donald Rumsfeld US Secretary of Defense */
         var expected = plugins.length;
         Pfs.findPluginInfos(plugins, function(knownKnowns, knowThatWeKnow, knownUnknowns, unknownUnknowns){
+            $('#debug').append("<h3>Current</h3>");
+            for (var i = 0; i < knownKnowns.length; i++) {
+                $('#debug').append("<p>" + knownKnowns[i].plugin + "</p>");
+            }
             if (window.console) {console.info("current", knownKnowns);}
             if (window.console) {console.warn("outdated", knowThatWeKnow);}
             if (window.console) {console.error("vulnerable", knownUnknowns);}
             if (window.console) {console.info("unknown", unknownUnknowns);}
             
             //If this testing is failing... I edited the PFS2 database Plugin Name to be 'QuickTime'
-            same(knowThatWeKnow[0], plugins[2], "QuickTime is out of date");
+            same(knownKnowns[0], plugins[2], "QuickTime is up to date");
             
             var actual = knownKnowns.length + knowThatWeKnow.length + knownUnknowns.length + unknownUnknowns.length;            
             equals(actual, expected, "All plugins should be in atleast one of these four categories");
