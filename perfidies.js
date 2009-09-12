@@ -7,6 +7,7 @@
   @author ozten
 */
 var Pfs = {
+    MAX_MIMES_LENGTH: 3000,
     /**
      * A list of well known plugins that are *always* up to date.
      */
@@ -166,12 +167,25 @@ var Pfs = {
     shouldSkipPluginNamed: function(name) {
         this.skipPluginsNamed.indexOf(name) >= 0
     },
-    hasPluginNameHook: function(name) {
-        return /Java.*/.test(name);
-    },
-    doPluginNameHook: function(name) {
-        return "Java Embedding Plugin " + PluginDetect.getVersion('Java', 'getJavaInfo.jar').replace(/,/g, '.').replace(/_/g, '.');
-    },
+    /**
+     * Certain plugins need special handeling to retrieve the version
+     * 
+     * @returns {boolean} or {function} - false if there is no hook, a function to run otherwise
+     */
+    pluginNameHook: function(name) {
+        console.info("PluginDetect", name);
+        if (/Java.*/.test(name)) {
+            return "Java Embedding Plugin " + PluginDetect.getVersion('Java', 'getJavaInfo.jar').replace(/,/g, '.').replace(/_/g, '.');    
+        } else if(/.*Flash/.test(name)) {            
+            return name + " " + PluginDetect.getVersion('Flash').replace(/,/g, '.');
+        } else if(/.*QuickTime.*/.test(name)) {
+            console.info("QuickTime Plug-in xxx ", PluginDetect.getVersion('Flash'));
+            return "QuickTime Plug-in " + PluginDetect.getVersion('QuickTime').replace(/,/g, '.');        
+        } else {
+            console.info("NOT QuickTime  ", PluginDetect.getVersion('Flash'));
+            return false;
+        }
+    },    
     /**
      * Cleans up the navigator.plugins object into a list of plugin2mimeTypes
      * Each plugin2mimeTypes has two fields
@@ -194,8 +208,10 @@ var Pfs = {
             var pluginInfo;
             if (this.shouldSkipPluginNamed(plugins[i].name)) {
                 continue;
-            } else if (this.hasPluginNameHook(plugins[i].name)) {
-                pluginInfo = this.doPluginNameHook(plugins[i].name);
+            }
+            var hook = this.pluginNameHook(plugins[i].name);
+            if (hook !== false) {
+                pluginInfo = hook;
             } else {
                 
                 if (plugins[i].name && this.hasVersionInfo(plugins[i].name)) {
@@ -216,13 +232,34 @@ var Pfs = {
                 var mimeType = plugins[i][j].type;
                 if (mimeType) {
                     var m = marcelMrceau.normalize(mimeType);
-                    if (marcelMrceau.seen.m === undefined) {
-                        marcelMrceau.seen.m = true;
+                    if (marcelMrceau.seen[m] === undefined) {
+                        marcelMrceau.seen[m] = true;
                         mimes.push(m);
+                    } else {
+                        console.info("Skipping ", m, marcelMrceau.seen);
                     }
-                }                
+                }            
+            }            
+            var mimeValues = [];
+            if (mimes.length > 0) {
+                var mimeValue = mimes[0];
+                var length = mimeValue.length;
+                for (var j=1; j < mimes.length; j++) {
+                    length += mimes[j].length;
+                    mimeValue += " " + mimes[j]; //TODO let JSON request url encode, or do it here?
+                    if (length > Pfs.MAX_MIMES_LENGTH &&
+                        (i + 1) < mimes.length) {
+                        console.info("Resetting the world");
+                        mimeValues.push(mimeValue);
+                        //reset
+                        mimeValue = mimes[i + 1];
+                        length = mimeValue.length;
+                    }
+                }
+                mimeValues.push(mimeValue);
             }
-            p.push({plugin: pluginInfo, mimes: mimes, classified: false, raw: plugins[i]});
+            console.info("Well be calling", mimeValues);
+            p.push({plugin: pluginInfo, mimes: mimeValues, classified: false, raw: plugins[i]});
         }
         
         return p;
@@ -509,8 +546,9 @@ var Pfs = {
             rawVersion = plugin.description;
         }
         if (rawVersion) {
-            if (this.hasPluginNameHook(plugin.name)) {
-                rawVersion = this.doPluginNameHook(plugin.name);
+            var hook = this.pluginNameHook(plugin.name);
+            if (hook !== false) {
+                rawVersion = hook;
             }
             info.meta.version = this.parseVersion(rawVersion).join('.');    
         }
