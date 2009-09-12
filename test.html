@@ -49,6 +49,13 @@ $(document).ready(function(){
         equals(Pfs.compVersion("QuickTime Plug-in 7.6.2", "QuickTime Plug-in 7.6.1"), 1, "Comparing a newer plugin should return a 1");
     });
     
+    module("Mime normalization");
+    test("MasterMime", function(){
+        var mimeMaster = Pfs.createMasterMime();
+        var actual = mimeMaster.normalize("application/x-java-applet;version=1.3");
+        equals(actual, "application/x-java-applet");
+    });
+    
     module("Navigator");
     
     //Simulator a Firefox 3.5 Mac OS X
@@ -81,8 +88,8 @@ $(document).ready(function(){
         "4": {
             name: "Java Embedding Plugin 0.9.7.1",
             description: "Runs Java applets using the latest installed versions of Java. For more information: <A HREF=http://javaplugin.sourceforge.net/>Java Embedding Plugin</A>. Run version test: <A HREF=http://gemal.dk/browserspy/java.html>Java Information</A>.",
-            length: 2,
-            "0": {type: "application/x-java-applet;version=1.3"}, "1": {type: "application/x-java-applet;version=1.5"} /* and many more */
+            length: 1,
+            "0": {type: "application/x-java-applet"} /* and many more */
         },
     };
     
@@ -96,7 +103,7 @@ $(document).ready(function(){
                             "classified": true, "raw":  testBrowserNavigatorPlugins[0] },
                           { "plugin": "iPhoto6", "mimes": ["application/photo"],
                             "classified": false, "raw":  testBrowserNavigatorPlugins[3] },
-                          { "plugin": "Java Embedding Plugin 1.5.0.19", "mimes": ["application/x-java-applet;version=1.3", "application/x-java-applet;version=1.5"],
+                          { "plugin": "Java Embedding Plugin 1.5.0.19", "mimes": ["application/x-java-applet"],
                           "classified": false, "raw": testBrowserNavigatorPlugins[4]}
                         ];
     

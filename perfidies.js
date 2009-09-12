@@ -211,17 +211,33 @@ var Pfs = {
                 }
             }
             var mimes = [];
+            var marcelMrceau = this.createMasterMime(); /* I hate mimes */
             for (var j=0; j < plugins[i].length; j++) {
                 var mimeType = plugins[i][j].type;
                 if (mimeType) {
-                    mimes.push(mimeType);                    
+                    var m = marcelMrceau.normalize(mimeType);
+                    if (marcelMrceau.seen.m === undefined) {
+                        marcelMrceau.seen.m = true;
+                        mimes.push(m);
+                    }
                 }                
             }
-            
             p.push({plugin: pluginInfo, mimes: mimes, classified: false, raw: plugins[i]});
         }
         
         return p;
+    },
+    createMasterMime: function() {
+        return {
+            seen: {},
+            /**
+             * normalizes a mime type. Example application/x-java-applet;version=1.3
+             * becomes application/x-java-applet
+             */
+            normalize: function(mime) {
+                return mime.split(';')[0];
+            }
+        };
     },
     VULNERABLE: "vulnerable",
     createFinder: function(callbackFn) {
