@@ -221,7 +221,8 @@ var Pfs = {
         }
         
         return p;
-    },    
+    },
+    VULNERABLE: "vulnerable",
     createFinder: function(callbackFn) {
         return {
             // A list of plugin2mimeTypes
@@ -321,7 +322,7 @@ var Pfs = {
                     }
                     var pfsInfo = data[i];
                     if (! pfsInfo.aliases ||
-                      ( ! pfsInfo.aliases.literal  && ! pfsInfo.aliases.regex )) {
+                       (! pfsInfo.aliases.literal  && ! pfsInfo.aliases.regex )) {
                             if (window.console) { window.console.error("Malformed PFS2 plugin info, no aliases"); }
                             break;
                     }
@@ -344,9 +345,7 @@ var Pfs = {
                         }
                     }
                     if (pfsInfo.aliases.regex) {
-                        
                         for(var j=0; searchingPluginInfo && j < pfsInfo.aliases.regex.length; j++) {
-                            
                             var rxName = pfsInfo.aliases.regex[j];
                             if (new RegExp(rxName).test(currentPluginName)) {
                                 searchingResults = false;
@@ -364,8 +363,8 @@ var Pfs = {
                                     if (window.console) { console.info("Weird, we are newer", this.currentPlugin.plugin, pfsInfo.releases.latest);}
                                     searchPluginRelease = false;
                                     break;
-                                case 0:
-                                    if (pfsInfo.releases.latest.status == "vulnerable") { // TODO constant
+                                case 0:                                    
+                                    if (pfsInfo.releases.latest.status == Pfs.VULNERABLE) {
                                         this.classifyAsUpToDateAndVulnerable(this.currentPlugin);
                                     } else {
                                         this.classifyAsUpToDate(this.currentPlugin);    
@@ -392,7 +391,8 @@ var Pfs = {
                                         //older than ours, keep looking
                                         break;
                                     case 0:
-                                        if (pfsInfo.releases.latest.status == "vulnerable") { // TODO constant
+                                        console.info("VULNERABLE ", others[k]);
+                                        if (others[k].status == Pfs.VULNERABLE) {
                                             this.classifyAsVulnerable(this.currentPlugin);
                                         } else {
                                             this.classifyAsOutOfDate(this.currentPlugin);    

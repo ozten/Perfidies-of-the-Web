@@ -34,8 +34,6 @@ $(document).ready(function(){
         
         same(Pfs.parseVersion("VLC Multimedia Plugin (compatible Totem 2.26.1)"), [2, 26, 1],
                "Weird characters around the version won't break us");
-    
-        
     });
     test("compVersionChain", function(){
         equals(Pfs.compVersionChain([7, 6, 2], [7, 6, 1]), 1, "First version chain is newer");
@@ -106,26 +104,54 @@ $(document).ready(function(){
         same(actual[4], expected[4], "We can grab each plugin's info and a list of mime types");
     });
 
-    module("Module PFS2");
-
-    test("process pfs2 callback", function() {
-        
-        
-        /*********/
-        
-        var oldPlugins = Pfs.browserPlugins({ length: 1, "0": {
-                            name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 200.9.8",
-                            length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});
-        
-        Pfs.findPluginInfos(oldPlugins, function(current, outdated, vulnerable, disableNow, unknown){
-          if (window.console) { console.info(current, outdated, vulnerable, disableNow, unknown); }
-            same(outdated[0], oldPlugins[0], "Foobar is old, update");
+    module("Integration with PFS2");
+    test("current plugin on browser pfs2 callback", function() {    
+        var currentPlugins = Pfs.browserPlugins({ length: 1, "0": {
+                            name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 200.9.9",
+                            length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});        
+        Pfs.findPluginInfos(currentPlugins, function(current, outdated, vulnerable, disableNow, unknown){
+            if (window.console) { console.info(current, outdated, vulnerable, disableNow, unknown); }
+            same(current[0], currentPlugins[0], "Current Plugin");
+            equals(outdated.length, 0, "No outdated");
+            equals(vulnerable.length, 0, "No vulnerable");
+            equals(disableNow.length, 0, "No disableNow");
+            equals(unknown.length, 0, "No unknown");
             start();
           });
         stop(30000);
-        
-        /*********/
-        
+    });
+    test("old plugin on browser pfs2 callback", function() {
+        var oldPlugins = Pfs.browserPlugins({ length: 1, "0": {
+                            name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 200.9.8",
+                            length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});        
+        Pfs.findPluginInfos(oldPlugins, function(current, outdated, vulnerable, disableNow, unknown){
+          if (window.console) { console.info(current, outdated, vulnerable, disableNow, unknown); }            
+            same(outdated[0], oldPlugins[0], "Foobar is old, update");
+            equals(current.length, 0, "No current");
+            equals(vulnerable.length, 0, "No vulnerable");
+            equals(disableNow.length, 0, "No disableNow");
+            equals(unknown.length, 0, "No unknown");
+            start();
+          });
+        stop(30000);
+    });    
+    test("vulnerable plugin on browser pfs2 callback", function() {    
+        var currentPlugins = Pfs.browserPlugins({ length: 1, "0": {
+                            name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 99.9.9",
+                            length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});        
+        Pfs.findPluginInfos(currentPlugins, function(current, outdated, vulnerable, disableNow, unknown){
+            if (window.console) { console.info(current, outdated, vulnerable, disableNow, unknown); }
+            same(vulnerable[0], currentPlugins[0], "Version 99.9.9 was a vulnerable to puppy attack");
+            equals(current.length, 0, "No current");
+            equals(outdated.length, 0, "No outdated");            
+            equals(disableNow.length, 0, "No disableNow");
+            equals(unknown.length, 0, "No unknown");
+            start();
+          });
+        stop(30000);
+    });
+    //TODO test disabled, put a vulnerable latest into the test database
+    test("unknown plugin on browser pfs2 callback", function() {    
         var unknownPlugins = Pfs.browserPlugins({ length: 1, "0": {
                             name: "Unknown Plugin", description: "Unknown 5000",
                             length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});
@@ -133,19 +159,19 @@ $(document).ready(function(){
         Pfs.findPluginInfos(unknownPlugins, function(current, outdated, vulnerable, disableNow, unknown){
             if (window.console) { console.info(current, outdated, vulnerable, disableNow, unknown); }
             same(unknown[0], unknownPlugins[0], "Known mime, Unknown Plugin");
+            equals(current.length, 0, "No current");
+            equals(outdated.length, 0, "No outdated");
+            equals(vulnerable.length, 0, "No vulnerable");
+            equals(disableNow.length, 0, "No disableNow");
             start();
           });
         stop(30000);
-        
-        //var r = Pfs.pluginData([{"id":2,"name":"Adobe Flash Player","description":"","latest_version":"","vendor":"Adobe","url":"http:\/\/www.adobe.com\/go\/getflashplayer","icon_url":"","license_url":"http:\/\/www.adobe.com\/go\/eula_flashplayer","plugin_id":1,"guid":"{4cfaef8a-a6c9-41a0-8e6f-967eb8f49143}","filename":"","version":"10.0.22.87","xpi_location":"http:\/\/fpdownload.macromedia.com\/get\/flashplayer\/xpi\/current\/flashplayer-win.xpi","installer_location":"","installer_hash":"","installer_shows_ui":0,"manual_installation_url":"http:\/\/www.adobe.com\/go\/getflashplayer","needs_restart":0,"min":"","max":"","xpcomabi":"","created":"2009-03-27 21:00:07","modified":"2009-03-27 21:00:07"}]);
-        
     });
+    
     test("inspect the navigation object", function(){
       ok(notNull(window.navigator), "We have a navigator object");
       ok(notNull(window.navigator.plugins), "We have a plugins object");
-      
     });
-    
   });      
   </script>
 </head>
