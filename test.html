@@ -109,39 +109,7 @@ $(document).ready(function(){
     module("Module PFS2");
 
     test("process pfs2 callback", function() {
-      //expect(2)
-      
-        /* var plugins = Pfs.browserPlugins(navigator.plugins); */
-        var plugins =  Pfs.browserPlugins({ length: 1, "0": {
-                            name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 200.9.9",
-                            length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});
-        var expected = plugins.length;
-        /* There are known knowns.
-             These are things we know that we know. 
-           There are known unknowns.
-             That is to say, there are things that we know we don't know.
-           But there are also unknown unknowns.
-             There are things we don't know we don't know
-              -- Donald Rumsfeld US Secretary of Defense */
         
-        Pfs.findPluginInfos(plugins, function(knownKnowns, knowThatWeKnow, knownUnknowns, unknownUnknowns){
-            $('#debug').append("<h3>Current</h3>");
-            for (var i = 0; i < knownKnowns.length; i++) {
-                $('#debug').append("<p>" + knownKnowns[i].plugin + "</p>");
-            }
-            if (window.console) {console.info("current", knownKnowns);}
-            if (window.console) {console.warn("outdated", knowThatWeKnow);}
-            if (window.console) {console.error("vulnerable", knownUnknowns);}
-            if (window.console) {console.info("unknown", unknownUnknowns);}
-            
-            //If this testing is failing... I edited the PFS2 database Plugin Name to be 'QuickTime'
-            same(knownKnowns[0], plugins[2], "QuickTime is up to date");
-            
-            var actual = knownKnowns.length + knowThatWeKnow.length + knownUnknowns.length + unknownUnknowns.length;            
-            equals(actual, expected, "All plugins should be in atleast one of these four categories");
-            start();
-          });
-        stop(30000);
         
         /*********/
         
@@ -150,7 +118,7 @@ $(document).ready(function(){
                             length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});
         
         Pfs.findPluginInfos(oldPlugins, function(current, outdated, vulnerable, disableNow, unknown){
-          console.info(current, outdated, vulnerable, disableNow, unknown);
+          if (window.console) { console.info(current, outdated, vulnerable, disableNow, unknown); }
             same(outdated[0], oldPlugins[0], "Foobar is old, update");
             start();
           });
@@ -163,7 +131,7 @@ $(document).ready(function(){
                             length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});
         
         Pfs.findPluginInfos(unknownPlugins, function(current, outdated, vulnerable, disableNow, unknown){
-          console.info(current, outdated, vulnerable, disableNow, unknown);
+            if (window.console) { console.info(current, outdated, vulnerable, disableNow, unknown); }
             same(unknown[0], unknownPlugins[0], "Known mime, Unknown Plugin");
             start();
           });
