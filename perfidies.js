@@ -170,7 +170,7 @@ var Pfs = {
         return /Java.*/.test(name);
     },
     doPluginNameHook: function(name) {
-        return "Java " + PluginDetect.getVersion('Java', 'getJavaInfo.jar').replace(/,/g, '.').replace(/_/g, '.');
+        return "Java Embedding Plugin " + PluginDetect.getVersion('Java', 'getJavaInfo.jar').replace(/,/g, '.').replace(/_/g, '.');
     },
     /**
      * Cleans up the navigator.plugins object into a list of plugin2mimeTypes
@@ -178,7 +178,8 @@ var Pfs = {
      * * plugins - the plugin Description including Version information if available
      * * mimes - An array of mime types
      * * classified - Do we know the plugins status from pfs2
-     * Eample: [{plugin: "QuickTime Plug-in 7.6.2", mimes: ["image/tiff', "image/jpeg"], classified: false}]
+     * * raw - A reference to origional navigator.plugins object
+     * Eample: [{plugin: "QuickTime Plug-in 7.6.2", mimes: ["image/tiff', "image/jpeg"], classified: false, raw: {...}}]
      *
      * Cleanup includes
      * * filtering out *always* up to date plugins
@@ -217,7 +218,7 @@ var Pfs = {
                 }                
             }
             
-            p.push({plugin: pluginInfo, mimes: mimes, classified: false});
+            p.push({plugin: pluginInfo, mimes: mimes, classified: false, raw: plugins[i]});
         }
         
         return p;
@@ -361,6 +362,7 @@ var Pfs = {
                             switch(Pfs.compVersion(this.currentPlugin.plugin, pfsInfo.releases.latest.version)) {
                                 case 1:
                                     if (window.console) { console.info("Weird, we are newer", this.currentPlugin.plugin, pfsInfo.releases.latest);}
+                                    this.classifyAsUpToDate(this.currentPlugin);    
                                     searchPluginRelease = false;
                                     break;
                                 case 0:                                    
