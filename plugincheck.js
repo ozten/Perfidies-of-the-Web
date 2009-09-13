@@ -1,6 +1,97 @@
 /**
  * UI code for http://mozilla.com/en-US/plugincheck/
  */
+if (window.Pfs === undefined) { window.Pfs = {}; }
+Pfs.UI = {
+    /**
+     * Creates a navigatorInfo object from the browser's navigator object
+     */
+    browserInfo: function() {
+        var parts = navigator.userAgent.split('/');
+        var version = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+        return {
+            appID: '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}',
+            appRelease: version,
+            appVersion: navigator.buildID,
+            clientOS: navigator.oscpu,
+            chromeLocale: 'en-US'            
+        }
+    },
+    /**
+     * Cleans up the navigator.plugins object into a list of plugin2mimeTypes
+     * 
+     * Each plugin2mimeTypes has two fields
+     * * plugins - the plugin Description including Version information if available
+     * * mimes - An array of mime types
+     * * classified - Do we know the plugins status from pfs2
+     * * raw - A reference to origional navigator.plugins object
+     * Eample: [{plugin: "QuickTime Plug-in 7.6.2", mimes: ["image/tiff', "image/jpeg"], classified: false, raw: {...}}]
+     *
+     * Cleanup includes
+     * * filtering out *always* up to date plugins
+     * * Special handling of plugin names for well known plugins like Java
+     * @param plugins {object} The window.navigator.plugins object
+     * @returns {array} A list of plugin2mimeTypes
+     */
+    browserPlugins: function(plugins) {
+        var p = [];
+        for (var i=0; i < plugins.length; i++) {
+            var pluginInfo;
+            if (Pfs.shouldSkipPluginNamed(plugins[i].name)) {
+                continue;
+            }
+            var hook = Pfs.pluginNameHook(plugins[i].name);
+            if (hook !== false) {
+                pluginInfo = hook;
+            } else {
+                
+                if (plugins[i].name && Pfs.hasVersionInfo(plugins[i].name)) {
+                    pluginInfo = plugins[i].name;
+                } else if (plugins[i].description && Pfs.hasVersionInfo(plugins[i].description)) {
+                    pluginInfo = plugins[i].description;
+                } else {                
+                    if (plugins[i].name) {
+                        pluginInfo = plugins[i].name;    
+                    } else {
+                        pluginInfo = plugins[i].description;
+                    }
+                }
+            }
+            var mimes = [];
+            var marcelMrceau = Pfs.createMasterMime(); /* I hate mimes */
+            for (var j=0; j < plugins[i].length; j++) {
+                var mimeType = plugins[i][j].type;
+                if (mimeType) {
+                    var m = marcelMrceau.normalize(mimeType);
+                    if (marcelMrceau.seen[m] === undefined) {
+                        marcelMrceau.seen[m] = true;
+                        mimes.push(m);
+                    } 
+                }            
+            }            
+            var mimeValues = [];
+            if (mimes.length > 0) {
+                var mimeValue = mimes[0];
+                var length = mimeValue.length;
+                for (var j=1; j < mimes.length; j++) {
+                    length += mimes[j].length;
+                    mimeValue += " " + mimes[j]; //TODO let JSON request url encode, or do it here?
+                    if (length > Pfs.MAX_MIMES_LENGTH &&
+                        (i + 1) < mimes.length) {                        
+                        mimeValues.push(mimeValue);
+                        //reset
+                        mimeValue = mimes[i + 1];
+                        length = mimeValue.length;
+                    }
+                }
+                mimeValues.push(mimeValue);
+            }            
+            p.push({plugin: pluginInfo, mimes: mimeValues, classified: false, raw: plugins[i]});
+        }
+        
+        return p;
+    },
+};
 $(document).ready(function(){
     var icons = {
         flash:     "/img/tignish/plugincheck/icon-flash.png",
@@ -57,8 +148,7 @@ $(document).ready(function(){
             }
             
             $('#plugin-template').parent().append(html);
-            html.show(); //TODO needed?
-            
+            html.show();            
             /*<tr id="plugin-template" class="odd" style="display: none">
                         <td>
                             <img class="icon" src="/img/tignish/plugincheck/icon-divx.png" alt="DivX Icon" />
@@ -90,8 +180,8 @@ $(document).ready(function(){
     }
     Pfs.reportPluginsFn = reportPlugins;
     
-    var browserPlugins = Pfs.browserPlugins(navigator.plugins);
-    Pfs.findPluginInfos(Pfs.browserInfo(), browserPlugins, function(current, outdated, vulnerable, disableNow, unknown){        
+    var browserPlugins = Pfs.UI.browserPlugins(navigator.plugins);
+    Pfs.findPluginInfos(Pfs.UI.browserInfo(), browserPlugins, function(current, outdated, vulnerable, disableNow, unknown){        
         var total = 0;
         displayPlugins(disableNow, states.dis, total);
         total += disableNow.length;

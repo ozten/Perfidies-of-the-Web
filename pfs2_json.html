@@ -7,6 +7,67 @@
     <script src="plugindetect.js"></script>
   <script>
 $(document).ready(function(){
+    /**
+     * PFS2 supports loading plugin data that is encoded in
+     * JSON files. This function can be used to export a plugin
+     * to serve as a template for that service.
+     * 
+     * @param plugin {object} A plugin
+     * @returns {string} The JSON dump of the plugin
+     */
+    var dumpPlugin2Pfs2 = function(plugin) {
+        var info = { "meta": { "pfs_id": "", "vendor": "", "name": "", "platform": { "app_id": "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}" }, 
+                               "url": "", "manual_installation_url": "", "version": "",  "license_url": "", "installer_shows_ui": ""},
+                     "aliases": {"literal": [],"regex": []},
+                     "releases": [{ "guid": "", "license_url": "", "os_name": "", "xpi_location": "" }], 
+                     "mimes": []};
+        var addMime = function (suffix, name, description) {
+            suffix = suffix ? suffix : "";            
+            name = name ? name : "";
+            description = description ? description : "" ;
+            return {"suffixes": suffix, "name": name,"description": description};
+        }
+        if (plugin.description) {            
+            info.description = plugin.description;
+        }        
+        if (plugin.name) {
+            info.aliases.literal.push(plugin.name);
+            info.meta.name = plugin.name;
+        }
+        
+        // TODO: the version info calls below, suggest a wrapper public function
+        // getVersion(name, description)
+        var rawVersion;
+        if (plugin.name && Pfs.hasVersionInfo(plugin.name)) {
+            rawVersion = plugin.name;
+        } else if (plugin.description && Pfs.hasVersionInfo(plugin.description)) {
+            rawVersion = plugin.description;            
+        }
+        if (rawVersion) {
+            var hook = Pfs.pluginNameHook(plugin.name);
+            if (hook !== false) {
+                rawVersion = hook;
+            }
+            info.meta.version = Pfs.parseVersion(rawVersion).join('.');    
+        }
+        
+        if (navigator.oscpu){info.releases[0].os_name =  navigator.oscpu;}
+        var masterMime = Pfs.createMasterMime();
+                          
+        for (var j=0; j < plugin.length; j++) {
+            var mimeType = plugin[j].type;
+            if (mimeType) {
+                var m = masterMime.normalize(mimeType);
+                if (info.mimes[m] === undefined) {
+                    info.mimes[m] = true;
+                    info.mimes.push(m);
+                } 
+            }
+        }
+            
+        
+        return JSON.stringify(info);
+    };
     for(var i=0; i<= window.navigator.plugins.length; i++) {
         var plugin = window.navigator.plugins[i];
         if (plugin) {
@@ -16,7 +77,7 @@ $(document).ready(function(){
     for(var i=0; i<= window.navigator.plugins.length; i++) {
         var plugin = window.navigator.plugins[i];
         if (plugin) {
-            $('#main table tbody').append("<tr id='plugin" + i + "'><td>" + plugin.name + "</td><td><textarea cols=80 rows=7>" + Pfs.dumpPlugin2Pfs2(plugin) + "</textarea></td></tr>");
+            $('#main table tbody').append("<tr id='plugin" + i + "'><td>" + plugin.name + "</td><td><textarea cols=80 rows=7>" + dumpPlugin2Pfs2(plugin) + "</textarea></td></tr>");
         }
     }
 });

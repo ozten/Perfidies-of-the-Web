@@ -1,12 +1,22 @@
 /**
-   perfidies.js
-  There are two layers - The UI and the PFS2 API
-  
-  This file will (evetually) only host the PFS API. Other JS files will host
-  the MoCo whatsnew UI, the SFx Up Your Plug Badges, etc
-  @author ozten
-*/
-var Pfs = {
+ * Plugin Finder Service Client Library.
+ * There are two layers to the mozilla.com/en-US/plugincheck/ page: The UI and the PFS2 API.
+ *
+ * The UI JavaScript which uses this in plugincheck.js
+ *
+ * The main entry point into the PFS2 Client API is the findPluginInfos function.
+ * This funtion takes a NavigatorInfo, a list of PluginInfos, and a callback function.
+ *
+ * It will serially contact the PFS2 server for each plugin and analyze the results.
+ * It categorizes the plugins into disableNow, vulnerable, current, outdated, and unknown
+ * and the callback recieves a list of each of these types of plugins
+ * 
+ * This file will (evetually) only host the PFS API. Other JS files will host
+ * the MoCo whatsnew UI, the SFx Up Your Plug Badges, etc
+ * @author ozten
+ */
+if (window.Pfs === undefined) { window.Pfs = {}; }
+Pfs = {
     /**
      * PFS2 accepts multiple mime-types per request. What is the maximum length
      * of each mime-type field. If a plugin has too many mime-types then it
@@ -19,15 +29,18 @@ var Pfs = {
     endpoint: "error set me before using",
     /**
      * A list of well known plugins that are *always* up to date.
+     * @client
+     * @private
      */
-    skipPluginsNamed: ["Default Plugin"],
-    
+    skipPluginsNamed: ["Default Plugin"],    
     /**
      * Compares the description of two plugin versions and returns
      * either 1, 0, or -1 to indicate:
      * newer = 1
      * same = 0
      * older = -1
+     * @private
+     * @client
      * @param plugin1 {string} The first plugin description. Example: QuickTime Plug-in 7.6.2
      * @param plugin2 {string} The second plugin description to compare against
      * @returns {integer} The comparison results
@@ -43,8 +56,7 @@ var Pfs = {
             if(window.console) {window.console.warn("compVersion v1, v2, either v1 or v2 or both is undefined v1=", v1, " v2=", v2);}
             return -1;
         }
-    },
-    
+    },    
     /**
      * Ghetto BNF:
      * A Version = description? version comment?
@@ -54,6 +66,8 @@ var Pfs = {
      * seperator = .
      * 
      * v - string like "Quicktime 3.0.12"
+     * @private
+     * @client
      * return a "VersionChain" which is an array of version parts example - [3, 0, 12]
      */
      parseVersion: function(v) {
@@ -143,6 +157,7 @@ var Pfs = {
      * newer = 1
      * same = 0
      * older = -1
+     * @private
      * @param versionChain1 {array} A list of version components Example [5, 3, 'a']
      * @param versionChain2 {array} The other version chain to compare against
      * @returns integer
@@ -166,6 +181,9 @@ var Pfs = {
         }
         return 0;
     },
+    /**
+     * @private
+     */
     hasVersionInfo: function(description) {
         if (description) {
             return this.parseVersion(description).length > 0;
@@ -173,12 +191,17 @@ var Pfs = {
             return false;
         }
     },
+    /**
+     * @private
+     */
     shouldSkipPluginNamed: function(name) {
         this.skipPluginsNamed.indexOf(name) >= 0
     },
     /**
      * Certain plugins need special handeling to retrieve the version
-     * 
+     * @private
+     * @ui - PluginDetect dependency belongs in UI, as well as pluginNameHook
+     *       It's not so much a name hook as override version detection
      * @returns {boolean} or {function} - false if there is no hook, a function to run otherwise
      */
     pluginNameHook: function(name) {        
@@ -206,95 +229,12 @@ var Pfs = {
         } else {            
             return false;
         }
-    },
+    },    
     /**
-     * TODO browser* methods may belong in the plugincheck.js file 
-     */
-    browserInfo: function() {
-        var parts = navigator.userAgent.split('/');
-        var version = parts.length > 1 ? parts[parts.length - 1] : parts[0];
-        return {
-            appID: '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}',
-            appRelease: version,
-            appVersion: navigator.buildID,
-            clientOS: navigator.oscpu,
-            chromeLocale: 'en-US'            
-        }
-    },
-    /**
-     * Cleans up the navigator.plugins object into a list of plugin2mimeTypes
-     * Each plugin2mimeTypes has two fields
-     * * plugins - the plugin Description including Version information if available
-     * * mimes - An array of mime types
-     * * classified - Do we know the plugins status from pfs2
-     * * raw - A reference to origional navigator.plugins object
-     * Eample: [{plugin: "QuickTime Plug-in 7.6.2", mimes: ["image/tiff', "image/jpeg"], classified: false, raw: {...}}]
-     *
-     * Cleanup includes
-     * * filtering out *always* up to date plugins
-     * * Special handling of plugin names for well known plugins like Java
+     * Creates an object that can normailze and store mime types
      * 
-     * @param plugins {object} The window.navigator.plugins object
-     * @returns {array} A list of plugin2mimeTypes
+     * @returns {object} - the master mime instance
      */
-    browserPlugins: function(plugins) {
-        var p = [];
-        for (var i=0; i < plugins.length; i++) {
-            var pluginInfo;
-            if (this.shouldSkipPluginNamed(plugins[i].name)) {
-                continue;
-            }
-            var hook = this.pluginNameHook(plugins[i].name);
-            if (hook !== false) {
-                pluginInfo = hook;
-            } else {
-                
-                if (plugins[i].name && this.hasVersionInfo(plugins[i].name)) {
-                    pluginInfo = plugins[i].name;
-                } else if (plugins[i].description && this.hasVersionInfo(plugins[i].description)) {
-                    pluginInfo = plugins[i].description;
-                } else {                
-                    if (plugins[i].name) {
-                        pluginInfo = plugins[i].name;    
-                    } else {
-                        pluginInfo = plugins[i].description;
-                    }
-                }
-            }
-            var mimes = [];
-            var marcelMrceau = this.createMasterMime(); /* I hate mimes */
-            for (var j=0; j < plugins[i].length; j++) {
-                var mimeType = plugins[i][j].type;
-                if (mimeType) {
-                    var m = marcelMrceau.normalize(mimeType);
-                    if (marcelMrceau.seen[m] === undefined) {
-                        marcelMrceau.seen[m] = true;
-                        mimes.push(m);
-                    } 
-                }            
-            }            
-            var mimeValues = [];
-            if (mimes.length > 0) {
-                var mimeValue = mimes[0];
-                var length = mimeValue.length;
-                for (var j=1; j < mimes.length; j++) {
-                    length += mimes[j].length;
-                    mimeValue += " " + mimes[j]; //TODO let JSON request url encode, or do it here?
-                    if (length > Pfs.MAX_MIMES_LENGTH &&
-                        (i + 1) < mimes.length) {                        
-                        mimeValues.push(mimeValue);
-                        //reset
-                        mimeValue = mimes[i + 1];
-                        length = mimeValue.length;
-                    }
-                }
-                mimeValues.push(mimeValue);
-            }            
-            p.push({plugin: pluginInfo, mimes: mimeValues, classified: false, raw: plugins[i]});
-        }
-        
-        return p;
-    },
     createMasterMime: function() {
         return {
             seen: {},
@@ -307,7 +247,16 @@ var Pfs = {
             }
         };
     },
+    /**
+     * PFS2 Server code for a vulnerable release
+     */
     VULNERABLE: "vulnerable",
+    /**
+     * Creates an instance of the PluginFinder object, which tracks
+     * the state of calling the PFS2 server
+     * @private
+     * @returns {object}
+     */
     createFinder: function(navigatorInfo, callbackFn) {
         return {
             // A list of plugin2mimeTypes
@@ -542,6 +491,11 @@ var Pfs = {
         };
     },
     /**
+     * Given information about the browser and plugins installed
+     * the function contacts the PFS2 Service and analyzes each
+     * plugin. When completed it uses the callback function to
+     * provide a list of blah blah.
+     * 
      * @param {object} - navigatorInfo - A NavigatiorInfo object {
      *   clientOS, chromeLocale, appID, appReleease, appVersion
      * }
@@ -556,64 +510,5 @@ var Pfs = {
             finderState.findPluginQueue.push(pluginInfos[i]);
         }
         finderState.startFindingNextPlugin();
-    },
-    /**
-     * PFS2 supports loading plugin data that is encoded in
-     * JSON files. This function can be used to export a plugin
-     * to serve as a template for that service.
-     * 
-     * @param plugin {object} A plugin
-     * @returns {string} The JSON dump of the plugin
-     */
-    dumpPlugin2Pfs2: function(plugin) {
-        var info = { "meta": { "pfs_id": "", "vendor": "", "name": "", "platform": { "app_id": "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}" }, 
-                               "url": "", "manual_installation_url": "", "version": "",  "license_url": "", "installer_shows_ui": ""},
-                     "aliases": {"literal": [],"regex": []},
-                     "releases": [{ "guid": "", "license_url": "", "os_name": "", "xpi_location": "" }], 
-                     "mimes": []};
-        var addMime = function (suffix, name, description) {
-            suffix = suffix ? suffix : "";            
-            name = name ? name : "";
-            description = description ? description : "" ;
-            return {"suffixes": suffix, "name": name,"description": description};
-        }
-        if (plugin.description) {            
-            info.description = plugin.description;
-        }        
-        if (plugin.name) {
-            info.aliases.literal.push(plugin.name);
-            info.meta.name = plugin.name;
-        }
-        
-        var rawVersion;
-        if (plugin.name && this.hasVersionInfo(plugin.name)) {
-            rawVersion = plugin.name;
-        } else if (plugin.description && this.hasVersionInfo(plugin.description)) {
-            rawVersion = plugin.description;            
-        }
-        if (rawVersion) {
-            var hook = this.pluginNameHook(plugin.name);
-            if (hook !== false) {
-                rawVersion = hook;
-            }
-            info.meta.version = this.parseVersion(rawVersion).join('.');    
-        }
-        
-        if (navigator.oscpu){info.releases[0].os_name =  navigator.oscpu;}
-        var masterMime = this.createMasterMime();
-                          
-        for (var j=0; j < plugin.length; j++) {
-            var mimeType = plugin[j].type;
-            if (mimeType) {
-                var m = masterMime.normalize(mimeType);
-                if (info.mimes[m] === undefined) {
-                    info.mimes[m] = true;
-                    info.mimes.push(m);
-                } 
-            }
-        }
-            
-        
-        return JSON.stringify(info);
     }
 };

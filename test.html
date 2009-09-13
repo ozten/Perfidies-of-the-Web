@@ -4,6 +4,7 @@
 <head>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
   <script src="perfidies.js"></script>
+  <script src="plugincheck.js"></script>
   <script src="plugindetect.js"></script>
   <link rel="stylesheet" href="http://jqueryjs.googlecode.com/svn/trunk/qunit/testsuite.css" type="text/css" media="screen" />
 
@@ -114,15 +115,15 @@ $(document).ready(function(){
         PluginDetect.getVersion = function(pluginName, jarFile){
             return "1.5,0,19";
         };
-        var actual = Pfs.browserPlugins(testBrowserNavigatorPlugins);
+        var actual = Pfs.UI.browserPlugins(testBrowserNavigatorPlugins);
         var expected = testPluginInfos;
         same(actual[4], expected[4], "We can grab each plugin's info and a list of mime types");
     });
 
     module("Integration with PFS2");
-    var navigatorInfo = Pfs.browserInfo();    
+    var navigatorInfo = Pfs.UI.browserInfo();    
     test("current plugin on browser pfs2 callback", function() {    
-        var currentPlugins = Pfs.browserPlugins({ length: 1, "0": {
+        var currentPlugins = Pfs.UI.browserPlugins({ length: 1, "0": {
                             name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 200.9.9",
                             length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});        
         Pfs.findPluginInfos(navigatorInfo, currentPlugins, function(current, outdated, vulnerable, disableNow, unknown){
@@ -137,7 +138,7 @@ $(document).ready(function(){
         stop(30000);
     });
     test("old plugin on browser pfs2 callback", function() {
-        var oldPlugins = Pfs.browserPlugins({ length: 1, "0": {
+        var oldPlugins = Pfs.UI.browserPlugins({ length: 1, "0": {
                             name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 200.9.8",
                             length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});        
         Pfs.findPluginInfos(navigatorInfo, oldPlugins, function(current, outdated, vulnerable, disableNow, unknown){
@@ -152,7 +153,7 @@ $(document).ready(function(){
         stop(30000);
     });    
     test("vulnerable plugin on browser pfs2 callback", function() {    
-        var currentPlugins = Pfs.browserPlugins({ length: 1, "0": {
+        var currentPlugins = Pfs.UI.browserPlugins({ length: 1, "0": {
                             name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 99.9.9",
                             length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});        
         Pfs.findPluginInfos(navigatorInfo, currentPlugins, function(current, outdated, vulnerable, disableNow, unknown){
@@ -168,7 +169,7 @@ $(document).ready(function(){
     });
     //TODO test disabled, put a vulnerable latest into the test database
     test("unknown plugin on browser pfs2 callback", function() {    
-        var unknownPlugins = Pfs.browserPlugins({ length: 1, "0": {
+        var unknownPlugins = Pfs.UI.browserPlugins({ length: 1, "0": {
                             name: "Unknown Plugin", description: "Unknown 5000",
                             length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});
         
