@@ -183,11 +183,26 @@ var Pfs = {
      */
     pluginNameHook: function(name) {        
         if (/Java.*/.test(name)) {
-            return "Java Embedding Plugin " + PluginDetect.getVersion('Java', 'getJavaInfo.jar').replace(/,/g, '.').replace(/_/g, '.');    
-        } else if(/.*Flash/.test(name)) {            
-            return name + " " + PluginDetect.getVersion('Flash').replace(/,/g, '.');
-        } else if(/.*QuickTime.*/.test(name)) {            
-            return "QuickTime Plug-in " + PluginDetect.getVersion('QuickTime').replace(/,/g, '.');        
+            var j =  PluginDetect.getVersion('Java', 'getJavaInfo.jar');
+            if (j !== null) {
+                return "Java Embedding Plugin " + j.replace(/,/g, '.').replace(/_/g, '.');        
+            } else {
+                return false;
+            }
+        } else if(/.*Flash/.test(name)) {
+            var f = PluginDetect.getVersion('Flash');
+            if (f !== null) {
+                return name + " " + f.replace(/,/g, '.');    
+            } else {
+                return false;
+            }
+        } else if(/.*QuickTime.*/.test(name)) {
+            var q = PluginDetect.getVersion('QuickTime');
+            if (q !== null) {
+                return "QuickTime Plug-in " + q.replace(/,/g, '.');            
+            } else {
+                return false;
+            }
         } else {            
             return false;
         }
@@ -528,7 +543,8 @@ var Pfs = {
      */
     dumpPlugin2Pfs2: function(plugin) {
         var info = { "meta": { "pfs_id": "", "vendor": "", "name": "", "platform": { "app_id": "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}" }, 
-                               "url": "", "manual_installation_url": "", "version": "",  "license_url": "", "installer_shows_ui": ""}, 
+                               "url": "", "manual_installation_url": "", "version": "",  "license_url": "", "installer_shows_ui": ""},
+                     "aliases": {"literal": [],"regex": []},
                      "releases": [{ "guid": "", "license_url": "", "os_name": "", "xpi_location": "" }], 
                      "mimes": []};
         var addMime = function (suffix, name, description) {
@@ -539,14 +555,17 @@ var Pfs = {
         }
         if (plugin.description) {            
             info.description = plugin.description;
+        }        
+        if (plugin.name) {
+            info.aliases.literal.push(plugin.name);
+            info.meta.name = plugin.name;
         }
-        if (plugin.name) {info.meta.name = plugin.name;}
         
         var rawVersion;
         if (plugin.name && this.hasVersionInfo(plugin.name)) {
             rawVersion = plugin.name;
         } else if (plugin.description && this.hasVersionInfo(plugin.description)) {
-            rawVersion = plugin.description;
+            rawVersion = plugin.description;            
         }
         if (rawVersion) {
             var hook = this.pluginNameHook(plugin.name);
@@ -557,16 +576,26 @@ var Pfs = {
         }
         
         if (navigator.oscpu){info.releases[0].os_name =  this.pluginOsName2Pfs2OsName(navigator.oscpu);}
-        for (var i=0; i < plugin.length; i++) {
-            var mime = plugin[i];
-            if (mime) {
-                info.mimes[info.mimes.length] = addMime(mime.suffixes, mime.type, mime.description);
+        var masterMime = this.createMasterMime();
+                          
+        for (var j=0; j < plugin.length; j++) {
+            var mimeType = plugin[j].type;
+            if (mimeType) {
+                var m = masterMime.normalize(mimeType);
+                if (info.mimes[m] === undefined) {
+                    info.mimes[m] = true;
+                    info.mimes.push(m);
+                } 
             }
         }
+            
+        
         return JSON.stringify(info);
     },
     pluginOsName2Pfs2OsName: function(osCpu) {
-        if (/Mac OS X/.test(osCpu)) {
+        if (/Intel Mac OS X/.test(osCpu)) {
+            return "mac";
+        } else if (/Intel Mac OS X/.test(osCpu)) {
             return "mac";
         // return win
         } else if (/Linux/.test(osCpu)) {
