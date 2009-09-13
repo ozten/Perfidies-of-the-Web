@@ -30,11 +30,18 @@ $(document).ready(function(){
                   out: {c:"yellow", l:"Update", s:"Potentially Vulnerable"},
                   cur: {c:"green", l:"Learn More", s:"You're Safe"}};
     
-    var displayPlugins = function(pInfos, status) {
-        for(var i=0; i<pInfos.length; i++) {
-        
-            var plugin = pInfos[i].raw;
-            var html = $('#plugin-template').clone();
+    var displayPlugins = function(pInfos, status, rowCount) {
+        for(var index=0; index < pInfos.length; index++) {            
+            var plugin = pInfos[index].raw;
+            var html = $('#plugin-template').clone();            
+            var rowClass;
+            
+            if ((index + rowCount) % 2 == 0) {
+                rowClass = 'odd';
+            } else {
+                rowClass = 'even';
+            }
+            html.addClass(rowClass);
             
             $('.name', html).text(plugin.name);
             $('.version', html).html(plugin.description);
@@ -63,6 +70,14 @@ $(document).ready(function(){
         }
     }
     var reportPlugins = function(pInfos, status) {
+        //TODO should pInfos have a version
+        //Or should the client library have a case 'newer than'?
+        if (status == "newer") {
+            if (window.console) {console.info("Weird, we are newer", pInfos);}    
+        } else {
+            if (window.console) {console.info("Report: ", status, pInfos);}    
+        }
+        
         for(var i=0; i < pInfos.length; i++) {
             var plugin = pInfos[i].raw;
             if (plugin) {
@@ -73,20 +88,21 @@ $(document).ready(function(){
             }
         }        
     }
+    Pfs.reportPluginsFn = reportPlugins;
     
     var browserPlugins = Pfs.browserPlugins(navigator.plugins);
     Pfs.findPluginInfos(Pfs.browserInfo(), browserPlugins, function(current, outdated, vulnerable, disableNow, unknown){        
         var total = 0;
-        displayPlugins(disableNow, states.dis);
+        displayPlugins(disableNow, states.dis, total);
         total += disableNow.length;
         
-        displayPlugins(vulnerable, states.vul);
+        displayPlugins(vulnerable, states.vul, total);
         total += vulnerable.length;
         
-        displayPlugins(outdated, states.out);
+        displayPlugins(outdated, states.out, total);
         total += outdated.length;
         
-        displayPlugins(current, states.cur);
+        displayPlugins(current, states.cur, total);
         total += current.length;
         
         reportPlugins(unknown, 'unknown');

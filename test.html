@@ -120,14 +120,13 @@ $(document).ready(function(){
     });
 
     module("Integration with PFS2");
-    var navigatorInfo = Pfs.browserInfo();
-    console.info('navigatorInfo', navigatorInfo);
+    var navigatorInfo = Pfs.browserInfo();    
     test("current plugin on browser pfs2 callback", function() {    
         var currentPlugins = Pfs.browserPlugins({ length: 1, "0": {
                             name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 200.9.9",
                             length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});        
         Pfs.findPluginInfos(navigatorInfo, currentPlugins, function(current, outdated, vulnerable, disableNow, unknown){
-            if (window.console) { console.info(current, outdated, vulnerable, disableNow, unknown); }
+            if (window.console) {console.info(current, outdated, vulnerable, disableNow, unknown); }
             same(current[0], currentPlugins[0], "Current Plugin");
             equals(outdated.length, 0, "No outdated");
             equals(vulnerable.length, 0, "No vulnerable");
@@ -142,7 +141,7 @@ $(document).ready(function(){
                             name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 200.9.8",
                             length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});        
         Pfs.findPluginInfos(navigatorInfo, oldPlugins, function(current, outdated, vulnerable, disableNow, unknown){
-          if (window.console) { console.info(current, outdated, vulnerable, disableNow, unknown); }            
+          if (window.console) {console.info(current, outdated, vulnerable, disableNow, unknown); }            
             same(outdated[0], oldPlugins[0], "Foobar is old, update");
             equals(current.length, 0, "No current");
             equals(vulnerable.length, 0, "No vulnerable");
@@ -157,7 +156,7 @@ $(document).ready(function(){
                             name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 99.9.9",
                             length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});        
         Pfs.findPluginInfos(navigatorInfo, currentPlugins, function(current, outdated, vulnerable, disableNow, unknown){
-            if (window.console) { console.info(current, outdated, vulnerable, disableNow, unknown); }
+            if (window.console) {console.info(current, outdated, vulnerable, disableNow, unknown); }
             same(vulnerable[0], currentPlugins[0], "Version 99.9.9 was a vulnerable to puppy attack");
             equals(current.length, 0, "No current");
             equals(outdated.length, 0, "No outdated");            
@@ -174,7 +173,7 @@ $(document).ready(function(){
                             length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});
         
         Pfs.findPluginInfos(navigatorInfo, unknownPlugins, function(current, outdated, vulnerable, disableNow, unknown){
-            if (window.console) { console.info(current, outdated, vulnerable, disableNow, unknown); }
+            if (window.console) {console.info(current, outdated, vulnerable, disableNow, unknown); }
             same(unknown[0], unknownPlugins[0], "Known mime, Unknown Plugin");
             equals(current.length, 0, "No current");
             equals(outdated.length, 0, "No outdated");

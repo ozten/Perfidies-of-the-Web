@@ -207,6 +207,9 @@ var Pfs = {
             return false;
         }
     },
+    /**
+     * TODO browser* methods may belong in the plugincheck.js file 
+     */
     browserInfo: function() {
         var os = this.pluginOsName2Pfs2OsName(navigator.oscpu);        
         var parts = navigator.userAgent.split('/');
@@ -448,7 +451,9 @@ var Pfs = {
                         if (pfsInfo.releases.latest) {
                             switch(Pfs.compVersion(this.currentPlugin.plugin, pfsInfo.releases.latest.version)) {
                                 case 1:
-                                    if (window.console) {console.info("Weird, we are newer", this.currentPlugin.plugin, pfsInfo.releases.latest);}
+                                    if (Pfs.reportPluginFn) {
+                                        Pfs.reportPluginFn([pfsInfo], 'newer');
+                                    }
                                     this.classifyAsUpToDate(this.currentPlugin);    
                                     searchPluginRelease = false;
                                     break;
