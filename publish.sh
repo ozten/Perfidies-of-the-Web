@@ -1,0 +1,1 @@
+scp *.* ozten@ozten.com:pfs2.ozten.com/trunk/htdocs/
