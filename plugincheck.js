@@ -278,8 +278,9 @@ $(document).ready(function(){
             if (data.status == Pfs.NEWER) {
                 //ping the server and then treat as current
                 reportPlugins(data.pluginInfo, Pfs.NEWER);
-                data.status == Pfs.CURRENT;
+                data.status = Pfs.CURRENT;
             }
+            console.info(data.status, data.pluginInfo);
             if (states[data.status]) {
                 switch (data.status) {
                     case Pfs.DISABLE:
@@ -305,7 +306,7 @@ $(document).ready(function(){
         }
     };
     Pfs.findPluginInfos(Pfs.UI.browserInfo(), browserPlugins, function(xcurrent, xoutdated, xvulnerable, xdisableNow, xunknown){
-        manualTestingFakeOutput();
+        //manualTestingFakeOutput();
         //TODO use this as a finalizer        
         var worstCount = 0;
         
