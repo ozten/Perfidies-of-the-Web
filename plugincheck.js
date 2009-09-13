@@ -280,7 +280,6 @@ $(document).ready(function(){
                 reportPlugins(data.pluginInfo, Pfs.NEWER);
                 data.status = Pfs.CURRENT;
             }
-            console.info(data.status, data.pluginInfo);
             if (states[data.status]) {
                 switch (data.status) {
                     case Pfs.DISABLE:
@@ -325,16 +324,19 @@ $(document).ready(function(){
         if (worstStatus !== undefined) {
             $('#pfs-status').html(worstCount + " of " + total + " plugins are " + worstStatus)
                             .addClass('vulnerable');
+        }        
+        if ($('.plugin:hidden').size() > 0) {
+            $('.view-all-toggle').html("<a href='#'>View All Your Plugins</a>").click(function(){
+                if (updateDisplayId === undefined) {
+                    updateDisplayId = setTimeout(updateDisplay, 300);
+                }
+                showAll = true;
+                $('tr.plugin:hidden').show();
+                $('.view-all-toggle').remove();
+                return false;    
+            });    
         }
-        $('.view-all-toggle').html("<a href='#'>View All Your Plugins</a>").click(function(){
-            if (updateDisplayId === undefined) {
-                updateDisplayId = setTimeout(updateDisplay, 300);
-            }
-            showAll = true;
-            $('tr.plugin:hidden').show();
-            $(this).remove();
-            return false;    
-        });
+        
     }, incrementalCallbackFn
     );
     /**
