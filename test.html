@@ -121,7 +121,8 @@ $(document).ready(function(){
     });
 
     module("Integration with PFS2");
-    var navigatorInfo = Pfs.UI.browserInfo();    
+    var navigatorInfo = Pfs.UI.browserInfo();
+    var incrementalCallback = function(){};
     test("current plugin on browser pfs2 callback", function() {    
         var currentPlugins = Pfs.UI.browserPlugins({ length: 1, "0": {
                             name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 200.9.9",
@@ -134,7 +135,7 @@ $(document).ready(function(){
             equals(disableNow.length, 0, "No disableNow");
             equals(unknown.length, 0, "No unknown");
             start();
-          });
+          }, incrementalCallback);
         stop(30000);
     });
     test("old plugin on browser pfs2 callback", function() {
@@ -149,7 +150,7 @@ $(document).ready(function(){
             equals(disableNow.length, 0, "No disableNow");
             equals(unknown.length, 0, "No unknown");
             start();
-          });
+          }, incrementalCallback);
         stop(30000);
     });    
     test("vulnerable plugin on browser pfs2 callback", function() {    
@@ -164,7 +165,7 @@ $(document).ready(function(){
             equals(disableNow.length, 0, "No disableNow");
             equals(unknown.length, 0, "No unknown");
             start();
-          });
+          }, incrementalCallback);
         stop(30000);
     });
     //TODO test disabled, put a vulnerable latest into the test database
@@ -181,7 +182,7 @@ $(document).ready(function(){
             equals(vulnerable.length, 0, "No vulnerable");
             equals(disableNow.length, 0, "No disableNow");
             start();
-          });
+          }, incrementalCallback);
         stop(30000);
     });
     

@@ -3,6 +3,7 @@
  */
 if (window.Pfs === undefined) { window.Pfs = {}; }
 Pfs.UI = {
+    MAX_VISIBLE: 3,
     /**
      * Creates a navigatorInfo object from the browser's navigator object
      */
@@ -115,105 +116,251 @@ $(document).ready(function(){
     };
     
     $('#pfs-status').html("Checking with Mozilla HQ to check your plugins <img class='progress' src='/img/tignish/plugincheck/ajax-loader.gif' alt='Loading Data' />");
-    var states = {
-                  vul: {c:"orange", l:"Update Now", s:"Vulnerable"},
-                  dis: {c:"orange", l:"Disable Now", s:"Vulnerable No Fix"},
-                  out: {c:"yellow", l:"Update", s:"Potentially Vulnerable"},
-                  cur: {c:"green", l:"Learn More", s:"You're Safe"}};
+    var states = {};
+    states[Pfs.VULNERABLE] = {c:"orange", l:"Update Now",  s:"Vulnerable",             code: Pfs.VULNERABLE};
+    states[Pfs.DISABLE] =    {c:"orange", l:"Disable Now", s:"Vulnerable No Fix",      code: Pfs.DISABLE};
+    states[Pfs.OUTDATED] =   {c:"yellow", l:"Update",      s:"Potentially Vulnerable", code: Pfs.OUTDATED};
+    states[Pfs.CURRENT] =    {c:"green",  l:"Learn More",  s:"You're Safe",            code: Pfs.CURRENT};
     
-    var displayPlugins = function(pInfos, status, rowCount) {
-        for(var index=0; index < pInfos.length; index++) {            
-            var plugin = pInfos[index].raw;
-            var html = $('#plugin-template').clone();            
-            var rowClass;
-            
-            if ((index + rowCount) % 2 == 0) {
-                rowClass = 'odd';
-            } else {
-                rowClass = 'even';
-            }
-            html.addClass(rowClass);
-            
-            $('.name', html).text(plugin.name);
-            $('.version', html).html(plugin.description);
-            $('.icon', html).attr('src', iconFor(plugin.name));
-            
-            $('.status', html).text(status.s);
-            if (status == states.unk) {
-                $('.action', html).html('');
-            } else {                
-                $('.action a', html).addClass(status.c);
-                $('.action a span', html).text(status.l);
-                    
-            }
-            
-            $('#plugin-template').parent().append(html);
-            html.show();            
-            /*<tr id="plugin-template" class="odd" style="display: none">
-                        <td>
-                            <img class="icon" src="/img/tignish/plugincheck/icon-divx.png" alt="DivX Icon" />
-                            <h4 class="name">DivX</h4><span class="version">6.0, DivX, Inc.</span>
-                        </td>
-                        <td class="status">Vulnerable</td>
-                        <td class="action"><a class="orange button"><span>Update Now</span></a></td>
-                    </tr>*/
-        }
-    }
-    var reportPlugins = function(pInfos, status) {
+    var reportPlugins = function(pInfo, status) {
         //TODO should pInfos have a version
         //Or should the client library have a case 'newer than'?
-        if (status == "newer") {
-            if (window.console) {console.info("Weird, we are newer", pInfos);}    
+        if (status == Pfs.NEWER) {
+            if (window.console) {console.info("Report Weird, we are newer", pInfo);}    
         } else {
-            if (window.console) {console.info("Report: ", status, pInfos);}    
+            if (window.console) {console.info("Report Unkown: ", status, pInfo);}    
         }
         
-        for(var i=0; i < pInfos.length; i++) {
-            var plugin = pInfos[i].raw;
-            if (plugin) {
-                $.ajax({
-                    url: Pfs.endpoint + status + "_plugin.gif",
-                    data: {name: plugin.name, description: plugin.description}
-                });
-            }
-        }        
+        
+        var plugin = pInfo.raw;
+        if (plugin) {
+            $.ajax({
+                url: Pfs.endpoint + status + "_plugin.gif",
+                data: {name: plugin.name, description: plugin.description}
+            });
+        }
+            
     }
     Pfs.reportPluginsFn = reportPlugins;
+    var updateDisplayId = undefined;
+    var showAll = false;
+    var updateDisplay = function() {
+        if (updateDisplayId !== undefined) {
+            var criticalPlugins = $('tr.plugin.' + Pfs.DISABLE).add('tr.plugin.' + Pfs.VULNERABLE).add('tr.plugin.' + Pfs.OUTDATED);
+            criticalPlugins.show();
+            if (showAll == false && criticalPlugins.size() > Pfs.UI.MAX_VISIBLE) {
+                $('tr.plugin.' + Pfs.CURRENT).hide();
+            }
+            $('tr.plugin').removeClass('odd')
+                          .filter(':visible')
+                          .filter(':odd')
+                          .addClass('odd');
+            
+            updateDisplayId = undefined;
+        }
+    }
+    var addBySorting = function(el, status) {        
+        if (Pfs.DISABLE == status) {
+            //worst
+            var r = $('tr.plugin.' + Pfs.DISABLE + ':first').before(el).size();
+            if (r == 0) {
+                // no disabled yet, go before any other plugin
+                r = $('tr.plugin:first').before(el).size();
+                if (r == 0) {
+                    //no other plugins, be the first plugin
+                    $('#plugin-template').parent().append(el);
+                }
+            }
+        } else if(Pfs.VULNERABLE == status) {
+            //bad
+            var r = $('tr.plugin.' + Pfs.DISABLE + ':last').after(el).size();
+            if (r == 0) {
+                // no disabled yet, go before any other vulnerable plugin
+                r = $('tr.plugin.' + Pfs.VULNERABLE + ':first').before(el).size();
+                if (r == 0) {
+                    // no vulnerable yet, go before any other outdated plugin
+                    r = $('tr.plugin.' + Pfs.OUTDATED + ':first').before(el).size();
+                    if (r==0) {
+                        // no outdated yet, go before all others
+                        var r = $('tr.plugin:first').before(el).size();
+                        if (r == 0) {
+                            //no other plugins, be the first plugin
+                            $('#plugin-template').parent().append(el);                
+                        }
+                    }
+                    
+                }
+            }
+        } else if(Pfs.OUTDATED == status) {
+            //meh
+            var r = $('tr.plugin.' + Pfs.OUTDATED + ':first').before(el).size();
+            if (r == 0) {
+                var r = $('tr.plugin.' + Pfs.CURRENT + ':first').before(el).size();
+                if (r == 0) {
+                    r = $('tr.plugin:last').after(el).size();
+                    if (r == 0) {
+                        //no other plugins, be the first plugin
+                        $('#plugin-template').parent().append(el);
+                    }
+                }
+            }
+        } else if(Pfs.CURRENT == status) {
+            //best
+            var r = $('tr.plugin:last').after(el).size();
+            if (r == 0) {
+                //no other plugins, be the first plugin
+                $('#plugin-template').parent().append(el);                
+            }        
+        } else {
+            if (window.console) {console.error("Sorting to display, unknown status", status);}
+        }
+        if (updateDisplayId === undefined) {
+            updateDisplayId = setTimeout(updateDisplay, 300);
+        }
+    }
+    var displayPlugins = function(plugin, statusCopy, url, rowCount) {
+        
+        var html = $('#plugin-template').clone();
+        html.removeAttr('id')
+            .addClass('plugin')
+            .addClass(statusCopy.code);
+        var rowClass;
+        
+        if (rowCount % 2 == 0) {
+            html.addClass('odd');            
+        }        
+        
+        $('.name', html).text(plugin.name);
+        $('.version', html).html(plugin.description);
+        $('.icon', html).attr('src', iconFor(plugin.name));
+        
+        $('.status', html).text(statusCopy.s);
+        //TODO delete we don't show unknown
+        if (statusCopy == states.unk) {
+            $('.action', html).html('');
+        } else {
+            
+            $('.action a', html).addClass(statusCopy.c);
+            $('.action a span', html).text(statusCopy.l);
+            if (url !== undefined) {
+                $('.action a', html).attr('href', url);                
+            }            
+        }
+        
+        addBySorting(html, statusCopy.code);
+        
+        if (Pfs.UI.MAX_VISIBLE > total) {
+            html.show();                
+        }        
+        if (true) {
+        /*<tr id="plugin-template" class="odd" style="display: none">
+                    <td>
+                        <img class="icon" src="/img/tignish/plugincheck/icon-divx.png" alt="DivX Icon" />
+                        <h4 class="name">DivX</h4><span class="version">6.0, DivX, Inc.</span>
+                    </td>
+                    <td class="status">Vulnerable</td>
+                    <td class="action"><a class="orange button"><span>Update Now</span></a></td>
+                </tr>*/
+        }
+    }
     
     var browserPlugins = Pfs.UI.browserPlugins(navigator.plugins);
-    Pfs.findPluginInfos(Pfs.UI.browserInfo(), browserPlugins, function(current, outdated, vulnerable, disableNow, unknown){        
-        var total = 0;
-        displayPlugins(disableNow, states.dis, total);
-        total += disableNow.length;
-        
-        displayPlugins(vulnerable, states.vul, total);
-        total += vulnerable.length;
-        
-        displayPlugins(outdated, states.out, total);
-        total += outdated.length;
-        
-        displayPlugins(current, states.cur, total);
-        total += current.length;
-        
-        reportPlugins(unknown, 'unknown');
-        
-        $('.view-all-toggle').html("<a href='#'>View All Your Plugins</a>");
+    /* track plugins in the UI */
+    var total = 0; var disabled = 0; var vulnerables = 0; var outdated = 0;
+    /**
+     * incremental callback function
+     */
+    var incrementalCallbackFn = function(data){
+        if (data.status == Pfs.UNKNOWN) {
+            //ping the server
+            reportPlugins(data.pluginInfo, Pfs.UNKNOWN);
+        } else {
+            if (data.status == Pfs.NEWER) {
+                //ping the server and then treat as current
+                reportPlugins(data.pluginInfo, Pfs.NEWER);
+                data.status == Pfs.CURRENT;
+            }
+            if (states[data.status]) {
+                switch (data.status) {
+                    case Pfs.DISABLE:
+                        disabled++;
+                        // Anchor tag for instructions on how to disable a plugin
+                        url = "#disable";
+                        break;
+                    case Pfs.VULNERABLE:
+                        vulnerables++;
+                        break;
+                    case Pfs.OUTDATED:
+                        outdated++;
+                        break;
+                }
+                var copy = states[data.status];
+                var plugin = data.pluginInfo.raw;                
+                displayPlugins(plugin, copy, data.url, total);
+                total++;
+                
+            } else {
+                if (window.console) {console.error("We have an unknown status code when displaying UI.", data);}
+            }
+        }
+    };
+    Pfs.findPluginInfos(Pfs.UI.browserInfo(), browserPlugins, function(xcurrent, xoutdated, xvulnerable, xdisableNow, xunknown){
+        manualTestingFakeOutput();
+        //TODO use this as a finalizer        
         var worstCount = 0;
         
         var worstStatus = undefined;
-        if (disableNow.length > 0) {
-            worstCount = disableNow.length;
+        if (disabled > 0) {
+            worstCount = disabled;
             worstStatus = "vulnerable wih no update available";
-        } else if (vulnerable.length > 0) {
-            worstCount = vulnerable.length;
+        } else if (vulnerables > 0) {
+            worstCount = vulnerables;
             worstStatus = "vulnerable";
-        } else if (outdated.length > 0) {
-            worstCount = outdated.length;
+        } else if (outdated > 0) {
+            worstCount = outdated;
             worstStatus = "potentially vulnerable";
         }
+        
         if (worstStatus !== undefined) {
             $('#pfs-status').html(worstCount + " of " + total + " plugins are " + worstStatus)
                             .addClass('vulnerable');
         }
-    });    
+        $('.view-all-toggle').html("<a href='#'>View All Your Plugins</a>").click(function(){
+            if (updateDisplayId === undefined) {
+                updateDisplayId = setTimeout(updateDisplay, 300);
+            }
+            showAll = true;
+            $('tr.plugin:hidden').show();
+            $(this).remove();
+            return false;    
+        });
+    }, incrementalCallbackFn
+    );
+    /**
+     * Temporary: Instead of installing a bunch of plugins, I can simulate callbacks
+     */
+    var manualTestingFakeOutput = function() {
+        function mkPluginInfo(name, description, mimes) {
+            return {
+                name: name, description: description, mimes: mimes,
+                raw: {name: name, description: description}
+            };
+        }
+        function mkPfsInfo() {
+            return {};
+        }
+        incrementalCallbackFn({pluginInfo: mkPluginInfo("Foo1", "Foobar is cool", []), pfsInfo: mkPfsInfo(),
+                               status: Pfs.CURRENT});
+        
+        incrementalCallbackFn({pluginInfo: mkPluginInfo("Foo2", "Foobar is cool", []), pfsInfo: mkPfsInfo(),
+                               status: Pfs.DISABLE, url: "#disable"});
+        
+        incrementalCallbackFn({pluginInfo: mkPluginInfo("Foo3", "Foobar is cool", []), pfsInfo: mkPfsInfo(),
+                               status: Pfs.CURRENT});
+        
+        incrementalCallbackFn({pluginInfo: mkPluginInfo("Foo4", "Foobar is cool", []), pfsInfo: mkPfsInfo(),
+                               status: Pfs.VULNERABLE, url: "http://foo.bar.com"});
+        incrementalCallbackFn({pluginInfo: mkPluginInfo("Foo5", "Foobar is cool", []), pfsInfo: mkPfsInfo(),
+                               status: Pfs.OUTDATED, url: "http://foo.bar.com"});
+    };
 });

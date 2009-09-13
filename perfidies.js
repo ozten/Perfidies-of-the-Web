@@ -248,17 +248,64 @@ Pfs = {
         };
     },
     /**
-     * PFS2 Server code for a vulnerable release
+     * Status Code for incremental callback.
+     *
+     * The plugin is CURRENT, but their is also a known
+     * vulnerability, so it should be disbaled as soon
+     * as possible. No newer release is known to exist.
+     */
+    DISABLE:    "should_disble",
+    /**
+     * Status Code for incremental callback.
+     *
+     * This browser is vulnerable to exploit due to the
+     * currently installed plugin version. Upgrade the plugin
+     * to the latest version.
+     * 
+     * Also can be used as a constant with PFS2Info status field
      */
     VULNERABLE: "vulnerable",
+    /**
+     * Status Code for incremental callback
+     *
+     * This browser has an older version of the plugin installed.
+     * There are no known vulnerabilities. Upgrade the plugin
+     * to the latest version.
+     *
+     * Also can be used as a constant with PFS2Info status field
+     */
+    OUTDATED:    "outdated",
+    /**
+     * Status Code for incremental callback
+     *
+     * The browser has a current versin of the plugin. Whee!
+     *
+     * Also can be used as a constant with PFS2Info status field
+     */
+    CURRENT:    "latest",
+    /**
+     * Status Code for incremental callback.
+     *
+     * The browser has a plugin that is not tracked by the PFS2 server.
+     */
+    UNKNOWN:    "unknown",
+    /**
+     * Status Code for incremental callback.
+     * 
+     * Indicats that the browser's plugin is actually newer
+     * than any releases tracked by the PFS2 server.
+     */
+    NEWER:    "newer",
     /**
      * Creates an instance of the PluginFinder object, which tracks
      * the state of calling the PFS2 server
      * @private
      * @returns {object}
      */
-    createFinder: function(navigatorInfo, callbackFn) {
+    createFinder: function(navigatorInfo, callbackFn, incrementalCallbackFn) {
         return {
+            /* TODO some of this tracking code belongs in the @ui */
+             
             // A list of plugin2mimeTypes
             findPluginQueue: [],
             // A plugin2mimeTypes
@@ -279,6 +326,7 @@ Pfs = {
             * function(current, outdated, vulnerable, disableNow, unknown){ }
             */
             finishedFn: callbackFn,
+            incrementalCallbackFn: incrementalCallbackFn,
             startFindingNextPlugin: function() {
                 //Note unknown plugins before we start the next one
                 if (this.findPluginQueue.length > 0) {
@@ -320,7 +368,7 @@ Pfs = {
                 return true;
             },            
             
-            startFindingNextMimetypeOnCurrentPlugin: function() {
+            startFindingNextMimetypeOnCurrentPlugin: function(pfsInfo) {
                 this.currentMime += 1;
                 if (this.currentMime < this.currentPlugin.mimes.length) {
                     this.findPluginInfo();
@@ -328,6 +376,12 @@ Pfs = {
                     if (window.console) {console.warn("Exhausted Mime-Types...");}
                     if (this.currentPlugin !== null &&
                         ! this.currentPlugin.classified) {
+                        this.incrementalCallbackFn({
+                            pluginInfo: this.currentPlugin,
+                            pfsInfo: {},
+                            status: Pfs.UNKNOWN,
+                            url: ""
+                        });
                         this.unknownPlugins.push(this.currentPlugin);
                     }
                     this.startFindingNextPlugin();
@@ -402,13 +456,31 @@ Pfs = {
                                     if (Pfs.reportPluginFn) {
                                         Pfs.reportPluginFn([pfsInfo], 'newer');
                                     }
+                                    this.incrementalCallbackFn({
+                                            pluginInfo: this.currentPlugin,
+                                            pfsInfo: pfsInfo,
+                                            status: Pfs.NEWER,
+                                            url: pfsInfo.releases.latest.url
+                                    });
                                     this.classifyAsUpToDate(this.currentPlugin);    
                                     searchPluginRelease = false;
                                     break;
                                 case 0:                                    
                                     if (pfsInfo.releases.latest.status == Pfs.VULNERABLE) {
+                                        this.incrementalCallbackFn({
+                                            pluginInfo: this.currentPlugin,
+                                            pfsInfo: pfsInfo,
+                                            status: Pfs.DISABLE,
+                                            url: pfsInfo.releases.latest.url
+                                        });
                                         this.classifyAsUpToDateAndVulnerable(this.currentPlugin);
                                     } else {
+                                        this.incrementalCallbackFn({
+                                            pluginInfo: this.currentPlugin,
+                                            pfsInfo: pfsInfo,
+                                            status: Pfs.CURRENT,
+                                            url: pfsInfo.releases.latest.url
+                                        });
                                         this.classifyAsUpToDate(this.currentPlugin);    
                                     }                            
                                     searchPluginRelease = false;
@@ -434,8 +506,20 @@ Pfs = {
                                         break;
                                     case 0:                                        
                                         if (others[k].status == Pfs.VULNERABLE) {
+                                            this.incrementalCallbackFn({
+                                                pluginInfo: this.currentPlugin,
+                                                pfsInfo: pfsInfo,
+                                                status: Pfs.VULNERABLE,
+                                                url: pfsInfo.releases.latest.url
+                                            });
                                             this.classifyAsVulnerable(this.currentPlugin);
                                         } else {
+                                            this.incrementalCallbackFn({
+                                                pluginInfo: this.currentPlugin,
+                                                pfsInfo: pfsInfo,
+                                                status: Pfs.OUTDATED,
+                                                url: pfsInfo.releases.latest.url
+                                            });
                                             this.classifyAsOutOfDate(this.currentPlugin);    
                                         }
                                         
@@ -453,7 +537,13 @@ Pfs = {
                             }
                             if (this.currentPlugin.classified !== true) {
                                 // Sparse matrix of version numbers...
-                                // we know about 1.0.1 and 1.0.3 in db and this browser has 1.0.2, etc                        
+                                // we know about 1.0.1 and 1.0.3 in db and this browser has 1.0.2, etc
+                                this.incrementalCallbackFn({
+                                            pluginInfo: this.currentPlugin,
+                                            pfsInfo: pfsInfo,
+                                            status: Pfs.OUTDATED,
+                                            url: pfsInfo.releases.latest.url
+                                });
                                 this.classifyAsOutOfDate(this.currentPlugin);
                             }
                         }
@@ -466,7 +556,7 @@ Pfs = {
                     this.startFindingNextPlugin();    
                 } else {
                     //none of the plugins for this mime-type were a match... try the next mime-type
-                    this.startFindingNextMimetypeOnCurrentPlugin();
+                    this.startFindingNextMimetypeOnCurrentPlugin(pfsInfo);
                 }
             },
             pfs2Error: function(xhr, textStatus, errorThrown){
@@ -500,8 +590,8 @@ Pfs = {
      *   clientOS, chromeLocale, appID, appReleease, appVersion
      * }
      */
-    findPluginInfos: function(navigatorInfo, pluginInfos, callbackFn) {
-        var finderState = this.createFinder(navigatorInfo, callbackFn);
+    findPluginInfos: function(navigatorInfo, pluginInfos, callbackFn, incrementalCallbackFn) {
+        var finderState = this.createFinder(navigatorInfo, callbackFn, incrementalCallbackFn);
         
         // Walk through the plugins and get the metadata from PFS2
         // PFS2 is JSONP and can't be called async using jQuery.ajax
