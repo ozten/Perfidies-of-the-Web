@@ -211,14 +211,13 @@ var Pfs = {
      * TODO browser* methods may belong in the plugincheck.js file 
      */
     browserInfo: function() {
-        var os = this.pluginOsName2Pfs2OsName(navigator.oscpu);        
         var parts = navigator.userAgent.split('/');
         var version = parts.length > 1 ? parts[parts.length - 1] : parts[0];
         return {
             appID: '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}',
             appRelease: version,
             appVersion: navigator.buildID,
-            clientOS: os,
+            clientOS: navigator.oscpu,
             chromeLocale: 'en-US'            
         }
     },
@@ -600,7 +599,7 @@ var Pfs = {
             info.meta.version = this.parseVersion(rawVersion).join('.');    
         }
         
-        if (navigator.oscpu){info.releases[0].os_name =  this.pluginOsName2Pfs2OsName(navigator.oscpu);}
+        if (navigator.oscpu){info.releases[0].os_name =  navigator.oscpu;}
         var masterMime = this.createMasterMime();
                           
         for (var j=0; j < plugin.length; j++) {
@@ -616,17 +615,5 @@ var Pfs = {
             
         
         return JSON.stringify(info);
-    },
-    pluginOsName2Pfs2OsName: function(osCpu) {
-        if (/Intel Mac OS X/.test(osCpu)) {
-            return "intel mac os x";
-        } else if (/Mac OS X/.test(osCpu)) {
-            return "mac";
-        // return win
-        } else if (/Linux/.test(osCpu)) {
-            return "lin";
-        } else {
-            return "unknown";
-        }
     }
 };
