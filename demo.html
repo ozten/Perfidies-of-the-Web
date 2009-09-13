@@ -2,34 +2,6 @@
                     "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head><title>Plugin PFS2 JSON</title>
-  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
-  <script src="perfidies.js"></script>
-    <script src="plugindetect.js"></script>
-  <script>
-$(document).ready(function(){
-    var plugins = Pfs.browserPlugins(navigator.plugins);
-    var showClass = function(ofPlugin, plugins, display) {
-      $('#debug').append("<h3>" + ofPlugin + "</h3>");
-        for (var i = 0; i < plugins.length; i++) {
-            //$('#debug').append("<p>" + knownKnowns[i].plugin + "</p>");
-            showPlugin(plugins[i], display);
-        }
-    };
-    var showPlugin = function(plugin, display) {
-        display.append("<p>" + plugin.plugin + "</p>");
-    };
-    Pfs.findPluginInfos(plugins, function(current, outdated, vulnerable, unknown){
-        var debug = $('#debug');
-        showClass('Vulnerable', vulnerable, debug);
-        showClass('Outdated', outdated, debug);
-        showClass('Current', current, debug);
-        showClass('Unknown', unknown, debug);
-      });
-    
-    
-    
-});
-  </script>
   <style>
   table
 {
@@ -50,9 +22,7 @@ td, th
   </style>
 </head>
 <body>
- <h1>UpYourPlug Demo</h1>
- <p>Give me a couple minutes and I'll tell you about your plugins :). Also, want to see more info about your currently installed
-    plugins? Here is the <a href="pfs2_json.html">pfs2 -> JSON tool</a>.</p>
- <div id="debug"></div>
+  Moved to https://www-trunk.stage.mozilla.com/en-US/plugincheck/
+  Help us test it out :) We'll watch access logs for missing info
 </body>
 </html>

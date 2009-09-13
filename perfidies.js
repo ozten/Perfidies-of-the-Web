@@ -206,7 +206,19 @@ var Pfs = {
         } else {            
             return false;
         }
-    },    
+    },
+    browserInfo: function() {
+        var os = this.pluginOsName2Pfs2OsName(navigator.oscpu);        
+        var parts = navigator.userAgent.split('/');
+        var version = parts.length > 1 ? parts[parts.length - 1] : parts[0];
+        return {
+            appID: '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}',
+            appRelease: version,
+            appVersion: navigator.buildID,
+            clientOS: os,
+            chromeLocale: 'en-US'            
+        }
+    },
     /**
      * Cleans up the navigator.plugins object into a list of plugin2mimeTypes
      * Each plugin2mimeTypes has two fields
@@ -294,7 +306,7 @@ var Pfs = {
         };
     },
     VULNERABLE: "vulnerable",
-    createFinder: function(callbackFn) {
+    createFinder: function(navigatorInfo, callbackFn) {
         return {
             // A list of plugin2mimeTypes
             findPluginQueue: [],
@@ -343,10 +355,13 @@ var Pfs = {
                     return false;
                 }
                 //var mimeType = "application/x-shockwave-flash";
-                var url = Pfs.endpoint + "/?appID={ec8030f7-c20a-464f-9b0e-13a3a9e97384}&mimetype=" +
-                            mimeType + "&appVersion=2008052906&appRelease=3.0&clientOS=Windows%20NT%205.1&chromeLocale=en-US";                
+                /*var url =  + "?appID={ec8030f7-c20a-464f-9b0e-13a3a9e97384}&mimetype=" +
+                            mimeType + "&appVersion=2008052906&appRelease=3.0&clientOS=Windows%20NT%205.1&chromeLocale=en-US";                */
+                var args = $.extend({}, navigatorInfo);
+                args.mimetype = mimeType;
                 $.ajax({
-                    url: url,
+                    url: Pfs.endpoint,
+                    data: args,
                     dataType: "jsonp",
                     success: successFn,
                     error: errorFn
@@ -522,8 +537,13 @@ var Pfs = {
             }
         };
     },
-    findPluginInfos: function(pluginInfos, callbackFn) {
-        var finderState = this.createFinder(callbackFn);
+    /**
+     * @param {object} - navigatorInfo - A NavigatiorInfo object {
+     *   clientOS, chromeLocale, appID, appReleease, appVersion
+     * }
+     */
+    findPluginInfos: function(navigatorInfo, pluginInfos, callbackFn) {
+        var finderState = this.createFinder(navigatorInfo, callbackFn);
         
         // Walk through the plugins and get the metadata from PFS2
         // PFS2 is JSONP and can't be called async using jQuery.ajax
@@ -594,8 +614,8 @@ var Pfs = {
     },
     pluginOsName2Pfs2OsName: function(osCpu) {
         if (/Intel Mac OS X/.test(osCpu)) {
-            return "mac";
-        } else if (/Intel Mac OS X/.test(osCpu)) {
+            return "intel mac os x";
+        } else if (/Mac OS X/.test(osCpu)) {
             return "mac";
         // return win
         } else if (/Linux/.test(osCpu)) {

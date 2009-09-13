@@ -28,8 +28,7 @@ $(document).ready(function(){
                   vul: {c:"orange", l:"Update Now", s:"Vulnerable"},
                   dis: {c:"orange", l:"Disable Now", s:"Vulnerable No Fix"},
                   out: {c:"yellow", l:"Update", s:"Potentially Vulnerable"},
-                  cur: {c:"green", l:"Learn More", s:"You're Safe"},
-                  unk: {c:"", l:"", s:"Unknown"}};
+                  cur: {c:"green", l:"Learn More", s:"You're Safe"}};
     
     var displayPlugins = function(pInfos, status) {
         for(var i=0; i<pInfos.length; i++) {
@@ -63,17 +62,52 @@ $(document).ready(function(){
                     </tr>*/
         }
     }
+    var reportPlugins = function(pInfos, status) {
+        for(var i=0; i < pInfos.length; i++) {
+            var plugin = pInfos[i].raw;
+            if (plugin) {
+                $.ajax({
+                    url: Pfs.endpoint + status + "_plugin.gif",
+                    data: {name: plugin.name, description: plugin.description}
+                });
+            }
+        }        
+    }
     
     var browserPlugins = Pfs.browserPlugins(navigator.plugins);
-    Pfs.findPluginInfos(browserPlugins, function(current, outdated, vulnerable, disableNow, unknown){        
+    Pfs.findPluginInfos(Pfs.browserInfo(), browserPlugins, function(current, outdated, vulnerable, disableNow, unknown){        
+        var total = 0;
         displayPlugins(disableNow, states.dis);
+        total += disableNow.length;
+        
         displayPlugins(vulnerable, states.vul);
+        total += vulnerable.length;
+        
         displayPlugins(outdated, states.out);
+        total += outdated.length;
+        
         displayPlugins(current, states.cur);
-        displayPlugins(unknown, states.unk);
+        total += current.length;
+        
+        reportPlugins(unknown, 'unknown');
+        
         $('.view-all-toggle').html("<a href='#'>View All Your Plugins</a>");
-    
-        $('#pfs-status').html("10 of 30 plugins are vulnerable")
-                        .addClass('vulnerable');
+        var worstCount = 0;
+        
+        var worstStatus = undefined;
+        if (disableNow.length > 0) {
+            worstCount = disableNow.length;
+            worstStatus = "vulnerable wih no update available";
+        } else if (vulnerable.length > 0) {
+            worstCount = vulnerable.length;
+            worstStatus = "vulnerable";
+        } else if (outdated.length > 0) {
+            worstCount = outdated.length;
+            worstStatus = "potentially vulnerable";
+        }
+        if (worstStatus !== undefined) {
+            $('#pfs-status').html(worstCount + " of " + total + " plugins are " + worstStatus)
+                            .addClass('vulnerable');
+        }
     });    
 });
