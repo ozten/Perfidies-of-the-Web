@@ -7,7 +7,16 @@
   @author ozten
 */
 var Pfs = {
+    /**
+     * PFS2 accepts multiple mime-types per request. What is the maximum length
+     * of each mime-type field. If a plugin has too many mime-types then it
+     * will get chunked into several requests
+     */
     MAX_MIMES_LENGTH: 3000,
+    /**
+     * Endpoint for the PFS2 API .
+     */
+    endpoint: "error set me before using",
     /**
      * A list of well known plugins that are *always* up to date.
      */
@@ -81,7 +90,7 @@ var Pfs = {
                 versionChain.push(currentVersionPart);
                 inCharVersion = false;
             } else {
-                if (window.console) { console.error("This should never happen", currentVersionPart, inNumericVersion, inCharVersion); }
+                if (window.console) {console.error("This should never happen", currentVersionPart, inNumericVersion, inCharVersion); }
             }        
             currentVersionPart = "";
         }
@@ -124,7 +133,7 @@ var Pfs = {
             }
         }
         if (! inVersion) {        
-            if (window.console) { console.warn("Unable to parseVersion from " + v); }
+            if (window.console) {console.warn("Unable to parseVersion from " + v); }
         }
         return versionChain;    
     },
@@ -172,17 +181,14 @@ var Pfs = {
      * 
      * @returns {boolean} or {function} - false if there is no hook, a function to run otherwise
      */
-    pluginNameHook: function(name) {
-        console.info("PluginDetect", name);
+    pluginNameHook: function(name) {        
         if (/Java.*/.test(name)) {
             return "Java Embedding Plugin " + PluginDetect.getVersion('Java', 'getJavaInfo.jar').replace(/,/g, '.').replace(/_/g, '.');    
         } else if(/.*Flash/.test(name)) {            
             return name + " " + PluginDetect.getVersion('Flash').replace(/,/g, '.');
-        } else if(/.*QuickTime.*/.test(name)) {
-            console.info("QuickTime Plug-in xxx ", PluginDetect.getVersion('Flash'));
+        } else if(/.*QuickTime.*/.test(name)) {            
             return "QuickTime Plug-in " + PluginDetect.getVersion('QuickTime').replace(/,/g, '.');        
-        } else {
-            console.info("NOT QuickTime  ", PluginDetect.getVersion('Flash'));
+        } else {            
             return false;
         }
     },    
@@ -235,9 +241,7 @@ var Pfs = {
                     if (marcelMrceau.seen[m] === undefined) {
                         marcelMrceau.seen[m] = true;
                         mimes.push(m);
-                    } else {
-                        console.info("Skipping ", m, marcelMrceau.seen);
-                    }
+                    } 
                 }            
             }            
             var mimeValues = [];
@@ -248,8 +252,7 @@ var Pfs = {
                     length += mimes[j].length;
                     mimeValue += " " + mimes[j]; //TODO let JSON request url encode, or do it here?
                     if (length > Pfs.MAX_MIMES_LENGTH &&
-                        (i + 1) < mimes.length) {
-                        console.info("Resetting the world");
+                        (i + 1) < mimes.length) {                        
                         mimeValues.push(mimeValue);
                         //reset
                         mimeValue = mimes[i + 1];
@@ -257,8 +260,7 @@ var Pfs = {
                     }
                 }
                 mimeValues.push(mimeValue);
-            }
-            console.info("Well be calling", mimeValues);
+            }            
             p.push({plugin: pluginInfo, mimes: mimeValues, classified: false, raw: plugins[i]});
         }
         
@@ -321,18 +323,20 @@ var Pfs = {
             },
             /************* PFS2 below *************/
             callPfs2: function(mimeType, successFn, errorFn) {
+                if (Pfs.endpoint == "error set me before using") {
+                    if (window.console) {console.error("You must configure Pfs.endpoint before using this library");}
+                    return false;
+                }
                 //var mimeType = "application/x-shockwave-flash";
-                var endpoint = "http://pfs2.ubuntu/?appID={ec8030f7-c20a-464f-9b0e-13a3a9e97384}&mimetype=" +
-                            mimeType + "&appVersion=2008052906&appRelease=3.0&clientOS=Windows%20NT%205.1&chromeLocale=en-US";
-                /*var endpoint = "http://decafbad.com/2009/09/pfs2/trunk/htdocs/?appID={ec8030f7-c20a-464f-9b0e-13a3a9e97384}&mimetype=" +
-                            mimeType + "&appVersion=2008052906&appRelease=3.0&clientOS=Windows%20NT%205.1&chromeLocale=en-US";*/
-                
+                var url = Pfs.endpoint + "/?appID={ec8030f7-c20a-464f-9b0e-13a3a9e97384}&mimetype=" +
+                            mimeType + "&appVersion=2008052906&appRelease=3.0&clientOS=Windows%20NT%205.1&chromeLocale=en-US";                
                 $.ajax({
-                    url: endpoint,
+                    url: url,
                     dataType: "jsonp",
                     success: successFn,
                     error: errorFn
                 });
+                return true;
             },            
             
             startFindingNextMimetypeOnCurrentPlugin: function() {
@@ -340,7 +344,7 @@ var Pfs = {
                 if (this.currentMime < this.currentPlugin.mimes.length) {
                     this.findPluginInfo();
                 } else {
-                    if (window.console) { console.warn("Exhausted Mime-Types..."); }
+                    if (window.console) {console.warn("Exhausted Mime-Types...");}
                     if (this.currentPlugin !== null &&
                         ! this.currentPlugin.classified) {
                         this.unknownPlugins.push(this.currentPlugin);
@@ -414,7 +418,7 @@ var Pfs = {
                         if (pfsInfo.releases.latest) {
                             switch(Pfs.compVersion(this.currentPlugin.plugin, pfsInfo.releases.latest.version)) {
                                 case 1:
-                                    if (window.console) { console.info("Weird, we are newer", this.currentPlugin.plugin, pfsInfo.releases.latest);}
+                                    if (window.console) {console.info("Weird, we are newer", this.currentPlugin.plugin, pfsInfo.releases.latest);}
                                     this.classifyAsUpToDate(this.currentPlugin);    
                                     searchPluginRelease = false;
                                     break;
@@ -445,8 +449,7 @@ var Pfs = {
                                     case 1:
                                         //older than ours, keep looking
                                         break;
-                                    case 0:
-                                        console.info("VULNERABLE ", others[k]);
+                                    case 0:                                        
                                         if (others[k].status == Pfs.VULNERABLE) {
                                             this.classifyAsVulnerable(this.currentPlugin);
                                         } else {
@@ -484,7 +487,7 @@ var Pfs = {
                 }
             },
             pfs2Error: function(xhr, textStatus, errorThrown){
-                if (window.console) { console.error("Doh failed on mime/plugin ", this.currentPlugin.mimes[this.currentMime], this.currentPlugin) };
+                if (window.console) {console.error("Doh failed on mime/plugin ", this.currentPlugin.mimes[this.currentMime], this.currentPlugin) };
             },
             classifyAsUpToDateAndVulnerable: function(plugin2mimeTypes, releaseStatus) {
                 plugin2mimeTypes.classified = true;
@@ -572,4 +575,4 @@ var Pfs = {
             return "unknown";
         }
     }
-}
+};
