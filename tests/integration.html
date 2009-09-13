@@ -1,0 +1,105 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+                    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
+  <script src="../perfidies.js"></script>
+  <script src="../plugincheck.js"></script>
+  <script src="../plugindetect.js"></script>
+  <link rel="stylesheet" href="http://jqueryjs.googlecode.com/svn/trunk/qunit/testsuite.css" type="text/css" media="screen" />
+
+  <script>
+/* Point this at an endpoint that had the PFS2 unit tests run on it */
+Pfs.endpoint = 'http://pfs2.ubuntu/';
+function notNull(o) {
+    if (o) {
+        return true;
+    } else {
+        return false;
+    }
+}
+$(document).ready(function(){
+    module("Integration with PFS2");
+    var navigatorInfo = Pfs.UI.browserInfo();
+    var incrementalCallback = function(){};
+    test("current plugin on browser pfs2 callback", function() {    
+        var currentPlugins = Pfs.UI.browserPlugins({ length: 1, "0": {
+                            name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 200.9.9",
+                            length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});        
+        Pfs.findPluginInfos(navigatorInfo, currentPlugins, function(current, outdated, vulnerable, disableNow, unknown){
+            if (window.console) {console.info(current, outdated, vulnerable, disableNow, unknown); }
+            same(current[0], currentPlugins[0], "Current Plugin");
+            equals(outdated.length, 0, "No outdated");
+            equals(vulnerable.length, 0, "No vulnerable");
+            equals(disableNow.length, 0, "No disableNow");
+            equals(unknown.length, 0, "No unknown");
+            start();
+          }, incrementalCallback);
+        stop(30000);
+    });
+    test("old plugin on browser pfs2 callback", function() {
+        var oldPlugins = Pfs.UI.browserPlugins({ length: 1, "0": {
+                            name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 200.9.8",
+                            length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});        
+        Pfs.findPluginInfos(navigatorInfo, oldPlugins, function(current, outdated, vulnerable, disableNow, unknown){
+          if (window.console) {console.info(current, outdated, vulnerable, disableNow, unknown); }            
+            same(outdated[0], oldPlugins[0], "Foobar is old, update");
+            equals(current.length, 0, "No current");
+            equals(vulnerable.length, 0, "No vulnerable");
+            equals(disableNow.length, 0, "No disableNow");
+            equals(unknown.length, 0, "No unknown");
+            start();
+          }, incrementalCallback);
+        stop(30000);
+    });    
+    test("vulnerable plugin on browser pfs2 callback", function() {    
+        var currentPlugins = Pfs.UI.browserPlugins({ length: 1, "0": {
+                            name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 99.9.9",
+                            length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});        
+        Pfs.findPluginInfos(navigatorInfo, currentPlugins, function(current, outdated, vulnerable, disableNow, unknown){
+            if (window.console) {console.info(current, outdated, vulnerable, disableNow, unknown); }
+            same(vulnerable[0], currentPlugins[0], "Version 99.9.9 was a vulnerable to puppy attack");
+            equals(current.length, 0, "No current");
+            equals(outdated.length, 0, "No outdated");            
+            equals(disableNow.length, 0, "No disableNow");
+            equals(unknown.length, 0, "No unknown");
+            start();
+          }, incrementalCallback);
+        stop(30000);
+    });
+    //TODO test disabled, put a vulnerable latest into the test database
+    test("unknown plugin on browser pfs2 callback", function() {    
+        var unknownPlugins = Pfs.UI.browserPlugins({ length: 1, "0": {
+                            name: "Unknown Plugin", description: "Unknown 5000",
+                            length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});
+        
+        Pfs.findPluginInfos(navigatorInfo, unknownPlugins, function(current, outdated, vulnerable, disableNow, unknown){
+            if (window.console) {console.info(current, outdated, vulnerable, disableNow, unknown); }
+            same(unknown[0], unknownPlugins[0], "Known mime, Unknown Plugin");
+            equals(current.length, 0, "No current");
+            equals(outdated.length, 0, "No outdated");
+            equals(vulnerable.length, 0, "No vulnerable");
+            equals(disableNow.length, 0, "No disableNow");
+            start();
+          }, incrementalCallback);
+        stop(30000);
+    });
+    
+    test("inspect the navigation object", function(){
+      ok(notNull(window.navigator), "We have a navigator object");
+      ok(notNull(window.navigator.plugins), "We have a plugins object");
+    });
+  });      
+  </script>
+</head>
+<body>
+  
+<script type="text/javascript" src="http://jqueryjs.googlecode.com/svn/trunk/qunit/testrunner.js"></script>
+ <h1>PerFidieS Unit Tests</h1>
+ <h2 id="banner"></h2>
+ <h2 id="userAgent"></h2>
+ <ol id="tests"></ol>
+ <div id="main"></div>
+ <div id="debug"></div>
+</body>
+</html>
