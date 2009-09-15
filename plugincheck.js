@@ -3,7 +3,7 @@
  */
 if (window.Pfs === undefined) { window.Pfs = {}; }
 Pfs.UI = {
-    MAX_VISIBLE: 3,
+    MAX_VISIBLE: 5,
     /**
      * Creates a navigatorInfo object from the browser's navigator object
      */
@@ -358,69 +358,45 @@ Pfs.UI = {
             }
         }
     };
-    
-    /**
-     * Temporary: Instead of installing a bunch of plugins, I can simulate callbacks
-     */
-    var manualTestingFakeOutput = function() {
-        function mkPluginInfo(name, description, mimes) {
-            return {
-                name: name, description: description, mimes: mimes,
-                raw: {name: name, description: description}
-            };
+    var finishedCallbackFn = function(){        
+        //manualTestingFakeOutput();
+        
+        var worstCount = 0;
+        
+        var worstStatus = undefined;
+        if (disabled > 0) {
+            worstCount = disabled;
+            worstStatus = "vulnerable wih no update available";
+        } else if (vulnerables > 0) {
+            worstCount = vulnerables;
+            worstStatus = "vulnerable";
+        } else if (outdated > 0) {
+            worstCount = outdated;
+            worstStatus = "potentially vulnerable";
         }
-        function mkPfsInfo() {
-            return {};
+        
+        if (worstStatus !== undefined) {
+            $('#pfs-status').html(worstCount + " of " + total + " plugins are " + worstStatus)
+                            .addClass('vulnerable');
+        }        
+        if ($('.plugin:hidden').size() > 0) {
+            $('.view-all-toggle').html("<a href='#'>View All Your Plugins</a>").click(function(){
+                if (updateDisplayId === undefined) {
+                    updateDisplayId = setTimeout(updateDisplay, 300);
+                }
+                showAll = true;
+                $('tr.plugin:hidden').show();
+                $('.view-all-toggle').remove();
+                return false;    
+            });    
         }
-        incrementalCallbackFn({pluginInfo: mkPluginInfo("Foo1", "Foobar is cool", []), pfsInfo: mkPfsInfo(),
-                               status: Pfs.CURRENT});
-        
-        incrementalCallbackFn({pluginInfo: mkPluginInfo("Foo2", "Foobar is cool", []), pfsInfo: mkPfsInfo(),
-                               status: Pfs.DISABLE, url: "#disable"});
-        
-        incrementalCallbackFn({pluginInfo: mkPluginInfo("Foo3", "Foobar is cool", []), pfsInfo: mkPfsInfo(),
-                               status: Pfs.CURRENT});
-        
-        incrementalCallbackFn({pluginInfo: mkPluginInfo("Foo4", "Foobar is cool", []), pfsInfo: mkPfsInfo(),
-                               status: Pfs.VULNERABLE, url: "http://foo.bar.com"});
-        incrementalCallbackFn({pluginInfo: mkPluginInfo("Foo5", "Foobar is cool", []), pfsInfo: mkPfsInfo(),
-                               status: Pfs.OUTDATED, url: "http://foo.bar.com"});
+            
     };
+    //Used in regression testing
+    Pfs.UI.displayPlugin = incrementalCallbackFn;
+    
     window.checkPlugins = function(endpoint) {
         Pfs.endpoint = endpoint;
-        Pfs.findPluginInfos(Pfs.UI.browserInfo(), browserPlugins, function(xcurrent, xoutdated, xvulnerable, xdisableNow, xunknown){        
-            //manualTestingFakeOutput();
-            //TODO use this as a finalizer        
-            var worstCount = 0;
-            
-            var worstStatus = undefined;
-            if (disabled > 0) {
-                worstCount = disabled;
-                worstStatus = "vulnerable wih no update available";
-            } else if (vulnerables > 0) {
-                worstCount = vulnerables;
-                worstStatus = "vulnerable";
-            } else if (outdated > 0) {
-                worstCount = outdated;
-                worstStatus = "potentially vulnerable";
-            }
-            
-            if (worstStatus !== undefined) {
-                $('#pfs-status').html(worstCount + " of " + total + " plugins are " + worstStatus)
-                                .addClass('vulnerable');
-            }        
-            if ($('.plugin:hidden').size() > 0) {
-                $('.view-all-toggle').html("<a href='#'>View All Your Plugins</a>").click(function(){
-                    if (updateDisplayId === undefined) {
-                        updateDisplayId = setTimeout(updateDisplay, 300);
-                    }
-                    showAll = true;
-                    $('tr.plugin:hidden').show();
-                    $('.view-all-toggle').remove();
-                    return false;    
-                });    
-            }
-            
-        }, incrementalCallbackFn);
+        Pfs.findPluginInfos(Pfs.UI.browserInfo(), browserPlugins, incrementalCallbackFn, finishedCallbackFn);
     }
 })();

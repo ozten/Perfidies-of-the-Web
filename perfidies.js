@@ -32,7 +32,80 @@ Pfs = {
      * @client
      * @private
      */
-    skipPluginsNamed: ["Default Plugin"],    
+    skipPluginsNamed: ["Default Plugin"],
+    /**
+     * Status Code for incremental callback.
+     *
+     * The plugin is CURRENT, but their is also a known
+     * vulnerability, so it should be disbaled as soon
+     * as possible. No newer release is known to exist.
+     */
+    DISABLE:    "should_disble",
+    /**
+     * Status Code for incremental callback.
+     *
+     * This browser is vulnerable to exploit due to the
+     * currently installed plugin version. Upgrade the plugin
+     * to the latest version.
+     * 
+     * Also can be used as a constant with PFS2Info status field
+     */
+    VULNERABLE: "vulnerable",
+    /**
+     * Status Code for incremental callback
+     *
+     * This browser has an older version of the plugin installed.
+     * There are no known vulnerabilities. Upgrade the plugin
+     * to the latest version.
+     *
+     * Also can be used as a constant with PFS2Info status field
+     */
+    OUTDATED:    "outdated",
+    /**
+     * Status Code for incremental callback
+     *
+     * The browser has a current versin of the plugin. Whee!
+     *
+     * Also can be used as a constant with PFS2Info status field
+     */
+    CURRENT:    "latest",
+    /**
+     * Status Code for incremental callback.
+     *
+     * The browser has a plugin that is not tracked by the PFS2 server.
+     */
+    UNKNOWN:    "unknown",
+    /**
+     * Status Code for incremental callback.
+     * 
+     * Indicats that the browser's plugin is actually newer
+     * than any releases tracked by the PFS2 server.
+     */
+    NEWER:    "newer",
+    /**
+     * Given information about the browser and plugins installed
+     * the function contacts the PFS2 Service and analyzes each
+     * plugin. When completed it uses the callback function to
+     * provide a list of blah blah.
+     * 
+     * @param {object} - navigatorInfo - A NavigatiorInfo object {
+     *   clientOS, chromeLocale, appID, appReleease, appVersion
+     * }
+     */
+    findPluginInfos: function(navigatorInfo, pluginInfos, incrementalCallback, finishedCallback) {
+        var finderState = this.createFinder(navigatorInfo, incrementalCallback, finishedCallback);
+        
+        // Walk through the plugins and get the metadata from PFS2
+        // PFS2 is JSONP and can't be called async using jQuery.ajax
+        // We'll create a queue and manage our requests
+        for(var i=0; i< pluginInfos.length; i++) {            
+            if (Pfs.shouldSkipPluginNamed(pluginInfos[i].plugin) !== true) {
+                finderState.findPluginQueue.push(pluginInfos[i]);    
+            }
+            
+        }
+        finderState.startFindingNextPlugin();
+    },
     /**
      * Compares the description of two plugin versions and returns
      * either 1, 0, or -1 to indicate:
@@ -206,62 +279,14 @@ Pfs = {
             }
         };
     },
-    /**
-     * Status Code for incremental callback.
-     *
-     * The plugin is CURRENT, but their is also a known
-     * vulnerability, so it should be disbaled as soon
-     * as possible. No newer release is known to exist.
-     */
-    DISABLE:    "should_disble",
-    /**
-     * Status Code for incremental callback.
-     *
-     * This browser is vulnerable to exploit due to the
-     * currently installed plugin version. Upgrade the plugin
-     * to the latest version.
-     * 
-     * Also can be used as a constant with PFS2Info status field
-     */
-    VULNERABLE: "vulnerable",
-    /**
-     * Status Code for incremental callback
-     *
-     * This browser has an older version of the plugin installed.
-     * There are no known vulnerabilities. Upgrade the plugin
-     * to the latest version.
-     *
-     * Also can be used as a constant with PFS2Info status field
-     */
-    OUTDATED:    "outdated",
-    /**
-     * Status Code for incremental callback
-     *
-     * The browser has a current versin of the plugin. Whee!
-     *
-     * Also can be used as a constant with PFS2Info status field
-     */
-    CURRENT:    "latest",
-    /**
-     * Status Code for incremental callback.
-     *
-     * The browser has a plugin that is not tracked by the PFS2 server.
-     */
-    UNKNOWN:    "unknown",
-    /**
-     * Status Code for incremental callback.
-     * 
-     * Indicats that the browser's plugin is actually newer
-     * than any releases tracked by the PFS2 server.
-     */
-    NEWER:    "newer",
+    
     /**
      * Creates an instance of the PluginFinder object, which tracks
      * the state of calling the PFS2 server
      * @private
      * @returns {object}
      */
-    createFinder: function(navigatorInfo, callbackFn, incrementalCallbackFn) {
+    createFinder: function(navigatorInfo, incrementalCallback, finishedCallback) {
         return {
             /* TODO some of this tracking code belongs in the @ui */
              
@@ -269,23 +294,12 @@ Pfs = {
             findPluginQueue: [],
             // A plugin2mimeTypes
             currentPlugin: null,
-            currentMime: -1,
-            // A list of plugin2mimeTypes
-            currentPlugins: [],
-            // A list of plugin2mimeTypes
-            outdatedPlugins: [],
-            // A list of plugin2mimeTypes
-            vulnerablePlugins: [],
-            // A list of plugin2mimeTypes
-            shouldDisablePlugins: [],
-            // A list of plugin2mimeTypes
-            unknownPlugins: [],
+            currentMime: -1,            
            /**
-            * The user supplied callback for when finding plugin information is complete
-            * function(current, outdated, vulnerable, disableNow, unknown){ }
+            * The user supplied callback for when finding plugin information is complete            
             */
-            finishedFn: callbackFn,
-            incrementalCallbackFn: incrementalCallbackFn,
+            finishedFn: finishedCallback,
+            incrementalCallbackFn: incrementalCallback,
             startFindingNextPlugin: function() {
                 //Note unknown plugins before we start the next one
                 if (this.findPluginQueue.length > 0) {
@@ -294,9 +308,7 @@ Pfs = {
                     
                     this.findPluginInfo();
                 } else {
-                    this.finishedFn(this.currentPlugins, this.outdatedPlugins,
-                                    this.vulnerablePlugins, this.shouldDisablePlugins,
-                                    this.unknownPlugins);
+                    this.finishedFn();
                 }
             },
             findPluginInfo: function() {
@@ -343,7 +355,7 @@ Pfs = {
                             status: Pfs.UNKNOWN,
                             url: ""
                         });
-                        this.unknownPlugins.push(this.currentPlugin);
+                        this.currentPlugin.classified = true;                        
                     }
                     this.startFindingNextPlugin();
                 }
@@ -423,7 +435,8 @@ Pfs = {
                                             status: Pfs.NEWER,
                                             url: pfsInfo.releases.latest.url
                                     });
-                                    this.classifyAsUpToDate(this.currentPlugin);    
+                                    this.currentPlugin.classified = true;
+                                    
                                     searchPluginRelease = false;
                                     break;
                                 case 0:                                    
@@ -434,7 +447,7 @@ Pfs = {
                                             status: Pfs.DISABLE,
                                             url: pfsInfo.releases.latest.url
                                         });
-                                        this.classifyAsUpToDateAndVulnerable(this.currentPlugin);
+                                        this.currentPlugin.classified = true;
                                     } else {
                                         this.incrementalCallbackFn({
                                             pluginInfo: this.currentPlugin,
@@ -442,7 +455,7 @@ Pfs = {
                                             status: Pfs.CURRENT,
                                             url: pfsInfo.releases.latest.url
                                         });
-                                        this.classifyAsUpToDate(this.currentPlugin);    
+                                        this.currentPlugin.classified = true;
                                     }                            
                                     searchPluginRelease = false;
                                     break;
@@ -473,7 +486,7 @@ Pfs = {
                                                 status: Pfs.VULNERABLE,
                                                 url: pfsInfo.releases.latest.url
                                             });
-                                            this.classifyAsVulnerable(this.currentPlugin);
+                                            this.currentPlugin.classified = true;
                                         } else {
                                             this.incrementalCallbackFn({
                                                 pluginInfo: this.currentPlugin,
@@ -481,7 +494,7 @@ Pfs = {
                                                 status: Pfs.OUTDATED,
                                                 url: pfsInfo.releases.latest.url
                                             });
-                                            this.classifyAsOutOfDate(this.currentPlugin);    
+                                            this.currentPlugin.classified = true;
                                         }
                                         
                                         searchPluginRelease = false;
@@ -505,7 +518,7 @@ Pfs = {
                                             status: Pfs.OUTDATED,
                                             url: pfsInfo.releases.latest.url
                                 });
-                                this.classifyAsOutOfDate(this.currentPlugin);
+                                this.currentPlugin.classified = true;
                             }
                         }
                     } 
@@ -522,47 +535,7 @@ Pfs = {
             },
             pfs2Error: function(xhr, textStatus, errorThrown){
                 if (window.console) {console.error("Doh failed on mime/plugin ", this.currentPlugin.mimes[this.currentMime], this.currentPlugin) };
-            },
-            classifyAsUpToDateAndVulnerable: function(plugin2mimeTypes, releaseStatus) {
-                plugin2mimeTypes.classified = true;
-                this.shouldDisablePlugins.push(plugin2mimeTypes);        
-            },
-            classifyAsUpToDate: function(plugin2mimeTypes, releaseStatus) {
-                plugin2mimeTypes.classified = true;
-                this.currentPlugins.push(plugin2mimeTypes);        
-            },
-            classifyAsOutOfDate: function(plugin2mimeTypes) {
-                plugin2mimeTypes.classified = true;
-                this.outdatedPlugins.push(plugin2mimeTypes);
-            },
-            classifyAsVulnerable: function(plugin2mimeTypes) {
-                plugin2mimeTypes.classified = true;
-                this.vulnerablePlugins.push(plugin2mimeTypes);
-            }
+            }            
         };
-    },
-    /**
-     * Given information about the browser and plugins installed
-     * the function contacts the PFS2 Service and analyzes each
-     * plugin. When completed it uses the callback function to
-     * provide a list of blah blah.
-     * 
-     * @param {object} - navigatorInfo - A NavigatiorInfo object {
-     *   clientOS, chromeLocale, appID, appReleease, appVersion
-     * }
-     */
-    findPluginInfos: function(navigatorInfo, pluginInfos, callbackFn, incrementalCallbackFn) {
-        var finderState = this.createFinder(navigatorInfo, callbackFn, incrementalCallbackFn);
-        
-        // Walk through the plugins and get the metadata from PFS2
-        // PFS2 is JSONP and can't be called async using jQuery.ajax
-        // We'll create a queue and manage our requests
-        for(var i=0; i< pluginInfos.length; i++) {            
-            if (Pfs.shouldSkipPluginNamed(pluginInfos[i].plugin) !== true) {
-                finderState.findPluginQueue.push(pluginInfos[i]);    
-            }
-            
-        }
-        finderState.startFindingNextPlugin();
     }
 };
