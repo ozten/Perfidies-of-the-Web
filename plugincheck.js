@@ -36,28 +36,15 @@ Pfs.UI = {
      */
     browserPlugins: function(plugins) {
         var p = [];
+        var pluginsSeen = [];
         for (var i=0; i < plugins.length; i++) {
-            var pluginInfo;
-            if (Pfs.shouldSkipPluginNamed(plugins[i].name)) {
+            
+            if (Pfs.shouldSkipPluginNamed(plugins[i].name) ||
+                pluginsSeen.indexOf(plugins[i].name) >= 0) {
                 continue;
             }
-            var hook = Pfs.pluginNameHook(plugins[i].name);
-            if (hook !== false) {
-                pluginInfo = hook;
-            } else {
-                
-                if (plugins[i].name && Pfs.hasVersionInfo(plugins[i].name)) {
-                    pluginInfo = plugins[i].name;
-                } else if (plugins[i].description && Pfs.hasVersionInfo(plugins[i].description)) {
-                    pluginInfo = plugins[i].description;
-                } else {                
-                    if (plugins[i].name) {
-                        pluginInfo = plugins[i].name;    
-                    } else {
-                        pluginInfo = plugins[i].description;
-                    }
-                }
-            }
+            var pluginInfo = Pfs.UI.namePlusVersion(plugins[i].name, plugins[i].description);
+            
             var mimes = [];
             var marcelMrceau = Pfs.createMasterMime(); /* I hate mimes */
             for (var j=0; j < plugins[i].length; j++) {
@@ -86,14 +73,81 @@ Pfs.UI = {
                     }
                 }
                 mimeValues.push(mimeValue);
-            }            
+            }
             p.push({plugin: pluginInfo, mimes: mimeValues, classified: false, raw: plugins[i]});
+            if (plugins[i].name) {
+                // Bug#519256 - guard against duplicate plugins
+                pluginsSeen.push(plugins[i].name);    
+            }
+            
         }
         
         return p;
     },
+    /**
+     * @private
+     */
+    hasVersionInfo: function(versionedName) {
+        if (versionedName) {
+            return Pfs.parseVersion(versionedName).length > 0;
+        } else {
+            return false;
+        }
+    },
+    /**
+     * Given a name and description, returns the name and version
+     * of the plugin. This may include special handeling
+     * for known plugins using the PluginDetect or other hooks.
+     *
+     * This function can be used to format the version property of the
+     * pluginMetadata object
+     * 
+     * @public
+     * @ui - PluginDetect dependency belongs in UI, as well as hasVerison
+     *       It's not so much a name hook as override version detection
+     * @returns {string} - The name of the plugin, it may be enhanced via PluginDetect or other hooks
+     */
+    namePlusVersion: function(name, description) {
+        if (/Java.*/.test(name)) {
+            var j =  PluginDetect.getVersion('Java', 'getJavaInfo.jar');
+            if (j !== null) {
+                return "Java Embedding Plugin " + j.replace(/,/g, '.').replace(/_/g, '.');        
+            } else {
+                return name;
+            }
+        } else if(/.*Flash/.test(name)) {
+            var f = PluginDetect.getVersion('Flash');
+            if (f !== null) {
+                return name + " " + f.replace(/,/g, '.');    
+            } else {
+                return name;
+            }
+        } else if(/.*QuickTime.*/.test(name)) {
+            var q = PluginDetect.getVersion('QuickTime');
+            if (q !== null) {
+                return "QuickTime Plug-in " + q.replace(/,/g, '.');            
+            } else {
+                return name;
+            }
+        } else {
+            // General case
+            if (name && this.hasVersionInfo(name)) {                
+                return name;
+            } else if (description && this.hasVersionInfo(description)) {                
+                return description;
+            } else {
+                
+                if (name) {
+                    return name;
+                } else {
+                    return description;
+                }
+            }
+        }
+    },
 };
-$(document).ready(function(){
+(function(){
+    
     var icons = {
         flash:     "/img/tignish/plugincheck/icon-flash.png",
         java:      "/img/tignish/plugincheck/icon-java.png",
@@ -304,41 +358,7 @@ $(document).ready(function(){
             }
         }
     };
-    Pfs.findPluginInfos(Pfs.UI.browserInfo(), browserPlugins, function(xcurrent, xoutdated, xvulnerable, xdisableNow, xunknown){
-        //manualTestingFakeOutput();
-        //TODO use this as a finalizer        
-        var worstCount = 0;
-        
-        var worstStatus = undefined;
-        if (disabled > 0) {
-            worstCount = disabled;
-            worstStatus = "vulnerable wih no update available";
-        } else if (vulnerables > 0) {
-            worstCount = vulnerables;
-            worstStatus = "vulnerable";
-        } else if (outdated > 0) {
-            worstCount = outdated;
-            worstStatus = "potentially vulnerable";
-        }
-        
-        if (worstStatus !== undefined) {
-            $('#pfs-status').html(worstCount + " of " + total + " plugins are " + worstStatus)
-                            .addClass('vulnerable');
-        }        
-        if ($('.plugin:hidden').size() > 0) {
-            $('.view-all-toggle').html("<a href='#'>View All Your Plugins</a>").click(function(){
-                if (updateDisplayId === undefined) {
-                    updateDisplayId = setTimeout(updateDisplay, 300);
-                }
-                showAll = true;
-                $('tr.plugin:hidden').show();
-                $('.view-all-toggle').remove();
-                return false;    
-            });    
-        }
-        
-    }, incrementalCallbackFn
-    );
+    
     /**
      * Temporary: Instead of installing a bunch of plugins, I can simulate callbacks
      */
@@ -366,4 +386,41 @@ $(document).ready(function(){
         incrementalCallbackFn({pluginInfo: mkPluginInfo("Foo5", "Foobar is cool", []), pfsInfo: mkPfsInfo(),
                                status: Pfs.OUTDATED, url: "http://foo.bar.com"});
     };
-});
+    window.checkPlugins = function(endpoint) {
+        Pfs.endpoint = endpoint;
+        Pfs.findPluginInfos(Pfs.UI.browserInfo(), browserPlugins, function(xcurrent, xoutdated, xvulnerable, xdisableNow, xunknown){        
+            //manualTestingFakeOutput();
+            //TODO use this as a finalizer        
+            var worstCount = 0;
+            
+            var worstStatus = undefined;
+            if (disabled > 0) {
+                worstCount = disabled;
+                worstStatus = "vulnerable wih no update available";
+            } else if (vulnerables > 0) {
+                worstCount = vulnerables;
+                worstStatus = "vulnerable";
+            } else if (outdated > 0) {
+                worstCount = outdated;
+                worstStatus = "potentially vulnerable";
+            }
+            
+            if (worstStatus !== undefined) {
+                $('#pfs-status').html(worstCount + " of " + total + " plugins are " + worstStatus)
+                                .addClass('vulnerable');
+            }        
+            if ($('.plugin:hidden').size() > 0) {
+                $('.view-all-toggle').html("<a href='#'>View All Your Plugins</a>").click(function(){
+                    if (updateDisplayId === undefined) {
+                        updateDisplayId = setTimeout(updateDisplay, 300);
+                    }
+                    showAll = true;
+                    $('tr.plugin:hidden').show();
+                    $('.view-all-toggle').remove();
+                    return false;    
+                });    
+            }
+            
+        }, incrementalCallbackFn);
+    }
+})();

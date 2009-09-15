@@ -5,8 +5,10 @@
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
   <script src="perfidies.js"></script>
     <script src="plugindetect.js"></script>
+    <script src="plugincheck.js"></script>
   <script>
 $(document).ready(function(){
+    Pfs.endpoint = 'http://pfs2.stage.mozilla.com/';
     /**
      * PFS2 supports loading plugin data that is encoded in
      * JSON files. This function can be used to export a plugin
@@ -35,20 +37,19 @@ $(document).ready(function(){
             info.meta.name = plugin.name;
         }
         
-        // TODO: the version info calls below, suggest a wrapper public function
-        // getVersion(name, description)
-        var rawVersion;
-        if (plugin.name && Pfs.hasVersionInfo(plugin.name)) {
-            rawVersion = plugin.name;
-        } else if (plugin.description && Pfs.hasVersionInfo(plugin.description)) {
-            rawVersion = plugin.description;            
-        }
+        // TODO: This whole patch of code is... browserPlugins([plugin])... no?
+        var rawVersion = Pfs.UI.namePlusVersion(plugin.name, plugin.description);
         if (rawVersion) {
-            var hook = Pfs.pluginNameHook(plugin.name);
-            if (hook !== false) {
-                rawVersion = hook;
+            var versionChain = Pfs.parseVersion(rawVersion);
+            info.meta.version = versionChain.join('.');
+            if (versionChain.length > 0) {
+                plugin.version = info.meta.version;  
+            } else {
+                plugin.version = "Not Detected";
             }
-            info.meta.version = Pfs.parseVersion(rawVersion).join('.');    
+            
+        } else {
+            plugin.version = "Not Detected";
         }
         
         if (navigator.oscpu){info.releases[0].os_name =  navigator.oscpu;}
@@ -64,20 +65,24 @@ $(document).ready(function(){
                 } 
             }
         }
-            
-        
         return JSON.stringify(info);
     };
+    var pluginsSeen = [];
     for(var i=0; i<= window.navigator.plugins.length; i++) {
         var plugin = window.navigator.plugins[i];
-        if (plugin) {
+        if (plugin && pluginsSeen.indexOf(plugin.name) == -1) {
             $('#nav').append("<li><a href='#plugin" + i + "'>" + plugin.name + "</a></li>");
+            pluginsSeen.push(plugin.name);
         }
+        
     }
+    pluginsSeen = [];
     for(var i=0; i<= window.navigator.plugins.length; i++) {
         var plugin = window.navigator.plugins[i];
-        if (plugin) {
-            $('#main table tbody').append("<tr id='plugin" + i + "'><td>" + plugin.name + "</td><td><textarea cols=80 rows=7>" + dumpPlugin2Pfs2(plugin) + "</textarea></td></tr>");
+        if (plugin && pluginsSeen.indexOf(plugin.name) == -1) {
+            var info = dumpPlugin2Pfs2(plugin);
+            $('#main table tbody').append("<tr id='plugin" + i + "'><td>Name: " + plugin.name + "<br />Version: " + plugin.version + "</td><td><textarea cols=80 rows=7>" + info + "</textarea></td></tr>");
+            pluginsSeen.push(plugin.name);
         }
     }
 });

@@ -27,7 +27,7 @@ $(document).ready(function(){
                             name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 200.9.9",
                             length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});        
         Pfs.findPluginInfos(navigatorInfo, currentPlugins, function(current, outdated, vulnerable, disableNow, unknown){
-            if (window.console) {console.info(current, outdated, vulnerable, disableNow, unknown); }
+            if (window.console) {console.info("29: ", current, outdated, vulnerable, disableNow, unknown); }
             same(current[0], currentPlugins[0], "Current Plugin");
             equals(outdated.length, 0, "No outdated");
             equals(vulnerable.length, 0, "No vulnerable");
@@ -37,6 +37,7 @@ $(document).ready(function(){
           }, incrementalCallback);
         stop(30000);
     });
+    
     test("old plugin on browser pfs2 callback", function() {
         var oldPlugins = Pfs.UI.browserPlugins({ length: 1, "0": {
                             name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 200.9.8",
@@ -89,6 +90,7 @@ $(document).ready(function(){
       ok(notNull(window.navigator), "We have a navigator object");
       ok(notNull(window.navigator.plugins), "We have a plugins object");
     });
+    
   });      
   </script>
 </head>

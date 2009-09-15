@@ -15,3 +15,6 @@ In this project, run tests/integration.html for end to end tests.
 # Mozilla.com PluginCheck
 ./build.sh which produces plugin.js
 Hit local instance of mozilla.com/en-US/plugincheck/
+
+# Credit
+Reuses Eric Gerds' excellent PluginDetect v0.6.3 http://www.pinlady.net/PluginDetect 

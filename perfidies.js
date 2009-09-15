@@ -181,55 +181,14 @@ Pfs = {
         }
         return 0;
     },
+    
     /**
      * @private
      */
-    hasVersionInfo: function(description) {
-        if (description) {
-            return this.parseVersion(description).length > 0;
-        } else {
-            return false;
-        }
+    shouldSkipPluginNamed: function(name) {        
+        return this.skipPluginsNamed.indexOf(name) >= 0;
     },
-    /**
-     * @private
-     */
-    shouldSkipPluginNamed: function(name) {
-        this.skipPluginsNamed.indexOf(name) >= 0
-    },
-    /**
-     * Certain plugins need special handeling to retrieve the version
-     * @private
-     * @ui - PluginDetect dependency belongs in UI, as well as pluginNameHook
-     *       It's not so much a name hook as override version detection
-     * @returns {boolean} or {function} - false if there is no hook, a function to run otherwise
-     */
-    pluginNameHook: function(name) {        
-        if (/Java.*/.test(name)) {
-            var j =  PluginDetect.getVersion('Java', 'getJavaInfo.jar');
-            if (j !== null) {
-                return "Java Embedding Plugin " + j.replace(/,/g, '.').replace(/_/g, '.');        
-            } else {
-                return false;
-            }
-        } else if(/.*Flash/.test(name)) {
-            var f = PluginDetect.getVersion('Flash');
-            if (f !== null) {
-                return name + " " + f.replace(/,/g, '.');    
-            } else {
-                return false;
-            }
-        } else if(/.*QuickTime.*/.test(name)) {
-            var q = PluginDetect.getVersion('QuickTime');
-            if (q !== null) {
-                return "QuickTime Plug-in " + q.replace(/,/g, '.');            
-            } else {
-                return false;
-            }
-        } else {            
-            return false;
-        }
-    },    
+     
     /**
      * Creates an object that can normailze and store mime types
      * 
@@ -341,6 +300,7 @@ Pfs = {
                 }
             },
             findPluginInfo: function() {
+                
                 var mime = this.currentPlugin.mimes[this.currentMime];
                     
                 var that = this;
@@ -353,6 +313,7 @@ Pfs = {
                     if (window.console) {console.error("You must configure Pfs.endpoint before using this library");}
                     return false;
                 }
+                
                 //var mimeType = "application/x-shockwave-flash";
                 /*var url =  + "?appID={ec8030f7-c20a-464f-9b0e-13a3a9e97384}&mimetype=" +
                             mimeType + "&appVersion=2008052906&appRelease=3.0&clientOS=Windows%20NT%205.1&chromeLocale=en-US";                */
@@ -596,8 +557,11 @@ Pfs = {
         // Walk through the plugins and get the metadata from PFS2
         // PFS2 is JSONP and can't be called async using jQuery.ajax
         // We'll create a queue and manage our requests
-        for(var i=0; i< pluginInfos.length; i++) {
-            finderState.findPluginQueue.push(pluginInfos[i]);
+        for(var i=0; i< pluginInfos.length; i++) {            
+            if (Pfs.shouldSkipPluginNamed(pluginInfos[i].plugin) !== true) {
+                finderState.findPluginQueue.push(pluginInfos[i]);    
+            }
+            
         }
         finderState.startFindingNextPlugin();
     }

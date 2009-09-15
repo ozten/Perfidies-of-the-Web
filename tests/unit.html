@@ -102,9 +102,8 @@ $(document).ready(function(){
         PluginDetect.getVersion = function(pluginName, jarFile){
             return "1.5,0,19";
         };
-        var actual = Pfs.UI.browserPlugins(testBrowserNavigatorPlugins);
-        var expected = testPluginInfos;
-        same(actual[4], expected[4], "We can grab each plugin's info and a list of mime types");
+        var actual = Pfs.UI.browserPlugins(testBrowserNavigatorPlugins);        
+        same(actual[3], testPluginInfos[4], "We can grab each plugin's info and a list of mime types. Not we skip default plugins");
     });
   });      
   </script>
