@@ -452,7 +452,7 @@ Pfs = {
         }
         
         for(var i=0; i < tokens.length; i++){
-            var token = tokens[i].trim();
+            var token = $.trim(tokens[i]);
             if (token.length === 0) {
                 continue;
             }
