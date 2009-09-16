@@ -30,7 +30,7 @@ Pfs = {
      * @client
      * @private
      */
-    skipPluginsNamed: ["Default Plugin"],
+    skipPluginsNamed: ["Default Plugin", "Default Plug-in"],
     /**
      * Status Code for incremental callback.
      *

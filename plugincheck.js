@@ -63,7 +63,8 @@ Pfs.UI = {
                 var length = mimeValue.length;
                 for (var j=1; j < mimes.length; j++) {
                     length += mimes[j].length;
-                    mimeValue += " " + mimes[j]; //TODO let JSON request url encode, or do it here?
+                    // mime types are space delimited
+                    mimeValue += " " + mimes[j];
                     if (length > Pfs.MAX_MIMES_LENGTH &&
                         (i + 1) < mimes.length) {                        
                         mimeValues.push(mimeValue);
@@ -109,6 +110,7 @@ Pfs.UI = {
      */
     namePlusVersion: function(name, description) {
         if (/Java.*/.test(name)) {
+            //Bug#519823 If we want to start using Applets again
             var j =  PluginDetect.getVersion('Java', 'getJavaInfo.jar', [0, 0, 0]);
             if (j !== null) {
                 return "Java Embedding Plugin " + j.replace(/,/g, '.').replace(/_/g, '.');        
@@ -177,20 +179,21 @@ Pfs.UI = {
     states[Pfs.CURRENT] =    {c:"green",  l:"Learn More",  s:"You're Safe",            code: Pfs.CURRENT};
     
     var reportPlugins = function(pInfo, status) {
-        //TODO should pInfos have a version
-        //Or should the client library have a case 'newer than'?
         if (status == Pfs.NEWER) {
-            if (window.console) {console.info("Report Weird, we are newer", pInfo);}    
+            if (window.console) {console.info("Report Weird, we are newer", browserPlugins, pInfo);}    
         } else {
             if (window.console) {console.info("Report Unkown: ", status, pInfo);}    
         }
-        
-        
         var plugin = pInfo.raw;
+        var reportData = {name: plugin.name, description: plugin.description};
+        var detectedVersion = Pfs.parseVersion(
+                                Pfs.UI.namePlusVersion(plugin.name, plugin.description)).join('.');
+        $.extend(reportData, Pfs.UI.navInfo, {version: detectedVersion, mimes: pInfo.mimes});
+        
         if (plugin) {
             $.ajax({
                 url: Pfs.endpoint + status + "_plugin.gif",
-                data: {name: plugin.name, description: plugin.description}
+                data: reportData
             });
         }
             
@@ -289,17 +292,13 @@ Pfs.UI = {
         $('.icon', html).attr('src', iconFor(plugin.name));
         
         $('.status', html).text(statusCopy.s);
-        //TODO delete we don't show unknown
-        if (statusCopy == states.unk) {
-            $('.action', html).html('');
-        } else {
-            
-            $('.action a', html).addClass(statusCopy.c);
-            $('.action a span', html).text(statusCopy.l);
-            if (url !== undefined) {
-                $('.action a', html).attr('href', url);                
-            }            
-        }
+         
+        $('.action a', html).addClass(statusCopy.c);
+        $('.action a span', html).text(statusCopy.l);
+        if (url !== undefined) {
+            $('.action a', html).attr('href', url);                
+        }            
+        
         
         addBySorting(html, statusCopy.code);
         
@@ -378,7 +377,11 @@ Pfs.UI = {
         if (worstStatus !== undefined) {
             $('#pfs-status').html(worstCount + " of " + total + " plugins are " + worstStatus)
                             .addClass('vulnerable');
-        }        
+        } else if ($('.plugin').size() == 0) {
+            $('#pfs-status').html("No plugins were detected");
+        } else {
+            $('#pfs-status').html("The plugins listed below are up to date");
+        }
         if ($('.plugin:hidden').size() > 0) {
             $('.view-all-toggle').html("<a href='#'>View All Your Plugins</a>").click(function(){
                 if (updateDisplayId === undefined) {
@@ -397,6 +400,7 @@ Pfs.UI = {
     
     window.checkPlugins = function(endpoint) {
         Pfs.endpoint = endpoint;
-        Pfs.findPluginInfos(Pfs.UI.browserInfo(), browserPlugins, incrementalCallbackFn, finishedCallbackFn);
+        Pfs.UI.navInfo = Pfs.UI.browserInfo();
+        Pfs.findPluginInfos(Pfs.UI.navInfo, browserPlugins, incrementalCallbackFn, finishedCallbackFn);
     }
 })();
