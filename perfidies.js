@@ -11,9 +11,7 @@
  * It categorizes the plugins into disableNow, vulnerable, current, outdated, and unknown
  * and the callback recieves a list of each of these types of plugins
  * 
- * This file will (evetually) only host the PFS API. Other JS files will host
- * the MoCo whatsnew UI, the SFx Up Your Plug Badges, etc
- * @author ozten
+ * @author Austin King (ozten)
  */
 if (window.Pfs === undefined) { window.Pfs = {}; }
 Pfs = {
