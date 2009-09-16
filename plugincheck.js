@@ -338,7 +338,7 @@ Pfs.UI = {
                     case Pfs.DISABLE:
                         disabled++;
                         // Anchor tag for instructions on how to disable a plugin
-                        url = "#disable";
+                        url = "#howto-disable";
                         break;
                     case Pfs.VULNERABLE:
                         vulnerables++;
