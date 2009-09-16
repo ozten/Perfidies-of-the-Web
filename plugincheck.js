@@ -109,7 +109,7 @@ Pfs.UI = {
      */
     namePlusVersion: function(name, description) {
         if (/Java.*/.test(name)) {
-            var j =  PluginDetect.getVersion('Java', 'getJavaInfo.jar');
+            var j =  PluginDetect.getVersion('Java', 'getJavaInfo.jar', [0, 0, 0]);
             if (j !== null) {
                 return "Java Embedding Plugin " + j.replace(/,/g, '.').replace(/_/g, '.');        
             } else {
