@@ -188,15 +188,11 @@ Pfs.UI = {
         var reportData = {name: plugin.name, description: plugin.description};
         var detectedVersion = Pfs.parseVersion(
                                 Pfs.UI.namePlusVersion(plugin.name, plugin.description)).join('.');
-        $.extend(reportData, Pfs.UI.navInfo, {version: detectedVersion, mimes: pInfo.mimes});
-        
-        if (plugin) {
-            $.ajax({
-                url: Pfs.endpoint + status + "_plugin.gif",
-                data: reportData
-            });
-        }
-            
+        $.extend(reportData, Pfs.UI.navInfo, {version: detectedVersion, mimes: pInfo.mimes});        
+        if (plugin) { 
+            $('body').append("<img src='" + Pfs.endpoint + status + "_plugin.gif?" + $.param(reportData) +
+                             "' width='1' height='1' />");
+        }           
     }
     Pfs.reportPluginsFn = reportPlugins;
     var updateDisplayId = undefined;
