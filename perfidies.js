@@ -22,6 +22,10 @@ Pfs = {
      */
     MAX_MIMES_LENGTH: 3000,
     /**
+     * Timeout a PFS request after 3 seconds
+     */
+    TIMEOUT: 3000,
+    /**
      * Endpoint for the PFS2 API .
      */
     endpoint: "error set me before using",
@@ -165,18 +169,18 @@ Pfs = {
                     Pfs.e("You must configure Pfs.endpoint before using this library");
                     return false;
                 }
-                var args = $.extend({}, navigatorInfo, {mimetype: mimeType, callback: "pfs2_callback"});
-                var src =  Pfs.endpoint + "?" + $.param(args);                
+                var args = $.extend({}, {mimetype: mimeType}, navigatorInfo);
                 
-                var s = document.createElement("script");
-                s.setAttribute('src', src);
-                var h = document.getElementsByTagName('head');
-                try {
-                    h[0].appendChild(s);   
-                } catch(e) {                    
-                    Pfs.e("Failed JSONP request to ", src, e);
-                    errorFn(e);
-                }
+                $.jsonp({
+                    cache: true,
+                    callbackParameter: "callback",
+                    data: args,
+                    error: errorFn,
+                    retry: 3,
+                    success: successFn,
+                    timeout: Pfs.TIMEOUT,                    
+                    url: Pfs.endpoint                    
+                });
                 return true;
             },            
             
@@ -374,11 +378,21 @@ Pfs = {
                     this.startFindingNextMimetypeOnCurrentPlugin(pfsInfo);
                 }
             },
+            /**
+             * bad hostname, 500 server error, malformed JSON textStatus = 'error'
+             * server timeout textStatus= 'timeout'
+             */
             pfs2Error: function(xhr, textStatus, errorThrown){
-                Pfs.e("Doh failed on mime/plugin ", this.currentPlugin.mimes[this.currentMime], this.currentPlugin);
+                xhr.retry = xhr.retry -1;
+                if (xhr.retry >= 0) {
+                    Pfs.e("Error Type [", textStatus, "] retrying on mime/plugin ", xhr, textStatus, errorThrown, this.currentPlugin.mimes[this.currentMime], this.currentPlugin);
+                    $.jsonp(xhr);
+                } else {
+                    $('table.status').replaceWith($('#error-panel').show());
+                    Pfs.e("Doh failed on mime/plugin ", xhr, textStatus, errorThrown, this.currentPlugin.mimes[this.currentMime], this.currentPlugin);    
+                }
             }            
         };
-        window.pfs2_callback = function(){ finder.pfs2Success.apply(finder, arguments);};
         return finder;
     },
     /**
