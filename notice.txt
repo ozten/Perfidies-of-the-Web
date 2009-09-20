@@ -1,0 +1,4 @@
+/*
+  Source code built from http://github.com/ozten/Perfidies-of-the-Web and reuses Eric Gerds's http://www.pinlady.net/PluginDetect/
+  DO NOT EDIT THIS SOURCE, Try README in Perfidies instead
+*/
