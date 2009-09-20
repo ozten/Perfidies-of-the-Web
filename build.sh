@@ -8,6 +8,7 @@ PERFIDIES=/home/aking/mozilla.com/en-US/firefox/plugincheck/perfidies
 cd $MOZILLA_COM
 rm -f js/plugincheck.js js/plugincheck.min.js
 cat $PERFIDIES/plugindetect.js >>           js/plugincheck.js
+cat $PERFIDIES/jquery-1.3.2.min.js >>       js/plugincheck.js
 cat $PERFIDIES/jquery.jsonp-1.1.0.js >>     js/plugincheck.js
 cat $PERFIDIES/perfidies.js >>              js/plugincheck.js
 cat $PERFIDIES/plugincheck.js >>            js/plugincheck.js
