@@ -495,8 +495,13 @@ Pfs.UI = {
     //Used in regression testing
     Pfs.UI.displayPlugin = incrementalCallbackFn;
     
-    window.checkPlugins = function(endpoint) {
-        Pfs.endpoint = endpoint;
+    window.checkPlugins = function(endpoint) {        
+        if (endpoint.indexOf("http://") == 0) {
+            endpoint = endpoint.substring(7);
+        } else if (endpoint.indexOf("https://") == 0) {
+            endpoint = endpoint.substring(8);
+        }
+        Pfs.endpoint = window.location.protocol + "//" + endpoint;
         Pfs.UI.navInfo = Pfs.UI.browserInfo();
         Pfs.findPluginInfos(Pfs.UI.navInfo, browserPlugins, incrementalCallbackFn, finishedCallbackFn);
     }
