@@ -45,6 +45,9 @@ Pfs.UI = {
             }
             var pluginInfo = Pfs.UI.namePlusVersion(plugins[i].name, plugins[i].description);
             
+            if (Pfs.UI.hasVersionInfo(pluginInfo) === false) {
+                continue;
+            }
             var mimes = [];
             var marcelMrceau = Pfs.createMasterMime(); /* I hate mimes */
             for (var j=0; j < plugins[i].length; j++) {
