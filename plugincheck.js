@@ -190,6 +190,7 @@ Pfs.UI = {
         java:      "/img/tignish/plugincheck/icon-java.png",
         quicktime: "/img/tignish/plugincheck/icon-quicktime.png",
         divx: "/img/tignish/plugincheck/icon-divx.png",
+        totem: "/img/tignish/plugincheck/icon-totem.png",
         generic: "/img/tignish/plugincheck/icon-flip.png"
     };
     var iconFor = function(pluginName) {
@@ -201,6 +202,8 @@ Pfs.UI = {
             return icons.quicktime;
         } else if(pluginName.indexOf("DivX") >= 0) {
             return icons.divx;
+        } else if(pluginName.indexOf("Totem") >= 0) {
+            return icons.totem;
         } else {
             return icons.generic;
         }
