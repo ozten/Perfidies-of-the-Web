@@ -38,20 +38,32 @@ Pfs.UI = {
         var p = [];
         var pluginsSeen = [];
         for (var i=0; i < plugins.length; i++) {
-            
+            var pluginInfo;
+            var rawPlugin = plugins[i];
             if (Pfs.shouldSkipPluginNamed(plugins[i].name) ||
+                this.shouldSkipPluginFileNamed(plugins[i].filename) ||
                 pluginsSeen.indexOf(plugins[i].name) >= 0) {
                 continue;
             }
-            var pluginInfo = Pfs.UI.namePlusVersion(plugins[i].name, plugins[i].description);
-            
+            // Linux Totem acts like QuickTime, DivX, VLC, etc Bug#520041
+            if (plugins[i].filename == "libtotem-cone-plugin.so") {
+                rawPlugin = {
+                    name:"Totem", description: plugins[i].description,
+                    length: plugins[i].length,
+                    filename: plugins[i].filename
+                };
+                for (var m=0; m < plugins[i].length; m++) {
+                    rawPlugin[m] = plugins[i][m];
+                }                
+            }
+            pluginInfo = Pfs.UI.namePlusVersion(rawPlugin.name, rawPlugin.description);                
             if (Pfs.UI.hasVersionInfo(pluginInfo) === false) {
                 continue;
             }
             var mimes = [];
             var marcelMrceau = Pfs.createMasterMime(); /* I hate mimes */
-            for (var j=0; j < plugins[i].length; j++) {
-                var mimeType = plugins[i][j].type;
+            for (var j=0; j < rawPlugin.length; j++) {
+                var mimeType = rawPlugin[j].type;
                 if (mimeType) {
                     var m = marcelMrceau.normalize(mimeType);
                     if (marcelMrceau.seen[m] === undefined) {
@@ -78,8 +90,8 @@ Pfs.UI = {
                 }
                 mimeValues.push(mimeValue);
             }
-            p.push({plugin: pluginInfo, mimes: mimeValues, classified: false, raw: plugins[i]});
-            if (plugins[i].name) {
+            p.push({plugin: pluginInfo, mimes: mimeValues, classified: false, raw: rawPlugin});
+            if (rawPlugin.name) {
                 // Bug#519256 - guard against duplicate plugins
                 pluginsSeen.push(plugins[i].name);    
             }
@@ -87,6 +99,19 @@ Pfs.UI = {
         }
         
         return p;
+    },
+    /**
+     * A list of well known plugin filenams that are *always* up to date.
+     * Totem being DivX, WMP, or QuickTime we'll skip. For 'VLC' Totem see browserPlugins
+     * where we rename the plugin to Totem
+     * 
+     * @private
+     */
+    skipPluginsFilesNamed: ["libtotem-mully-plugin.so", 
+                            "libtotem-narrowspace-plugin.so",
+                            "libtotem-gmp-plugin.so"],
+    shouldSkipPluginFileNamed: function(filename) {
+        return this.skipPluginsFilesNamed.indexOf($.trim(filename)) >= 0;
     },
     /**
      * @private

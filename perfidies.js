@@ -26,7 +26,7 @@ Pfs = {
      */
     endpoint: "error set me before using",
     /**
-     * A list of well known plugins that are *always* up to date.
+     * A list of well known plugin names that are *always* up to date.
      * @client
      * @private
      */
@@ -241,7 +241,7 @@ Pfs = {
                     var searchingPluginInfo = true;
                     if (pfsInfo.aliases.literal) {
                         for(var j=0; searchingPluginInfo && j < pfsInfo.aliases.literal.length; j++) {
-                            var litName = pfsInfo.aliases.literal[j];
+                            var litName = pfsInfo.aliases.literal[j];                            
                             if (currentPluginName == litName) {
                                 searchingResults = false;
                                 searchingPluginInfo = false;
