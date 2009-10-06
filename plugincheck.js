@@ -383,7 +383,7 @@ Pfs.UI = {
         } else {
             $('#pfs-status').html("The plugins listed below are up to date");
         }
-        if ($('.plugin:hidden').size() >= 0) {
+        if ($('.plugin:hidden').size() > 0) {
             $('.view-all-toggle').html("<a href='#'>View All Your Plugins</a>").click(function(){
                 if (updateDisplayId === undefined) {
                     updateDisplayId = setTimeout(updateDisplay, 300);
