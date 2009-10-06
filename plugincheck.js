@@ -178,8 +178,9 @@ Pfs.UI = {
     var states = {};
     states[Pfs.VULNERABLE] = {c:"orange", l:"Update Now",  s:"Vulnerable",             code: Pfs.VULNERABLE};
     states[Pfs.DISABLE] =    {c:"orange", l:"Disable Now", s:"Vulnerable No Fix",      code: Pfs.DISABLE};
-    states[Pfs.OUTDATED] =   {c:"yellow", l:"Update",      s:"Potentially Vulnerable", code: Pfs.OUTDATED};
-    states[Pfs.CURRENT] =    {c:"green",  l:"Learn More",  s:"You're Safe",            code: Pfs.CURRENT};
+    states[Pfs.OUTDATED] =   {c:"yellow", l:"Update",      s:"Outdated Version",       code: Pfs.OUTDATED};
+    states[Pfs.CURRENT] =    {c:"green",  l:"Up to Date",  s:"You're Safe",            code: Pfs.CURRENT};
+    states[Pfs.UNKNOWN] =    {c:"grey",   l:"Research",    s:"Unable to Detect Plugin Version", code: Pfs.UNKNOWN};
     
     var reportPlugins = function(pInfo, status) {
         if (status == Pfs.NEWER) {
@@ -286,7 +287,7 @@ Pfs.UI = {
             html.addClass('odd');            
         }        
         
-        $('.name', html).text(plugin.name);
+        $('.name a', html).text(plugin.name);        
         $('.version', html).html(plugin.description);
         $('.icon', html).attr('src', iconFor(plugin.name));
         
@@ -295,6 +296,7 @@ Pfs.UI = {
         $('.action a', html).addClass(statusCopy.c);
         $('.action a span', html).text(statusCopy.l);
         if (url !== undefined) {
+            $('.name a', html).attr('href', url);
             $('.action a', html).attr('href', url);                
         }            
         
@@ -381,7 +383,7 @@ Pfs.UI = {
         } else {
             $('#pfs-status').html("The plugins listed below are up to date");
         }
-        if ($('.plugin:hidden').size() > 0) {
+        if ($('.plugin:hidden').size() >= 0) {
             $('.view-all-toggle').html("<a href='#'>View All Your Plugins</a>").click(function(){
                 if (updateDisplayId === undefined) {
                     updateDisplayId = setTimeout(updateDisplay, 300);
