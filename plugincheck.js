@@ -134,6 +134,13 @@ Pfs.UI = {
             } else {
                 return name;
             }
+        } else if(/Windows Media Player Plug-in.*/.test(name)) {
+            var q = PluginDetect.getVersion('WindowsMediaPlayer');
+            if (q !== null) {
+                return name + " " + q.replace(/,/g, '.');            
+            } else {
+                return name;
+            }
         } else {
             // General case
             if (name && this.hasVersionInfo(name)) {                
