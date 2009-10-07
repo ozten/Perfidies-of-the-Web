@@ -30,7 +30,7 @@ Pfs = {
      * @client
      * @private
      */
-    skipPluginsNamed: ["Default Plugin", "Default Plug-in"],
+    skipPluginsNamed: ["Default Plugin", "Default Plug-in", "Mozilla Default Plug-in"],
     /**
      * Status Code for incremental callback.
      *
@@ -128,7 +128,8 @@ Pfs = {
      * @returns {object}
      */
     createFinder: function(navigatorInfo, incrementalCallback, finishedCallback) {
-        return {
+        
+        var finder = {
             // A list of plugin2mimeTypes
             findPluginQueue: [],
             // A plugin2mimeTypes
@@ -164,20 +165,18 @@ Pfs = {
                     if (window.console) {console.error("You must configure Pfs.endpoint before using this library");}
                     return false;
                 }
+                var args = $.extend({}, navigatorInfo, {mimetype: mimeType, callback: "pfs2_callback"});
+                var src =  Pfs.endpoint + "?" + $.param(args);                
                 
-                //var mimeType = "application/x-shockwave-flash";
-                /*var url =  + "?appID={ec8030f7-c20a-464f-9b0e-13a3a9e97384}&mimetype=" +
-                            mimeType + "&appVersion=2008052906&appRelease=3.0&clientOS=Windows%20NT%205.1&chromeLocale=en-US";                */
-                var args = $.extend({}, navigatorInfo);
-                args.mimetype = mimeType;
-                $.ajax({
-                    url: Pfs.endpoint,
-                    data: args,
-                    dataType: "jsonp",
-                    success: successFn,
-                    error: errorFn
-                });
-                
+                var s = document.createElement("script");
+                s.setAttribute('src', src);
+                var h = document.getElementsByTagName('head');
+                try {
+                    h[0].appendChild(s);   
+                } catch(e) {                    
+                    if(window.console) {window.console.error("Failed JSONP request to ", src, e);}
+                    errorFn(e);
+                }
                 return true;
             },            
             
@@ -263,7 +262,7 @@ Pfs = {
                     }
                     if (pluginMatch === true) {
                         var searchPluginRelease = true;
-                        if (pfsInfo.releases.latest) {
+                        if (pfsInfo.releases.latest) {                            
                             switch(Pfs.compVersion(this.currentPlugin.plugin, pfsInfo.releases.latest.version)) {
                                 case 1:
                                     if (Pfs.reportPluginFn) {
@@ -306,11 +305,10 @@ Pfs = {
                                     //keep looking
                                     break;
                             }                    
-                        }
-                        
+                        }                        
                         if (searchPluginRelease && pfsInfo.releases.others) {
                             var others = pfsInfo.releases.others;
-                            for (var k=0; searchPluginRelease && k < others.length; k++) {
+                            for (var k=0; searchPluginRelease && k < others.length; k++) {                                 
                                 if (! others[k].version) {
                                     continue;
                                 }
@@ -328,6 +326,7 @@ Pfs = {
                                             });
                                             this.currentPlugin.classified = true;
                                         } else {
+                                            //TODO... Bug here?
                                             this.incrementalCallbackFn({
                                                 pluginInfo: this.currentPlugin,
                                                 pfsInfo: pfsInfo,
@@ -375,6 +374,8 @@ Pfs = {
                 if (window.console) {console.error("Doh failed on mime/plugin ", this.currentPlugin.mimes[this.currentMime], this.currentPlugin) };
             }            
         };
+        window.pfs2_callback = function(){ finder.pfs2Success.apply(finder, arguments);};
+        return finder;
     },
     /**
      * Compares the description of two plugin versions and returns
