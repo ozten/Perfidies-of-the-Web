@@ -221,9 +221,9 @@ Pfs.UI = {
     
     var reportPlugins = function(pInfo, status) {
         if (status == Pfs.NEWER) {
-            if (window.console) {console.info("Report Weird, we are newer", browserPlugins, pInfo);}    
+            Pfs.i("Report Weird, we are newer", browserPlugins, pInfo);
         } else {
-            if (window.console) {console.info("Report Unkown: ", status, pInfo);}    
+            Pfs.i("Report Unkown: ", status, pInfo);
         }
         var plugin = pInfo.raw;
         var reportData = {name: plugin.name, description: plugin.description};
@@ -302,8 +302,12 @@ Pfs.UI = {
             //best case we are up to date, stick it after the last non unknown plugin in the list
             var r = $('tr.plugin').not('.' + Pfs.UNKNOWN).filter(':last').after(el).size();
             if (r == 0) {
-                //no other plugins, be the first plugin
-                $('#plugin-template').parent().append(el);                
+                r = $('tr.plugin').filter(':first').before(el).size();
+                if (r == 0) {
+                    //no other plugins, be the first plugin
+                    $('#plugin-template').parent().append(el);                    
+                }
+                
             }
         } else if(Pfs.UNKNOWN == status) {
             //unknown plugins go last, not much help to the user
@@ -313,7 +317,7 @@ Pfs.UI = {
                 $('#plugin-template').parent().append(el);                
             }
         } else {
-            if (window.console) {console.error("Sorting to display, unknown status", status);}
+            Pfs.e("Sorting to display, unknown status", status);
         }
         if (updateDisplayId === undefined) {
             updateDisplayId = setTimeout(updateDisplay, 300);
@@ -401,7 +405,7 @@ Pfs.UI = {
             total++;
             
         } else {
-            if (window.console) {console.error("We have an unknown status code when displaying UI.", data);}
+            Pfs.e("We have an unknown status code when displaying UI.", data);
         }
         
     };

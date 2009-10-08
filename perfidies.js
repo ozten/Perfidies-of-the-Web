@@ -127,8 +127,7 @@ Pfs = {
      * @private
      * @returns {object}
      */
-    createFinder: function(navigatorInfo, incrementalCallback, finishedCallback) {
-        
+    createFinder: function(navigatorInfo, incrementalCallback, finishedCallback) {        
         var finder = {
             // A list of plugin2mimeTypes
             findPluginQueue: [],
@@ -161,8 +160,8 @@ Pfs = {
             },
             /************* PFS2 below *************/
             callPfs2: function(mimeType, successFn, errorFn) {
-                if (Pfs.endpoint == "error set me before using") {
-                    if (window.console) {console.error("You must configure Pfs.endpoint before using this library");}
+                if (Pfs.endpoint == "error set me before using") {                    
+                    Pfs.e("You must configure Pfs.endpoint before using this library");
                     return false;
                 }
                 var args = $.extend({}, navigatorInfo, {mimetype: mimeType, callback: "pfs2_callback"});
@@ -174,7 +173,7 @@ Pfs = {
                 try {
                     h[0].appendChild(s);   
                 } catch(e) {                    
-                    if(window.console) {window.console.error("Failed JSONP request to ", src, e);}
+                    Pfs.e("Failed JSONP request to ", src, e);
                     errorFn(e);
                 }
                 return true;
@@ -185,7 +184,7 @@ Pfs = {
                 if (this.currentMime < this.currentPlugin.mimes.length) {
                     this.findPluginInfo();
                 } else {
-                    if (window.console) {console.warn("Exhausted Mime-Types...");}
+                    Pfs.w("Exhausted Mime-Types...");
                     if (this.currentPlugin !== null &&
                         ! this.currentPlugin.classified) {
                         this.incrementalCallbackFn({
@@ -228,12 +227,12 @@ Pfs = {
                     var pfsInfo = data[i];
                     if (! pfsInfo.aliases ||
                        (! pfsInfo.aliases.literal  && ! pfsInfo.aliases.regex )) {
-                            if (window.console) { window.console.error("Malformed PFS2 plugin info, no aliases"); }
+                            Pfs.e("Malformed PFS2 plugin info, no aliases");
                             break;
                     }
                     if (! pfsInfo.releases ||
                         ! pfsInfo.releases.latest) {
-                            if (window.console) { window.console.error("Malformed PFS2 plugin info, no latest release"); }
+                            Pfs.e("Malformed PFS2 plugin info, no latest release");
                             break;
                     }
                     // Is pfsInfo the plugin we seek?
@@ -370,7 +369,7 @@ Pfs = {
                 }
             },
             pfs2Error: function(xhr, textStatus, errorThrown){
-                if (window.console) {console.error("Doh failed on mime/plugin ", this.currentPlugin.mimes[this.currentMime], this.currentPlugin) };
+                Pfs.e("Doh failed on mime/plugin ", this.currentPlugin.mimes[this.currentMime], this.currentPlugin);
             }            
         };
         window.pfs2_callback = function(){ finder.pfs2Success.apply(finder, arguments);};
@@ -393,10 +392,10 @@ Pfs = {
             return this.compVersionChain( this.parseVersion(v1),
                                           this.parseVersion(v2));
         } else if (v1) {
-            if(window.console) {window.console.warn("compVersion v1, v2, v2 is undefined v1=", v1, " v2=", v2);}
+            Pfs.w("compVersion v1, v2, v2 is undefined v1=", v1, " v2=", v2);
             return 1;
         } else {
-            if(window.console) {window.console.warn("compVersion v1, v2, either v1 or v2 or both is undefined v1=", v1, " v2=", v2);}
+            Pfs.w("compVersion v1, v2, either v1 or v2 or both is undefined v1=", v1, " v2=", v2);
             return -1;
         }
     },    
@@ -447,7 +446,7 @@ Pfs = {
                 versionChain.push(currentVersionPart);
                 inCharVersion = false;
             } else {
-                if (window.console) {console.error("This should never happen", currentVersionPart, inNumericVersion, inCharVersion); }
+                Pfs.e("This should never happen", currentVersionPart, inNumericVersion, inCharVersion);
             }        
             currentVersionPart = "";
         }
@@ -490,7 +489,7 @@ Pfs = {
             }
         }
         if (! inVersion) {        
-            if (window.console) {console.warn("Unable to parseVersion from " + v); }
+            Pfs.w("Unable to parseVersion from " + v);
         }
         return versionChain;    
     },
@@ -548,5 +547,23 @@ Pfs = {
                 return mime.split(';')[0];
             }
         };
-    }
+    },
+    /**
+     * Log an error message if there is a console
+     * @variadic
+     * @param {object} or {string}
+     */
+    e: function(msg) {if (window.console) {console.error.apply(console, arguments);}},
+    /**
+     * Log a warning if there is a console
+     * @variadic
+     * @param {object} or {string}
+     */
+    w: function(msg) {if (window.console) {console.warn.apply(console, arguments);}},
+    /**
+     * Log a warning if there is a console
+     * @variadic
+     * @param {object} or {string}
+     */
+    i: function(msg) {if (window.console) {console.info.apply(console, arguments);}}
 };
