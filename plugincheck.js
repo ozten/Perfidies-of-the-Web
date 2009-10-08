@@ -57,7 +57,7 @@ Pfs.UI = {
                     rawPlugin[m] = plugins[i][m];
                 }                
             }
-            pluginInfo = Pfs.UI.namePlusVersion(rawPlugin.name, rawPlugin.description);                
+            pluginInfo = Pfs.UI.namePlusVersion(rawPlugin.name, rawPlugin.description);            
             if (Pfs.UI.hasVersionInfo(pluginInfo) === false) {
                 Pfs.UI.unknownVersionPlugins.push(rawPlugin);
                 continue;

@@ -27,10 +27,11 @@ Pfs = {
     endpoint: "error set me before using",
     /**
      * A list of well known plugin names that are *always* up to date.
+     * Bug#519234 - We skip RealPlayer G2 and use RealPlayer Version Plugin instead.
      * @client
      * @private
      */
-    skipPluginsNamed: ["Default Plugin", "Default Plug-in", "Mozilla Default Plug-in"],
+    skipPluginsNamed: ["Default Plugin", "Default Plug-in", "Mozilla Default Plug-in", "RealPlayer(tm) G2 LiveConnect-Enabled Plug-In (32-bit)"],
     /**
      * Status Code for incremental callback.
      *
@@ -215,6 +216,10 @@ Pfs = {
              */
             pfs2Success: function(data, status){
                 var currentPluginName = this.currentPlugin.plugin;
+                if (this.currentPlugin.raw && this.currentPlugin.raw.name) {
+                    currentPluginName = this.currentPlugin.raw.name;
+                }
+                Pfs.i(this.currentPlugin);
                 
                 var searchingResults = true;
                 var pluginMatch = false;
@@ -239,8 +244,9 @@ Pfs = {
                     var searchingPluginInfo = true;
                     if (pfsInfo.aliases.literal) {
                         for(var j=0; searchingPluginInfo && j < pfsInfo.aliases.literal.length; j++) {
-                            var litName = pfsInfo.aliases.literal[j];                            
-                            if (currentPluginName == litName) {
+                            var litName = pfsInfo.aliases.literal[j];
+                            
+                            if ($.trim(currentPluginName) == $.trim(litName)) {
                                 searchingResults = false;
                                 searchingPluginInfo = false;
                                 pluginMatch = true;
@@ -527,8 +533,8 @@ Pfs = {
     /**
      * @private
      */
-    shouldSkipPluginNamed: function(name) {        
-        return this.skipPluginsNamed.indexOf(name) >= 0;
+    shouldSkipPluginNamed: function(name) {
+        return this.skipPluginsNamed.indexOf($.trim(name)) >= 0;
     },
      
     /**
