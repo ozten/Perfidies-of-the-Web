@@ -267,7 +267,7 @@ Pfs = {
                                 case 1:
                                     if (Pfs.reportPluginFn) {
                                         Pfs.reportPluginFn([pfsInfo], 'newer');
-                                    }
+                                    }                                    
                                     this.incrementalCallbackFn({
                                             pluginInfo: this.currentPlugin,
                                             pfsInfo: pfsInfo,
@@ -325,8 +325,7 @@ Pfs = {
                                                 url: pfsInfo.releases.latest.url
                                             });
                                             this.currentPlugin.classified = true;
-                                        } else {
-                                            //TODO... Bug here?
+                                        } else {                                            
                                             this.incrementalCallbackFn({
                                                 pluginInfo: this.currentPlugin,
                                                 pfsInfo: pfsInfo,

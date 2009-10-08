@@ -4,6 +4,7 @@
 if (window.Pfs === undefined) { window.Pfs = {}; }
 Pfs.UI = {
     MAX_VISIBLE: 5,
+    unknownVersionPlugins: [],
     /**
      * Creates a navigatorInfo object from the browser's navigator object
      */
@@ -58,6 +59,7 @@ Pfs.UI = {
             }
             pluginInfo = Pfs.UI.namePlusVersion(rawPlugin.name, rawPlugin.description);                
             if (Pfs.UI.hasVersionInfo(pluginInfo) === false) {
+                Pfs.UI.unknownVersionPlugins.push(rawPlugin);
                 continue;
             }
             var mimes = [];
@@ -107,7 +109,7 @@ Pfs.UI = {
      * 
      * @private
      */
-    skipPluginsFilesNamed: ["libtotem-mully-plugin.so", 
+    skipPluginsFilesNamed: ["libtotem-mully-plugin.so",
                             "libtotem-narrowspace-plugin.so",
                             "libtotem-gmp-plugin.so"],
     shouldSkipPluginFileNamed: function(filename) {
@@ -297,12 +299,19 @@ Pfs.UI = {
                 }
             }
         } else if(Pfs.CURRENT == status) {
-            //best
+            //best case we are up to date, stick it after the last non unknown plugin in the list
+            var r = $('tr.plugin').not('.' + Pfs.UNKNOWN).filter(':last').after(el).size();
+            if (r == 0) {
+                //no other plugins, be the first plugin
+                $('#plugin-template').parent().append(el);                
+            }
+        } else if(Pfs.UNKNOWN == status) {
+            //unknown plugins go last, not much help to the user
             var r = $('tr.plugin:last').after(el).size();
             if (r == 0) {
                 //no other plugins, be the first plugin
                 $('#plugin-template').parent().append(el);                
-            }        
+            }
         } else {
             if (window.console) {console.error("Sorting to display, unknown status", status);}
         }
@@ -311,7 +320,6 @@ Pfs.UI = {
         }
     }
     var displayPlugins = function(plugin, statusCopy, url, rowCount) {
-        
         var html = $('#plugin-template').clone();
         html.removeAttr('id')
             .addClass('plugin')
@@ -363,39 +371,49 @@ Pfs.UI = {
         if (data.status == Pfs.UNKNOWN) {
             //ping the server
             reportPlugins(data.pluginInfo, Pfs.UNKNOWN);
-        } else {
-            if (data.status == Pfs.NEWER) {
-                //ping the server and then treat as current
-                reportPlugins(data.pluginInfo, Pfs.NEWER);
-                data.status = Pfs.CURRENT;
+            if (data.pluginInfo.raw && data.pluginInfo.raw.name) {
+                data.url = unknownPluginUrl(data.pluginInfo.raw.name);    
             }
-            if (states[data.status]) {
-                switch (data.status) {
-                    case Pfs.DISABLE:
-                        disabled++;
-                        // Anchor tag for instructions on how to disable a plugin
-                        url = "#howto-disable";
-                        break;
-                    case Pfs.VULNERABLE:
-                        vulnerables++;
-                        break;
-                    case Pfs.OUTDATED:
-                        outdated++;
-                        break;
-                }
-                var copy = states[data.status];
-                var plugin = data.pluginInfo.raw;                
-                displayPlugins(plugin, copy, data.url, total);
-                total++;
-                
-            } else {
-                if (window.console) {console.error("We have an unknown status code when displaying UI.", data);}
-            }
+            
         }
-    };
-    var finishedCallbackFn = function(){        
-        //manualTestingFakeOutput();
+        if (data.status == Pfs.NEWER) {
+            //ping the server and then treat as current
+            reportPlugins(data.pluginInfo, Pfs.NEWER);
+            data.status = Pfs.CURRENT;
+        }
+        if (states[data.status]) {
+            switch (data.status) {
+                case Pfs.DISABLE:
+                    disabled++;
+                    // Anchor tag for instructions on how to disable a plugin
+                    url = "#howto-disable";
+                    break;
+                case Pfs.VULNERABLE:
+                    vulnerables++;
+                    break;
+                case Pfs.OUTDATED:
+                    outdated++;
+                    break;
+            }
+            var copy = states[data.status];
+            var plugin = data.pluginInfo.raw;                
+            displayPlugins(plugin, copy, data.url, total);
+            total++;
+            
+        } else {
+            if (window.console) {console.error("We have an unknown status code when displaying UI.", data);}
+        }
         
+    };
+    var unknownPluginUrl = function(pluginName) { return "http://www.google.com/search?q=" + escape("current version plugin " + pluginName);}
+    var finishedCallbackFn = function(){
+        for(var i=0; i < Pfs.UI.unknownVersionPlugins.length; i++) {
+            var unknownPlugin = Pfs.UI.unknownVersionPlugins[i];
+            displayPlugins(unknownPlugin, states[Pfs.UNKNOWN], unknownPluginUrl(unknownPlugin.name), total);
+            total++;
+        }
+        
+        Pfs.UI.unknownVersionPlugins = [];
         var worstCount = 0;
         
         var worstStatus = undefined;
