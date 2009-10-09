@@ -216,7 +216,7 @@ Pfs.UI = {
     states[Pfs.VULNERABLE] = {c:"orange", l:"Update Now",  s:"Vulnerable",             code: Pfs.VULNERABLE};
     states[Pfs.DISABLE] =    {c:"orange", l:"Disable Now", s:"Vulnerable No Fix",      code: Pfs.DISABLE};
     states[Pfs.OUTDATED] =   {c:"yellow", l:"Update",      s:"Outdated Version",       code: Pfs.OUTDATED};
-    states[Pfs.CURRENT] =    {c:"green",  l:"Up to Date",  s:"You're Safe",            code: Pfs.CURRENT};
+    states[Pfs.CURRENT] =    {c:"green",  l:"Up to Date",  s:"REPLACE WITH VERSION",            code: Pfs.CURRENT};
     states[Pfs.UNKNOWN] =    {c:"grey",   l:"Research",    s:"Unable to Detect Plugin Version", code: Pfs.UNKNOWN};
     
     var reportPlugins = function(pInfo, status) {
@@ -400,6 +400,9 @@ Pfs.UI = {
                     break;
             }
             var copy = states[data.status];
+            if (Pfs.CURRENT === data.status) {
+                copy.s = Pfs.parseVersion(data.pluginInfo.plugin).join('.');;
+            }
             var plugin = data.pluginInfo.raw;                
             displayPlugins(plugin, copy, data.url, total);
             total++;
