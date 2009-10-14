@@ -4,7 +4,7 @@
 <head><title>Plugin PFS2 JSON</title>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.js"></script>
   <script src="perfidies.js"></script>
-    <script src="plugindetect.js"></script>
+    <script src="lib/plugindetect.js"></script>
     <script src="plugincheck.js"></script>
   <script>
 $(document).ready(function(){
@@ -43,13 +43,13 @@ $(document).ready(function(){
             var versionChain = Pfs.parseVersion(rawVersion);
             info.meta.version = versionChain.join('.');
             if (versionChain.length > 0) {
-                plugin.version = info.meta.version;  
+                plugin.dVersion = info.meta.version;  
             } else {
-                plugin.version = "Not Detected";
+                plugin.dVersion = "Not Detected";
             }
             
         } else {
-            plugin.version = "Not Detected";
+            plugin.dVersion = "Not Detected";
         }
         
         if (navigator.oscpu){info.releases[0].os_name =  navigator.oscpu;}
@@ -81,7 +81,7 @@ $(document).ready(function(){
         var plugin = window.navigator.plugins[i];
         if (plugin && pluginsSeen.indexOf(plugin.name) == -1) {
             var info = dumpPlugin2Pfs2(plugin);
-            $('#main table tbody').append("<tr id='plugin" + i + "'><td>Name: " + plugin.name + "<br />Version: " + plugin.version + "</td><td><textarea cols=80 rows=7>" + info + "</textarea></td></tr>");
+            $('#main table tbody').append("<tr id='plugin" + i + "'><td>Name: " + plugin.name + "<br />Version: " + plugin.dVersion + "</td><td><textarea cols=80 rows=7>" + info + "</textarea></td></tr>");
             pluginsSeen.push(plugin.name);
         }
     }
