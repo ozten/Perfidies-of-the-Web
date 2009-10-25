@@ -1,0 +1,4 @@
+# Location of the mozilla.com/trunk
+export MOZILLA_COM=/home/aking/mozilla.com
+# Location of the Perfidies code
+export PERFIDIES=/home/aking/mozilla.com/en-US/firefox/plugincheck/perfidies

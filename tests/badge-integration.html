@@ -1,0 +1,68 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
+                    "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+  
+  <script src="qunit/jquery.js"></script>
+  <script src="../lib/jquery.jsonp-1.1.0.js"></script>
+  <link rel="stylesheet" href="qunit/testsuite.css" type="text/css" media="screen" />
+  <script type="text/javascript" src="qunit/testrunner.js"></script>
+
+  <script src="../perfidies.js"></script>
+  <script src="../lib/plugindetect.js"></script>
+  <script src="../web.js"></script> 
+  
+  <script>
+/* Point this at an endpoint that had the PFS2 unit tests run on it */
+Pfs.endpoint = 'http://pfs2.ubuntu/';
+function notNull(o) {
+    if (o) {
+        return true;
+    } else {
+        return false;
+    }
+}
+$(document).ready(function(){
+    module("Integration for Web Badges and PFS2");
+    var navigatorInfo = Pfs.UI.browserInfo();
+    
+    test("old plugin, badge stops on first old plugin for browser pfs2 callback", function() {
+        var incCallbackCount = 0;
+        var expectedCallbackCount = 1;
+        var oldPlugins = Pfs.UI.browserPlugins(
+                        { length: 2,
+                          "0":{
+                            name: "Unknown Plugin", description: "Unknown 5000",
+                            length: 1, "0": {type: "application/photo"}},
+                          "1":{
+                            name: "Foobar Media Viewer", description: "Foobar Corporation Viewer of Media version 200.9.8",
+                            length: 2, "0": {type: "audio/x-foobar-audio"}, "1": {type: "video/x-foobar-video"}}});
+    
+        Pfs.findPluginInfos(navigatorInfo, oldPlugins, function(pfsResponse){
+            if (incCallbackCount == 0) {
+                same(pfsResponse.pluginInfo.raw.name, "Foobar Media Viewer", "If I'm red... This test is invalid, we didn't ask for Foobar Media first. Rewrite this test");
+                // okay we know we are dealing with Foobar
+                same(pfsResponse.status, Pfs.OUTDATED, "This plugin should seen as out of date");                          
+            }            
+            incCallbackCount++;
+            this.stopFindingPluginInfos();
+          }, function(){            
+            start();
+            equals(incCallbackCount, expectedCallbackCount, "We stopped at the first plugin which was outdated, right?");
+          });
+        stop(30000);
+    });
+    
+  });      
+  </script>
+</head>
+<body>
+  
+ <h1>PerFidieS Badge Integration Tests</h1>
+ <h2 id="banner"></h2>
+ <h2 id="userAgent"></h2>
+ <ol id="tests"></ol>
+ <div id="main"></div>
+ <div id="debug"></div>
+</body>
+</html>
