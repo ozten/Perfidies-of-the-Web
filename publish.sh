@@ -1,1 +1,1 @@
-scp -r tests *.* ozten@ozten.com:pfs2.ozten.com/trunk/htdocs/
+scp -r tests lib *.* ozten@ozten.com:pfs2.ozten.com/trunk/htdocs/

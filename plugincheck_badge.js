@@ -7,8 +7,8 @@ $(document).ready(function(){
     Pfs.UI.navInfo = Pfs.UI.browserInfo();
     var browserPlugins = Pfs.UI.browserPlugins(navigator.plugins);
     
-    var nextImage = "http://www-trunk.stage.mozilla.com/img/tignish/plugincheck/webbadge/safe.png";
-    var updateImage = "http://www-trunk.stage.mozilla.com/img/tignish/plugincheck/webbadge/upyourplug.png";
+    var nextImage   = "http://www.mozilla.com/img/tignish/plugincheck/webbadge/safe.png";
+    var updateImage = "http://www.mozilla.com/img/tignish/plugincheck/webbadge/upyourplug.png";
     var incrementalCallbackFn = function (data) {        
         if (data.status == Pfs.DISABLE ||            
             data.status == Pfs.VULNERABLE ||

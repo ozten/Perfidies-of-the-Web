@@ -8,13 +8,17 @@
   <link rel="stylesheet" href="qunit/testsuite.css" type="text/css" media="screen" />
   <script type="text/javascript" src="qunit/testrunner.js"></script>
 
-  <script src="../perfidies.js"></script>
+  <!-- test dev files quickly -->
+  <!--script src="../perfidies.js"></script>
   <script src="../lib/plugindetect.js"></script>
-  <script src="../plugincheck.js"></script>
+  <script src="../web.js"></script>
+  <script src="../plugincheck.js"></script-->
+  <!-- test the build -->
+  <script src="/js/plugincheck.js"></script>
   
   <script>
 /* Point this at an endpoint that had the PFS2 unit tests run on it */
-Pfs.endpoint = 'http://pfs2.haskwhal/';
+Pfs.endpoint = 'http://pfs2.ubuntu/';
 function notNull(o) {
     if (o) {
         return true;
@@ -97,7 +101,6 @@ $(document).ready(function(){
 </head>
 <body>
   
-<script type="text/javascript" src="http://jqueryjs.googlecode.com/svn/trunk/qunit/testrunner.js"></script>
  <h1>PerFidieS Integration Tests</h1>
  <h2 id="banner"></h2>
  <h2 id="userAgent"></h2>

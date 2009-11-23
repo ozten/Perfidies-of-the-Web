@@ -1,20 +1,40 @@
 #!/bin/bash
+#
+# Builds 2 JavaScript files which are used by http://mozilla.com/en-US/plugincheck
+# as well as the web badge version
+#
 
-# Location of the mozilla.com/trunk
-MOZILLA_COM=/home/aking/mozilla.com
-# Location of the Perfidies code
-PERFIDIES=/home/aking/mozilla.com/en-US/firefox/plugincheck/perfidies
-
+source build.conf
 cd $MOZILLA_COM
-rm -f js/plugincheck.js js/plugincheck.min.js
+echo "building plugincheck.js"
+rm -f js/plugincheck.js
 
 cat $PERFIDIES/lib/plugindetect.js >>       js/plugincheck.js
 cat $PERFIDIES/lib/jquery-1.3.2.min.js >>   js/plugincheck.js
 cat $PERFIDIES/lib/jquery.jsonp-1.1.0.js >> js/plugincheck.js
 cat $PERFIDIES/perfidies.js >>              js/plugincheck.js
+cat $PERFIDIES/web.js >>                    js/plugincheck.js
 cat $PERFIDIES/plugincheck.js >>            js/plugincheck.js
 
 cp  $PERFIDIES/notice.txt js/plugincheck.min.js
 ~/bin/jsmin < js/plugincheck.js >> js/plugincheck.min.js
 
 mv js/plugincheck.min.js js/plugincheck.js
+
+echo "building plugincheck_badge.js"
+rm -f js/plugincheck_badge.js
+
+cat $PERFIDIES/lib/plugindetect.js >>       js/plugincheck_badge.js
+cat $PERFIDIES/lib/jquery-1.3.2.min.js >>   js/plugincheck_badge.js
+cat $PERFIDIES/lib/jquery.jsonp-1.1.0.js >> js/plugincheck_badge.js
+cat $PERFIDIES/perfidies.js >>              js/plugincheck_badge.js
+cat $PERFIDIES/web.js >>                    js/plugincheck_badge.js
+cat $PERFIDIES/plugincheck_badge.js >>      js/plugincheck_badge.js
+cp  $PERFIDIES/notice.txt js/plugincheck_badge.min.js
+
+# remove whitespace for HTTP POST
+~/bin/jsmin < js/plugincheck_badge.js >> js/plugincheck_badge.post.js
+$PERFIDIES/closure_compiler.php /home/aking/mozilla.com/js/plugincheck_badge.post.js >> js/plugincheck_badge.min.js
+rm js/plugincheck_badge.post.js
+
+mv js/plugincheck_badge.min.js js/plugincheck_badge.js

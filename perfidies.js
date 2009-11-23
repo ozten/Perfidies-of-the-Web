@@ -174,7 +174,8 @@ Pfs = {
             findPluginQueue: [],
             // A plugin2mimeTypes
             currentPlugin: null,
-            currentMime: -1,            
+            currentMime: -1,
+            running: true,
            /**
             * The user supplied callback for when finding plugin information is complete            
             */
@@ -182,7 +183,7 @@ Pfs = {
             incrementalCallbackFn: incrementalCallback,
             startFindingNextPlugin: function() {
                 //Note unknown plugins before we start the next one
-                if (this.findPluginQueue.length > 0) {
+                if (this.running && this.findPluginQueue.length > 0) {
                     this.currentPlugin = this.findPluginQueue.pop();
                     this.currentMime = 0;
                     
@@ -198,6 +199,19 @@ Pfs = {
                 var that = this;
                 this.callPfs2(mime, function(){ that.pfs2Success.apply(that, arguments);},                                
                                     function(){ that.pfs2Error.apply(that, arguments);});  
+            },
+            /**
+             * Stops the finder from continuing to work it's way through plugins in the queue
+             * 
+             * Added to support web badges, where we are only interested in making PFS2 calls
+             * until we hit our first "bad" plugin. Then we stop making calls.
+             *
+             * Once this method has been called, the callee will still receive a completed callback
+             * @public
+             * @void
+             */
+            stopFindingPluginInfos: function() {
+               this.running = false;
             },
             /************* PFS2 below *************/
             callPfs2: function(mimeType, successFn, errorFn) {
@@ -351,7 +365,7 @@ Pfs = {
                                     break;
                             }                    
                         }                        
-                        if (searchPluginRelease && pfsInfo.releases.others) {
+                        if (this.running && searchPluginRelease && pfsInfo.releases.others) {
                             var others = pfsInfo.releases.others;
                             for (var k=0; searchPluginRelease && k < others.length; k++) {                                 
                                 if (! others[k].version) {
@@ -405,7 +419,7 @@ Pfs = {
                     } 
                     
                 }//for over the pfs2 JSON data
-                if (pluginMatch) {
+                if (this.running === false || pluginMatch) {
                     searchingResults = false;
                     
                     this.startFindingNextPlugin();    
