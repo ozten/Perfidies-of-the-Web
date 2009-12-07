@@ -7,18 +7,16 @@ $(document).ready(function(){
     Pfs.UI.navInfo = Pfs.UI.browserInfo();
     var browserPlugins = Pfs.UI.browserPlugins(navigator.plugins);
     
-    var nextImage   = "http://www.mozilla.com/img/tignish/plugincheck/webbadge/safe.png";
-    var updateImage = "http://www.mozilla.com/img/tignish/plugincheck/webbadge/upyourplug.png";
     var incrementalCallbackFn = function (data) {        
         if (data.status == Pfs.DISABLE ||            
             data.status == Pfs.VULNERABLE ||
             data.status == Pfs.OUTDATED) {
-            nextImage = updateImage;
+            pfsNextImage = pfsUpdateImage;
             this.stopFindingPluginInfos();
         } 
     };
     var finishedCallbackFn = function() {
-        $('#mozilla_plugin_checker_badge').attr('src', nextImage);
+        $('#mozilla_plugin_checker_badge').attr('src', pfsNextImage);
     };
     Pfs.findPluginInfos(Pfs.UI.navInfo, browserPlugins, incrementalCallbackFn, finishedCallbackFn);
 });
