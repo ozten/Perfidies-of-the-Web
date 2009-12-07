@@ -32,9 +32,19 @@ cat $PERFIDIES/web.js >>                    js/plugincheck_badge.js
 cat $PERFIDIES/plugincheck_badge.js >>      js/plugincheck_badge.js
 cp  $PERFIDIES/notice.txt js/plugincheck_badge.min.js
 
-# remove whitespace for HTTP POST
-~/bin/jsmin < js/plugincheck_badge.js >> js/plugincheck_badge.post.js
-$PERFIDIES/closure_compiler.php /home/aking/mozilla.com/js/plugincheck_badge.post.js >> js/plugincheck_badge.min.js
-rm js/plugincheck_badge.post.js
+# Pick one of the two following minimizers...
+# Used Google Closure Compiler for a release, but then on 11/23 with no
+# code change, it's output broke the script ;)
 
+# BEGIN Using jsmin
+~/bin/jsmin < js/plugincheck_badge.js >> js/plugincheck_badge.min.js
 mv js/plugincheck_badge.min.js js/plugincheck_badge.js
+# END Using jsmin
+
+# BEGIN Using Google Closure Compiler...
+# remove whitespace for HTTP POST
+#~/bin/jsmin < js/plugincheck_badge.js >> js/plugincheck_badge.post.js
+#$PERFIDIES/closure_compiler.php /home/aking/mozilla.com/js/plugincheck_badge.post.js >> js/plugincheck_badge.min.js
+#rm js/plugincheck_badge.post.js
+#mv js/plugincheck_badge.min.js js/plugincheck_badge.js
+# END Using Google Closure Compiler...
