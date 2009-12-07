@@ -64,13 +64,16 @@
         }
     };
     
-    $('#pfs-status').html("Checking with Mozilla HQ to check your plugins <img class='progress' src='/img/tignish/plugincheck/ajax-loader.gif' alt='Loading Data' />");
+    var loadingCopy = Pfs_internal[0];
+    var loadingAlt = Pfs_internal[1];
+    $('#pfs-status').html(loadingCopy + " <img class='progress' src='/img/tignish/plugincheck/ajax-loader.gif' alt='" + loadingAlt + "' />");    
     var states = {};
-    states[Pfs.VULNERABLE] = {c:"orange", l:"Update Now",  s:"Vulnerable",             code: Pfs.VULNERABLE};
-    states[Pfs.DISABLE] =    {c:"orange", l:"Disable Now", s:"Vulnerable No Fix",      code: Pfs.DISABLE};
-    states[Pfs.OUTDATED] =   {c:"yellow", l:"Update",      s:"Outdated Version",       code: Pfs.OUTDATED};
-    states[Pfs.CURRENT] =    {c:"green",  l:"Up to Date",  s:"REPLACE WITH VERSION",            code: Pfs.CURRENT};
-    states[Pfs.UNKNOWN] =    {c:"grey",   l:"Research",    s:"Unable to Detect Plugin Version", code: Pfs.UNKNOWN};
+    states[Pfs.VULNERABLE] = {c:"orange", l: Pfs_internal[5],  s: Pfs_internal[6], code:  Pfs.VULNERABLE};
+    states[Pfs.DISABLE] =    {c:"orange", l: Pfs_internal[3],  s: Pfs_internal[4], code:  Pfs.DISABLE};
+    states[Pfs.OUTDATED] =   {c:"yellow", l: Pfs_internal[7],  s: Pfs_internal[8], code:  Pfs.OUTDATED};
+    // no plugin_latest_status... It is set to the Version number detected
+    states[Pfs.CURRENT] =    {c:"green",  l: Pfs_internal[9],  s: undefined, code:        Pfs.CURRENT}; 
+    states[Pfs.UNKNOWN] =    {c:"grey",   l: Pfs_internal[10], s: Pfs_internal[11], code: Pfs.UNKNOWN};
     
     var reportPlugins = function(pInfo, status) {
         if (status == Pfs.NEWER) {
@@ -106,7 +109,7 @@
             updateDisplayId = undefined;
         }
     }
-    var addBySorting = function(el, status) {        
+    var addBySorting = function(el, status) {
         if (Pfs.DISABLE == status) {
             //worst
             var r = $('tr.plugin.' + Pfs.DISABLE + ':first').before(el).size();
@@ -219,6 +222,7 @@
     var browserPlugins = Pfs.UI.browserPlugins(navigator.plugins);
     /* track plugins in the UI */
     var total = 0; var disabled = 0; var vulnerables = 0; var outdated = 0;
+    
     /**
      * incremental callback function
      */
@@ -250,6 +254,7 @@
                     outdated++;
                     break;
             }
+            
             var copy = states[data.status];
             if (Pfs.CURRENT === data.status) {
                 copy.s = Pfs.parseVersion(data.pluginInfo.plugin).join('.');;
@@ -262,7 +267,9 @@
             Pfs.e("We have an unknown status code when displaying UI.", data);
         }        
     };
-    var unknownPluginUrl = function(pluginName) { return "http://www.google.com/search?q=" + escape("current version plugin " + pluginName);}
+        
+    var unknownPluginUrl = function(pluginName) { return Pfs_internal[18] + escape(Pfs_internal[19] + " " + pluginName);}
+    
     var finishedCallbackFn = function(){
         for(var i=0; i < Pfs.UI.unknownVersionPlugins.length; i++) {
             var unknownPlugin = Pfs.UI.unknownVersionPlugins[i];
@@ -276,25 +283,25 @@
         var worstStatus = undefined;
         if (disabled > 0) {
             worstCount = disabled;
-            worstStatus = "vulnerable wih no update available";
+            worstStatus = Pfs_internal[13];
         } else if (vulnerables > 0) {
             worstCount = vulnerables;
-            worstStatus = "vulnerable";
+            worstStatus = Pfs_internal[14];
         } else if (outdated > 0) {
             worstCount = outdated;
-            worstStatus = "potentially vulnerable";
+            worstStatus = Pfs_internal[15];
         }
         
         if (worstStatus !== undefined) {
-            $('#pfs-status').html(worstCount + " of " + total + " plugins are " + worstStatus)
-                            .addClass('vulnerable');
+            $('#pfs-status').html(worstCount + " " + Pfs_internal[12] + " " + total + " " + worstStatus)
+                            .addClass(Pfs.VULNERABLE);
         } else if ($('.plugin').size() == 0) {
-            $('#pfs-status').html("No plugins were detected");
+            $('#pfs-status').html(Pfs_internal[17]);
         } else {
-            $('#pfs-status').html("The plugins listed below are up to date");
+            $('#pfs-status').html(Pfs_internal[16]);
         }
         if ($('.plugin:hidden').size() > 0) {
-            $('.view-all-toggle').html("<a href='#'>View All Your Plugins</a>").click(function(){
+            $('.view-all-toggle').html("<a href='#'>" + Pfs_internal[2] + "</a>").click(function(){
                 if (updateDisplayId === undefined) {
                     updateDisplayId = setTimeout(updateDisplay, 300);
                 }
