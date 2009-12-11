@@ -13,7 +13,8 @@ echo "building plugincheck.js"
 rm -f js/plugincheck.js
 
 cat $PERFIDIES/lib/plugindetect.js >>       js/plugincheck.js
-cat $PERFIDIES/lib/jquery-1.3.2.min.js >>   js/plugincheck.js
+# Bug#535030 use mozilla.com's jquery
+#cat $PERFIDIES/lib/jquery-1.3.2.min.js >>   js/plugincheck.js
 cat $PERFIDIES/lib/jquery.jsonp-1.1.0.js >> js/plugincheck.js
 cat $PERFIDIES/perfidies.js >>              js/plugincheck.js
 cat $PERFIDIES/messages.js >>               js/plugincheck.js
