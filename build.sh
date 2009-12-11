@@ -6,6 +6,9 @@
 
 source build.conf
 cd $MOZILLA_COM
+echo "Checking for bad uses of jQuery"
+grep "$." *.js | grep -v "Pfs.$."
+
 echo "building plugincheck.js"
 rm -f js/plugincheck.js
 

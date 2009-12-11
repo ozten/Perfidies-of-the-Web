@@ -66,7 +66,7 @@
     
     var loadingCopy = Pfs_internal[0];
     var loadingAlt = Pfs_internal[1];
-    $('#pfs-status').html(loadingCopy + " <img class='progress' src='/img/tignish/plugincheck/ajax-loader.gif' alt='" + loadingAlt + "' />");    
+    Pfs.$('#pfs-status').html(loadingCopy + " <img class='progress' src='/img/tignish/plugincheck/ajax-loader.gif' alt='" + loadingAlt + "' />");    
     var states = {};
     states[Pfs.VULNERABLE] = {c:"orange", l: Pfs_internal[5],  s: Pfs_internal[6], code:  Pfs.VULNERABLE};
     states[Pfs.DISABLE] =    {c:"orange", l: Pfs_internal[3],  s: Pfs_internal[4], code:  Pfs.DISABLE};
@@ -85,9 +85,9 @@
         var reportData = {name: plugin.name, description: plugin.description};
         var detectedVersion = Pfs.parseVersion(
                                 Pfs.UI.namePlusVersion(plugin.name, plugin.description)).join('.');
-        $.extend(reportData, Pfs.UI.navInfo, {version: detectedVersion, mimes: pInfo.mimes});        
+        Pfs.$.extend(reportData, Pfs.UI.navInfo, {version: detectedVersion, mimes: pInfo.mimes});        
         if (plugin) { 
-            $('body').append("<img src='" + Pfs.endpoint + status + "_plugin.gif?" + $.param(reportData) +
+            Pfs.$('body').append("<img src='" + Pfs.endpoint + status + "_plugin.gif?" + Pfs.$.param(reportData) +
                              "' width='1' height='1' />");
         }           
     }
@@ -96,12 +96,12 @@
     var showAll = false;
     var updateDisplay = function() {
         if (updateDisplayId !== undefined) {
-            var criticalPlugins = $('tr.plugin.' + Pfs.DISABLE).add('tr.plugin.' + Pfs.VULNERABLE).add('tr.plugin.' + Pfs.OUTDATED);
+            var criticalPlugins = Pfs.$('tr.plugin.' + Pfs.DISABLE).add('tr.plugin.' + Pfs.VULNERABLE).add('tr.plugin.' + Pfs.OUTDATED);
             criticalPlugins.show();
             if (showAll == false && criticalPlugins.size() > Pfs.UI.MAX_VISIBLE) {
-                $('tr.plugin.' + Pfs.CURRENT).hide();
+                Pfs.$('tr.plugin.' + Pfs.CURRENT).hide();
             }
-            $('tr.plugin').removeClass('odd')
+            Pfs.$('tr.plugin').removeClass('odd')
                           .filter(':visible')
                           .filter(':odd')
                           .addClass('odd');
@@ -112,30 +112,30 @@
     var addBySorting = function(el, status) {
         if (Pfs.DISABLE == status) {
             //worst
-            var r = $('tr.plugin.' + Pfs.DISABLE + ':first').before(el).size();
+            var r = Pfs.$('tr.plugin.' + Pfs.DISABLE + ':first').before(el).size();
             if (r == 0) {
                 // no disabled yet, go before any other plugin
-                r = $('tr.plugin:first').before(el).size();
+                r = Pfs.$('tr.plugin:first').before(el).size();
                 if (r == 0) {
                     //no other plugins, be the first plugin
-                    $('#plugin-template').parent().append(el);
+                    Pfs.$('#plugin-template').parent().append(el);
                 }
             }
         } else if(Pfs.VULNERABLE == status) {
             //bad
-            var r = $('tr.plugin.' + Pfs.DISABLE + ':last').after(el).size();
+            var r = Pfs.$('tr.plugin.' + Pfs.DISABLE + ':last').after(el).size();
             if (r == 0) {
                 // no disabled yet, go before any other vulnerable plugin
-                r = $('tr.plugin.' + Pfs.VULNERABLE + ':first').before(el).size();
+                r = Pfs.$('tr.plugin.' + Pfs.VULNERABLE + ':first').before(el).size();
                 if (r == 0) {
                     // no vulnerable yet, go before any other outdated plugin
-                    r = $('tr.plugin.' + Pfs.OUTDATED + ':first').before(el).size();
+                    r = Pfs.$('tr.plugin.' + Pfs.OUTDATED + ':first').before(el).size();
                     if (r==0) {
                         // no outdated yet, go before all others
-                        var r = $('tr.plugin:first').before(el).size();
+                        var r = Pfs.$('tr.plugin:first').before(el).size();
                         if (r == 0) {
                             //no other plugins, be the first plugin
-                            $('#plugin-template').parent().append(el);                
+                            Pfs.$('#plugin-template').parent().append(el);                
                         }
                     }
                     
@@ -143,34 +143,34 @@
             }
         } else if(Pfs.OUTDATED == status) {
             //meh
-            var r = $('tr.plugin.' + Pfs.OUTDATED + ':first').before(el).size();
+            var r = Pfs.$('tr.plugin.' + Pfs.OUTDATED + ':first').before(el).size();
             if (r == 0) {
-                var r = $('tr.plugin.' + Pfs.CURRENT + ':first').before(el).size();
+                var r = Pfs.$('tr.plugin.' + Pfs.CURRENT + ':first').before(el).size();
                 if (r == 0) {
-                    r = $('tr.plugin:last').after(el).size();
+                    r = Pfs.$('tr.plugin:last').after(el).size();
                     if (r == 0) {
                         //no other plugins, be the first plugin
-                        $('#plugin-template').parent().append(el);
+                        Pfs.$('#plugin-template').parent().append(el);
                     }
                 }
             }
         } else if(Pfs.CURRENT == status) {
             //best case we are up to date, stick it after the last non unknown plugin in the list
-            var r = $('tr.plugin').not('.' + Pfs.UNKNOWN).filter(':last').after(el).size();
+            var r = Pfs.$('tr.plugin').not('.' + Pfs.UNKNOWN).filter(':last').after(el).size();
             if (r == 0) {
-                r = $('tr.plugin').filter(':first').before(el).size();
+                r = Pfs.$('tr.plugin').filter(':first').before(el).size();
                 if (r == 0) {
                     //no other plugins, be the first plugin
-                    $('#plugin-template').parent().append(el);                    
+                    Pfs.$('#plugin-template').parent().append(el);                    
                 }
                 
             }
         } else if(Pfs.UNKNOWN == status) {
             //unknown plugins go last, not much help to the user
-            var r = $('tr.plugin:last').after(el).size();
+            var r = Pfs.$('tr.plugin:last').after(el).size();
             if (r == 0) {
                 //no other plugins, be the first plugin
-                $('#plugin-template').parent().append(el);                
+                Pfs.$('#plugin-template').parent().append(el);                
             }
         } else {
             Pfs.e("Sorting to display, unknown status", status);
@@ -180,7 +180,7 @@
         }
     }
     var displayPlugins = function(plugin, statusCopy, url, rowCount) {
-        var html = $('#plugin-template').clone();
+        var html = Pfs.$('#plugin-template').clone();
         html.removeAttr('id')
             .addClass('plugin')
             .addClass(statusCopy.code);
@@ -190,17 +190,17 @@
             html.addClass('odd');            
         }        
         
-        $('.name a', html).text(plugin.name);        
-        $('.version', html).html(plugin.description);
-        $('.icon', html).attr('src', iconFor(plugin.name));
+        Pfs.$('.name a', html).text(plugin.name);        
+        Pfs.$('.version', html).html(plugin.description);
+        Pfs.$('.icon', html).attr('src', iconFor(plugin.name));
         
-        $('.status', html).text(statusCopy.s);
+        Pfs.$('.status', html).text(statusCopy.s);
          
-        $('.action a', html).addClass(statusCopy.c);
-        $('.action a span', html).text(statusCopy.l);
+        Pfs.$('.action a', html).addClass(statusCopy.c);
+        Pfs.$('.action a span', html).text(statusCopy.l);
         if (url !== undefined) {
-            $('.name a', html).attr('href', url);
-            $('.action a', html).attr('href', url);                
+            Pfs.$('.name a', html).attr('href', url);
+            Pfs.$('.action a', html).attr('href', url);                
         }            
         
         
@@ -293,21 +293,21 @@
         }
         
         if (worstStatus !== undefined) {
-            $('#pfs-status').html(worstCount + " " + Pfs_internal[12] + " " + total + " " + worstStatus)
+            Pfs.$('#pfs-status').html(worstCount + " " + Pfs_internal[12] + " " + total + " " + worstStatus)
                             .addClass(Pfs.VULNERABLE);
-        } else if ($('.plugin').size() == 0) {
-            $('#pfs-status').html(Pfs_internal[17]);
+        } else if (Pfs.$('.plugin').size() == 0) {
+            Pfs.$('#pfs-status').html(Pfs_internal[17]);
         } else {
-            $('#pfs-status').html(Pfs_internal[16]);
+            Pfs.$('#pfs-status').html(Pfs_internal[16]);
         }
-        if ($('.plugin:hidden').size() > 0) {
-            $('.view-all-toggle').html("<a href='#'>" + Pfs_internal[2] + "</a>").click(function(){
+        if (Pfs.$('.plugin:hidden').size() > 0) {
+            Pfs.$('.view-all-toggle').html("<a href='#'>" + Pfs_internal[2] + "</a>").click(function(){
                 if (updateDisplayId === undefined) {
                     updateDisplayId = setTimeout(updateDisplay, 300);
                 }
                 showAll = true;
-                $('tr.plugin:hidden').show();
-                $('.view-all-toggle').remove();
+                Pfs.$('tr.plugin:hidden').show();
+                Pfs.$('.view-all-toggle').remove();
                 return false;    
             });    
         }

@@ -2,7 +2,7 @@
    for the plugin detection part of the page */
 Pfs_internal = [];
 // General Copy
-Pfs_internal[0] = "Checking with Mozilla HQ to check your plugins";
+Pfs_internal[0] = "Checking with Mozilla on the status of your plugins";
 Pfs_internal[1] = "Loading Data";
 Pfs_internal[2] = "View All Your Plugins";
 

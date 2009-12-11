@@ -219,9 +219,9 @@ Pfs = {
                     Pfs.e("You must configure Pfs.endpoint before using this library");
                     return false;
                 }
-                var args = $.extend({}, {mimetype: mimeType}, navigatorInfo);
+                var args = Pfs.$.extend({}, {mimetype: mimeType}, navigatorInfo);
                 
-                $.jsonp({
+                Pfs.$.jsonp({
                     cache: true,
                     callbackParameter: "callback",
                     data: args,
@@ -300,7 +300,7 @@ Pfs = {
                         for(var j=0; searchingPluginInfo && j < pfsInfo.aliases.literal.length; j++) {
                             var litName = pfsInfo.aliases.literal[j];
                             
-                            if ($.trim(currentPluginName) == $.trim(litName)) {
+                            if (Pfs.$.trim(currentPluginName) == Pfs.$.trim(litName)) {
                                 searchingResults = false;
                                 searchingPluginInfo = false;
                                 pluginMatch = true;
@@ -436,9 +436,9 @@ Pfs = {
                 xhr.retry = xhr.retry -1;
                 if (xhr.retry >= 0) {
                     Pfs.e("Error Type [", textStatus, "] retrying on mime/plugin ", xhr, textStatus, errorThrown, this.currentPlugin.mimes[this.currentMime], this.currentPlugin);
-                    $.jsonp(xhr);
+                    Pfs.$.jsonp(xhr);
                 } else {
-                    $('table.status').replaceWith($('#error-panel').show());
+                    Pfs.$('table.status').replaceWith(Pfs.$('#error-panel').show());
                     Pfs.e("Doh failed on mime/plugin ", xhr, textStatus, errorThrown, this.currentPlugin.mimes[this.currentMime], this.currentPlugin);    
                 }
             }            
@@ -522,7 +522,7 @@ Pfs = {
         }
         
         for(var i=0; i < tokens.length; i++){
-            var token = $.trim(tokens[i]);
+            var token = Pfs.$.trim(tokens[i]);
             if (token.length === 0) {
                 continue;
             }
@@ -598,7 +598,7 @@ Pfs = {
      * @private
      */
     shouldSkipPluginNamed: function(name) {
-        return this.skipPluginsNamed.indexOf($.trim(name)) >= 0;
+        return this.skipPluginsNamed.indexOf(Pfs.$.trim(name)) >= 0;
     },
      
     /**
@@ -637,3 +637,6 @@ Pfs = {
      */
     i: function(msg) {if (window.console) {console.info.apply(console, arguments);}}
 };
+//Bug#535030 - All PFS scripts will use Pfs.$ to access jQuery, so that additional inclusions of
+// jQuery or a conflicting  library won't break jQuery or it's plugins
+Pfs.$ = jQuery.noConflict();

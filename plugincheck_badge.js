@@ -1,6 +1,6 @@
-$(document).ready(function(){
+Pfs.$(document).ready(function(){
     // PFS2 only works on Firefox for now...
-    if ($.browser.mozilla !== true) {
+    if (Pfs.$.browser.mozilla !== true) {
         return; 
     }
     Pfs.endpoint = window.location.protocol + "//" + 'pfs2.mozilla.org/';
@@ -16,7 +16,7 @@ $(document).ready(function(){
         } 
     };
     var finishedCallbackFn = function() {
-        $('#mozilla_plugin_checker_badge').attr('src', pfsNextImage);
+        Pfs.$('#mozilla_plugin_checker_badge').attr('src', pfsNextImage);
     };
     Pfs.findPluginInfos(Pfs.UI.navInfo, browserPlugins, incrementalCallbackFn, finishedCallbackFn);
 });

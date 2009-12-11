@@ -152,7 +152,7 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
                             "libtotem-narrowspace-plugin.so",
                             "libtotem-gmp-plugin.so"],
     shouldSkipPluginFileNamed: function(filename) {
-        return this.skipPluginsFilesNamed.indexOf($.trim(filename)) >= 0;
+        return this.skipPluginsFilesNamed.indexOf(Pfs.$.trim(filename)) >= 0;
     },
     /**
      * @private
