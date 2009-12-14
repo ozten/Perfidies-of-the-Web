@@ -42,7 +42,6 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
  * via a web page.
  */
  Pfs.UI = {
-    MAX_VISIBLE: 5,
     unknownVersionPlugins: [],
     /**
      * Creates a navigatorInfo object from the browser's navigator object

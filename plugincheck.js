@@ -98,9 +98,6 @@
         if (updateDisplayId !== undefined) {
             var criticalPlugins = Pfs.$('tr.plugin.' + Pfs.DISABLE).add('tr.plugin.' + Pfs.VULNERABLE).add('tr.plugin.' + Pfs.OUTDATED);
             criticalPlugins.show();
-            if (showAll == false && criticalPlugins.size() > Pfs.UI.MAX_VISIBLE) {
-                Pfs.$('tr.plugin.' + Pfs.CURRENT).hide();
-            }
             Pfs.$('tr.plugin').removeClass('odd')
                           .filter(':visible')
                           .filter(':odd')
@@ -206,9 +203,9 @@
         
         addBySorting(html, statusCopy.code);
         
-        if (Pfs.UI.MAX_VISIBLE > total) {
-            html.show();                
-        }        
+        
+        html.show();                
+                
         /*<tr id="plugin-template" class="odd" style="display: none">
                     <td>
                         <img class="icon" src="/img/tignish/plugincheck/icon-divx.png" alt="DivX Icon" />
