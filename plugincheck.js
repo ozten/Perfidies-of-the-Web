@@ -313,7 +313,7 @@
         Pfs.$('tr.unknown').map(function(){
             var name = Pfs.$('h4.name a', this).text();            
             if (name.indexOf("Adobe Acrobat") >= 0) {            
-                Pfs.$(this).after("<tr><td colspan='3'><div style='padding-left: 73px'><strong>Notice:</strong> Adobe recommend <a href='http://get.adobe.com/reader/'>Adobe Reader 9.3</a></div></td></tr>");
+                Pfs.$(this).after("<tr><td colspan='3'><div style='padding-left: 73px'><strong>Notice:</strong> Adobe recommend <a href='http://get.adobe.com/reader/'>Acrobat Reader 9.3</a></div></td></tr>");
             }});
     };
     //Used in regression testing
