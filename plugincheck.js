@@ -204,6 +204,7 @@
         addBySorting(html, statusCopy.code);
         
         
+        
         html.show();                
                 
         /*<tr id="plugin-template" class="odd" style="display: none">
@@ -308,7 +309,12 @@
                 return false;    
             });    
         }
-            
+        //Bug#524460 adobe reader plugin updates
+        Pfs.$('tr.unknown').map(function(){
+            var name = Pfs.$('h4.name a', this).text();            
+            if (name.indexOf("Adobe Acrobat") >= 0) {            
+                Pfs.$(this).after("<tr><td colspan='3'><div style='padding-left: 73px'><strong>Notice:</strong> Adobe recommend <a href='http://get.adobe.com/reader/'>Adobe Reader 9.3</a></div></td></tr>");
+            }});
     };
     //Used in regression testing
     Pfs.UI.displayPlugin = incrementalCallbackFn;
