@@ -40,21 +40,6 @@ Pfs.$(document).ready(function(){
             info.meta.name = plugin.name;
         }
         
-        // TODO: This whole patch of code is... browserPlugins([plugin])... no?
-        var rawVersion = Pfs.UI.namePlusVersion(plugin.name, plugin.description);
-        if (rawVersion) {
-            var versionChain = Pfs.parseVersion(rawVersion);
-            info.meta.version = versionChain.join('.');
-            if (versionChain.length > 0) {
-                plugin.dVersion = info.meta.version;  
-            } else {
-                plugin.dVersion = "Not Detected";
-            }
-            
-        } else {
-            plugin.dVersion = "Not Detected";
-        }
-        
         if (navigator.oscpu){info.releases[0].os_name =  navigator.oscpu;}
         var masterMime = Pfs.createMasterMime();
                           
@@ -68,6 +53,22 @@ Pfs.$(document).ready(function(){
                 } 
             }
         }
+
+        // TODO: This whole patch of code is... browserPlugins([plugin])... no?
+        var rawVersion = Pfs.UI.namePlusVersion(plugin.name, plugin.description, info.mimes);
+        if (rawVersion) {
+            var versionChain = Pfs.parseVersion(rawVersion);
+            info.meta.version = versionChain.join('.');
+            if (versionChain.length > 0) {
+                plugin.dVersion = info.meta.version;  
+            } else {
+                plugin.dVersion = "Not Detected";
+            }
+            
+        } else {
+            plugin.dVersion = "Not Detected";
+        }
+        
         return JSON.stringify(info);
     };
     var pluginsSeen = [];

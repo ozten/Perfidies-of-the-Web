@@ -95,11 +95,6 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
                     rawPlugin[m] = plugins[i][m];
                 }                
             }
-            pluginInfo = Pfs.UI.namePlusVersion(rawPlugin.name, rawPlugin.description);            
-            if (Pfs.UI.hasVersionInfo(pluginInfo) === false) {
-                Pfs.UI.unknownVersionPlugins.push(rawPlugin);
-                continue;
-            }
             var mimes = [];
             var marcelMrceau = Pfs.createMasterMime(); /* I hate mimes */
             for (var j=0; j < rawPlugin.length; j++) {
@@ -112,6 +107,11 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
                     } 
                 }            
             }            
+            pluginInfo = Pfs.UI.namePlusVersion(rawPlugin.name, rawPlugin.description, mimes);            
+            if (Pfs.UI.hasVersionInfo(pluginInfo) === false) {
+                Pfs.UI.unknownVersionPlugins.push(rawPlugin);
+                continue;
+            }
             var mimeValues = [];
             if (mimes.length > 0) {
                 var mimeValue = mimes[0];
@@ -164,8 +164,8 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
         }
     },
     /**
-     * Given a name and description, returns the name and version
-     * of the plugin. This may include special handeling
+     * Given a name, description, and mime types, returns the name
+     * and version * of the plugin. This may include special handeling *
      * for known plugins using the PluginDetect or other hooks.
      *
      * This function can be used to format the version property of the
@@ -176,7 +176,7 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
      *       It's not so much a name hook as override version detection
      * @returns {string} - The name of the plugin, it may be enhanced via PluginDetect or other hooks
      */
-    namePlusVersion: function(name, description) {
+    namePlusVersion: function(name, description, mimes) {
         if (/Java.*/.test(name)) {
             //Bug#519823 If we want to start using Applets again
             var j =  PluginDetect.getVersion('Java', 'getJavaInfo.jar', [0, 0, 0]);
@@ -206,6 +206,21 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
             } else {
                 return name;
             }
+        } else if(/.*BrowserPlus.*/.test(name)) {
+            var q = "";
+            if (mimes) {
+                re_trailing_version = /_([0-9]+\.[0-9]+\.[0-9]+)$/;
+                for (mime in mimes) {
+                    mime = mimes[mime];
+                    var r = re_trailing_version.exec(mime)
+                    if (r) {
+                        q = r[1];
+                        break;
+                    }
+                }
+            }
+            q = name + " " + q;
+            return q;
         } else {
             // General case
             if (name && this.hasVersionInfo(name)) {                
