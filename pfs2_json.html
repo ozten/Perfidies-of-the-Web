@@ -10,7 +10,7 @@
   <script src="web.js"></script>
   <script src="plugincheck.js"></script>
   <script>
-$(document).ready(function(){
+Pfs.$(document).ready(function(){
     Pfs.endpoint = 'http://pfs2.stage.mozilla.com/';
     /**
      * PFS2 supports loading plugin data that is encoded in
@@ -74,7 +74,7 @@ $(document).ready(function(){
     for(var i=0; i<= window.navigator.plugins.length; i++) {
         var plugin = window.navigator.plugins[i];
         if (plugin && pluginsSeen.indexOf(plugin.name) == -1) {
-            $('#nav').append("<li><a href='#plugin" + i + "'>" + plugin.name + "</a></li>");
+            Pfs.$('#nav').append("<li><a href='#plugin" + i + "'>" + plugin.name + "</a></li>");
             pluginsSeen.push(plugin.name);
         }
         
@@ -84,7 +84,7 @@ $(document).ready(function(){
         var plugin = window.navigator.plugins[i];
         if (plugin && pluginsSeen.indexOf(plugin.name) == -1) {
             var info = dumpPlugin2Pfs2(plugin);
-            $('#main table tbody').append("<tr id='plugin" + i + "'><td>Name: " + plugin.name + "<br />Version: " + plugin.dVersion + "</td><td><textarea cols=80 rows=7>" + info + "</textarea></td></tr>");
+            Pfs.$('#main table tbody').append("<tr id='plugin" + i + "'><td>Name: " + plugin.name + "<br />Version: " + plugin.dVersion + "</td><td><textarea cols=80 rows=7>" + info + "</textarea></td></tr>");
             pluginsSeen.push(plugin.name);
         }
     }
