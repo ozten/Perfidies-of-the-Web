@@ -47,15 +47,27 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
      * Creates a navigatorInfo object from the browser's navigator object
      */
     browserInfo: function() {
-        var parts = navigator.userAgent.split('/');
-        var version = parts.length > 1 ? parts[parts.length - 1] : parts[0];
-        return {
-            appID: '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}',
-            appRelease: version,
-            appVersion: navigator.buildID,
-            clientOS: navigator.oscpu,
-            chromeLocale: 'en-US'            
+        var detected = BrowserDetect.detect(),
+            appID, version_detection_scheme;
+
+        if ('Firefox' == detected.browser || 'Minefield' == detected.browser) {
+            appID = '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}';
+        } else {
+            // TODO: More appIDs here?
+            appID = detected.browser;
         }
+
+        // TODO: invent more schemes here, eg. Firefox 3.6 has plugin versions
+        version_detection_scheme = 'original';
+
+        return {
+            appID:        appID,
+            appRelease:   detected.version,
+            appVersion:   detected.build,
+            clientOS:     navigator.oscpu || navigator.platform,
+            chromeLocale: navigator.language,
+            detection:    version_detection_scheme
+        };
     },
     /**
      * Cleans up the navigator.plugins object into a list of plugin2mimeTypes

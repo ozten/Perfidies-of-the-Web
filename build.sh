@@ -13,8 +13,11 @@ echo "building plugincheck.js"
 rm -f js/plugincheck.js
 
 cat $PERFIDIES/lib/plugindetect.js >>       js/plugincheck.js
+
 # Bug#535030 use mozilla.com's jquery
 #cat $PERFIDIES/lib/jquery-1.3.2.min.js >>   js/plugincheck.js
+cat $PERFIDIES/lib/browserdetect.js >>      js/plugincheck.js
+cat $PERFIDIES/lib/jquery-1.3.2.min.js >>   js/plugincheck.js
 cat $PERFIDIES/lib/jquery.jsonp-1.1.0.js >> js/plugincheck.js
 cat $PERFIDIES/perfidies.js >>              js/plugincheck.js
 cat $PERFIDIES/messages.js >>               js/plugincheck.js
@@ -30,6 +33,7 @@ echo "building plugincheck_badge.js"
 rm -f js/plugincheck_badge.js
 
 cat $PERFIDIES/lib/plugindetect.js >>       js/plugincheck_badge.js
+cat $PERFIDIES/lib/browserdetect.js >>      js/plugincheck_badge.js
 cat $PERFIDIES/lib/jquery-1.3.2.min.js >>   js/plugincheck_badge.js
 cat $PERFIDIES/lib/jquery.jsonp-1.1.0.js >> js/plugincheck_badge.js
 cat $PERFIDIES/perfidies.js >>              js/plugincheck_badge.js
