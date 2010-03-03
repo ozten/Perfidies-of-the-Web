@@ -85,7 +85,7 @@ Pfs.$(document).ready(function(){
         var plugin = window.navigator.plugins[i];
         if (plugin && pluginsSeen.indexOf(plugin.name) == -1) {
             var info = dumpPlugin2Pfs2(plugin);
-            Pfs.$('#main table tbody').append("<tr id='plugin" + i + "'><td>Name: " + plugin.name + "<br />Version: " + plugin.dVersion + "</td><td><textarea cols=80 rows=7>" + info + "</textarea></td></tr>");
+            Pfs.$('#main table tbody').append("<tr id='plugin" + i + "'><td>Name: " + plugin.name + "<br />Detected Version: " + plugin.dVersion + "<br />plugin.version=" + plugin.version + "</td><td><textarea cols=80 rows=7>" + info + "</textarea></td></tr>");
             pluginsSeen.push(plugin.name);
         }
     }
