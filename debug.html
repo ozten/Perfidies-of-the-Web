@@ -1,103 +1,123 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" 
                     "http://www.w3.org/TR/html4/loose.dtd">
 <html>
-<head><title>Plugin PFS2 JSON</title>
+<head><title>Perfidies Debugging for Browsers and Plugins</title>
   <script src="lib/jquery-1.3.2.min.js"></script>
+  <script src="lib/browserdetect.js"></script>
   <script src="lib/plugindetect.js"></script>
+  <script src="lib/jquery-1.3.2.min.js"></script>
   <script src="lib/jquery.jsonp-1.1.0.js"></script>
   <script src="perfidies.js"></script>
   <script src="messages.js"></script>
   <script src="web.js"></script>
   <script src="plugincheck.js"></script>
-  <script>
-Pfs.$(document).ready(function(){
-    Pfs.endpoint = 'http://pfs2.stage.mozilla.com/';
-    /**
-     * PFS2 supports loading plugin data that is encoded in
-     * JSON files. This function can be used to export a plugin
-     * to serve as a template for that service.
-     * 
-     * @param plugin {object} A plugin
-     * @returns {string} The JSON dump of the plugin
-     */
-    var dumpPlugin2Pfs2 = function(plugin) {
-        var info = { "meta": { "pfs_id": "", "vendor": "", "name": "", "platform": { "app_id": "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}" }, 
-                               "url": "", "manual_installation_url": "", "version": "",  "license_url": "", "installer_shows_ui": ""},
-                     "aliases": {"literal": [],"regex": []},
-                     "releases": [{ "guid": "", "license_url": "", "os_name": "", "xpi_location": "" }], 
-                     "mimes": []};
-        var addMime = function (suffix, name, description) {
-            suffix = suffix ? suffix : "";            
-            name = name ? name : "";
-            description = description ? description : "" ;
-            return {"suffixes": suffix, "name": name,"description": description};
-        }
-        if (plugin.description) {            
-            info.description = plugin.description;
-        }        
-        if (plugin.name) {
-            info.aliases.literal.push(plugin.name);
-            info.meta.name = plugin.name;
-        }
-        
-        if (navigator.oscpu){info.releases[0].os_name =  navigator.oscpu;}
-        var masterMime = Pfs.createMasterMime();
-                          
-        for (var j=0; j < plugin.length; j++) {
-            var mimeType = plugin[j].type;
-            if (mimeType) {
-                var m = masterMime.normalize(mimeType);
-                if (info.mimes[m] === undefined) {
-                    info.mimes[m] = true;
-                    info.mimes.push(m);
-                } 
-            }
-        }
 
-        // TODO: This whole patch of code is... browserPlugins([plugin])... no?
-        var rawVersion = Pfs.UI.namePlusVersion(plugin.name, plugin.description, info.mimes);
-        if (rawVersion) {
-            var versionChain = Pfs.parseVersion(rawVersion);
-            info.meta.version = versionChain.join('.');
-            if (versionChain.length > 0) {
-                plugin.dVersion = info.meta.version;  
-            } else {
-                plugin.dVersion = "Not Detected";
-            }
-            
-        } else {
-            plugin.dVersion = "Not Detected";
-        }
-        
-        return JSON.stringify(info);
+  <script src="tools/json2.js"></script>
+  <script>
+$(document).ready(function(){
+
+    var browserInfo = Pfs.UI.browserInfo();
+    for (var key in browserInfo) {
+        $('#' + key).text(browserInfo[key]);
+    }
+
+    var ppkBrowserInfo = BrowserDetect.detect();
+    for (var key in ppkBrowserInfo) {
+        $('#ppk-' + key).text(ppkBrowserInfo[key]);
+    }
+
+    var findOrMakePluginInfo = function(plugin, pluginInfos) {
+	// There are the pluginInfos that perfidies prepares
+        // and then there are unknown plugins.
+        for (var i=0; i < pluginInfos.length; i++) {
+            if (plugin.name === pluginInfos[i].raw.name) {
+                return pluginInfos[i];
+	    }
+	}
+        var mimes = [];
+        for (var i=0; i< plugin.length; i++) {
+	    mimes.push(plugin[i].type);
+	}
+        return {
+            raw: plugin,
+            mimes: mimes
+        };
     };
-    var pluginsSeen = [];
-    for(var i=0; i<= window.navigator.plugins.length; i++) {
-        var plugin = window.navigator.plugins[i];
-        if (plugin && pluginsSeen.indexOf(plugin.name) == -1) {
-            Pfs.$('#nav').append("<li><a href='#plugin" + i + "'>" + plugin.name + "</a></li>");
-            pluginsSeen.push(plugin.name);
-        }
+
+    if (window.navigator && window.navigator.plugins) {
+        $('#heading, #meta, #mime').hide();
+
+        /* Pfs.UI.browserPlugins gives us a subset of the user's
+           the navigator.plugins object has many more, including duplicates.
+           Since this is a debugging view.... We'll show both */
         
-    }
-    pluginsSeen = [];
-    for(var i=0; i<= window.navigator.plugins.length; i++) {
-        var plugin = window.navigator.plugins[i];
-        if (plugin && pluginsSeen.indexOf(plugin.name) == -1) {
-            var info = dumpPlugin2Pfs2(plugin);
-            Pfs.$('#main table tbody').append("<tr id='plugin" + i + "'><td>Name: " + plugin.name + "<br />Detected Version: " + plugin.dVersion + "<br />plugin.version=" + plugin.version + "</td><td><textarea cols=80 rows=7>" + info + "</textarea></td></tr>");
-            pluginsSeen.push(plugin.name);
+        var pluginInfos = Pfs.UI.browserPlugins(navigator.plugins);
+        var pluginNamesSeen = {};
+        for(var i=0; i<= navigator.plugins.length; i++) {
+            if (!navigator.plugins[i]) {
+                continue;
+	    }
+            if (pluginNamesSeen[navigator.plugins[i].name]) {
+                continue;
+	    } else {
+                pluginNamesSeen[navigator.plugins[i].name] = true;
+	    }
+	    var pluginInfo = findOrMakePluginInfo(navigator.plugins[i], pluginInfos);
+            
+            if (pluginInfo && pluginInfo.raw) {
+                $('#nav').append("<li><a href='#plugin" + i + "'>" + pluginInfo.raw.name + "</a></li>");
+		if ((i % 5) == 0) {
+		    var headingRow = $('#heading').clone();
+                    headingRow.show().attr('id', null);
+		    $('table').append(headingRow);
+                    
+		}
+                var metaRow = $('#meta').clone().attr('id', 'plugin' + i);
+	        var mimeTypeRow = $('#mime').clone().attr('id', 'pluginmime' + i);
+
+                var nameVersion = Pfs.UI.namePlusVersion(pluginInfo.raw.name, pluginInfo.raw.description, pluginInfo.raw.mimes);
+		var detectedVersion = Pfs.parseVersion(nameVersion);
+
+                $('.name',            metaRow).html(pluginInfo.raw.name);
+		$('.versionchain',    metaRow).html(JSON.stringify(detectedVersion));
+                $('.versionproperty', metaRow).html(pluginInfo.raw.version);
+                $('.nameversion',     metaRow).html(nameVersion);
+                $('.filename',        metaRow).html(pluginInfo.raw.filename);
+                
+                var mimeRow = "Batches:<ul><li>" + pluginInfo.mimes.join('</li><li>') + "</li></ul>";
+                $('.mimes', mimeTypeRow).html(mimeRow);
+
+                var testParams = 'plugins=' + escape(nameVersion) + '&mimes=' + escape(pluginInfo.mimes.join(' '))
+                $('.test-link a', mimeTypeRow).attr('href', 'tester.html#' + testParams);
+
+                $('table').append(metaRow);
+                $('table').append(mimeTypeRow);
+		metaRow.show(); mimeTypeRow.show();
+            }
         }
-    }
-});
+     } else {
+         $('#main table').replaceWith('No navigator.plugins');
+     }
+
+});//document.ready
   </script>
   <style>
-  table
+.panel {
+    border: solid 1px #AAA;
+    float: left;
+    padding: 0 0.3em;
+    margin: 1em;
+}
+.name {
+    font-weight: bold;
+}
+table
 {
     border-color: #000;
     border-width: 0 0 1px 1px;
     border-style: solid;
     border-spacing: 0px;
+    margin: 0em 2em;
 }
 th { background-color: #CCC; }
 td, th
@@ -111,20 +131,62 @@ td, th
   </style>
 </head>
 <body>
- <h1>Plugin PFS2 JSON</h1>
+ <h1>Perfidies Debugging for Browsers and Plugins</h1>
+ <p>This debugging page exposes Perfidies' view of the world to aid in development and debugging new browsers and plugins</p>
  <p>Creates JSON files from your plugins. Adds one extra field <code>description</code> which may have useful extra info.
    <strong>Warning:</strong> Be sure to clean/inspect values before use. Example: aliases - literal - Should be edited down to a useful literal value.
  </p>
- <ol id="nav">
-  
-  </ol>
+
  <div id="main">
+   <div class="panel">
+     <h2>Plugin List</h2>
+     <ol id="nav">
+  
+      </ol>
+   </div>
+   <div class="panel">
+ <h2>Browser Info</h2>
+ <dl>
+  <dt>appID</dt><dd id="appID">324j23lj432klj</dd>
+  <dt>appRelease</dt><dd id="appRelease"></dd>
+  <dt>appVersion</dt><dd id="appVersion"></dd>
+  <dt>chromeLocale</dt><dd id="chromeLocale"></dd>
+  <dt>clientOS</dt><dd id="clientOS"></dd>
+  <dt title="The detection scheme that will be used">detection</dt><dd id="detection"></dd>
+ </dl>
+   </div>
+   <div class="panel">
+ <h2>PPK's Browser Detect</h2>
+ <dl>
+  <dt>browser</dt><dd id="ppk-browser"></dd>
+  <dt>build</dt><dd id="ppk-build"></dd>
+  <dt>os</dt><dd id="ppk-os"></dd>
+  <dt>version</dt><dd id="ppk-version"></dd>
+ </dl>
+   </div>
+   <div class="panel">
+  <h2>Plugins</h2>
+  <p>This is Perfidies concept of the plugins, before contancting plugindir. 
+     <strong>versionproperty</strong> is a Fx 3.6 feature where vendors can populate
+     <code>navigator.plugins[0].version</code>.
+     <strong>namePlusVersion</strong> is a combination of name, description, and mimes
+     which is used to create the Version Chain. </p>
  <table>
   <thead>
-  <tr><th>Plugin Name</th><th>JSON</th></tr>
+  <tr id="heading">
+    <th></th> <th>Name</th>
+    <th>Version Chain</th> <th>versionproperty</th> <th>namePlusVersion</th> <th>filename</th>
+  </tr><tr id="meta">
+    <th>Metadata</th> <td class="name"></td> <td class="versionchain"></td>
+    <td class="versionproperty"></td> <td class="nameversion"></td> <td class="filename"></td>
+  </tr><tr id="mime">
+    <th title="I hate mimes">Mime Types</th> <td colspan="4" class="mimes"></td> 
+    <td class="test-link"><a href="#">Test</a></td>
+  </tr>
   </thead>
   <tbody></tbody>
  </table>
+   </div>
  </div>
 </body>
 </html>

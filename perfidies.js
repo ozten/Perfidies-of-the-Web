@@ -273,13 +273,12 @@ Pfs = {
                 if (this.currentPlugin.raw && this.currentPlugin.raw.name) {
                     currentPluginName = this.currentPlugin.raw.name;
                 }
-                Pfs.i(this.currentPlugin);
                 
                 var searchingResults = true;
                 var pluginMatch = false;
                 var pluginInfo;
-                
-                for (var i =0; i < data.length; i++) {                    
+
+                for (var i =0; i < data.length; i++) {
                     if (! searchingResults) {
                         break;
                     }
@@ -419,7 +418,9 @@ Pfs = {
                     } 
                     
                 }//for over the pfs2 JSON data
+
                 if (this.running === false || pluginMatch) {
+                    
                     searchingResults = false;
                     
                     this.startFindingNextPlugin();    
@@ -637,6 +638,14 @@ Pfs = {
      */
     i: function(msg) {if (window.console) {console.info.apply(console, arguments);}}
 };
+
+
+if (window.opera) {
+    window.console = window.console || {};
+    console.info || (console.error = opera.postError)
+    console.info || (console.warn = opera.postError)
+    console.info || (console.info = opera.postError)
+}
 //Bug#535030 - All PFS scripts will use Pfs.$ to access jQuery, so that additional inclusions of
 // jQuery or a conflicting  library won't break jQuery or it's plugins
 Pfs.$ = jQuery.noConflict();

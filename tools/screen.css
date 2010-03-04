@@ -1,0 +1,64 @@
+/* playing with grid from zurb */
+div#container, div.container { position: relative; width: 940px; margin: 0 auto; padding: 0; }
+.column-row, .row { margin: 0 0 18px -20px; }
+.column, .columns { float: left; display: inline; margin: 0 0 0 20px; }
+
+.one { width: 40px; }
+.two { width: 100px; }
+.three { width: 160px; }
+.four { width: 220px; }
+.five { width: 280px; }
+.six { width: 340px; }
+.seven { width: 400px; }
+.eight { width: 460px; }
+.nine { width: 520px; }
+.ten { width: 580px; }
+.eleven { width: 640px; }
+.twelve { width: 700px; }
+.thirteen { width: 760px; }
+.fourteen { width: 820px; }
+.fifteen { width: 880px; }
+.sixteen { width: 940px; }
+.one-third { width: 300px; }
+.two-thirds { width: 620px; }
+
+.offset-by-one-half { margin-left: 50px; }
+.offset-by-one { margin-left: 80px; }
+.offset-by-two { margin-left: 140px; }
+.offset-by-three { margin-left: 200px; }
+.offset-by-four { margin-left: 260px; }
+.offset-by-five { margin-left: 320px; }
+.offset-by-six { margin-left: 380px; }
+.offset-by-seven { margin-left: 440px; }
+.offset-by-eight { margin-left: 500px; }
+.offset-by-nine { margin-left: 560px; }
+.offset-by-ten { margin-left: 620px; }
+.offset-by-eleven { margin-left: 680px; }
+.offset-by-twelve { margin-left: 740px; }
+.offset-by-thirteen { margin-left: 800px; }
+.offset-by-fourteen { margin-left: 880px; }
+
+. /* Clear the columns automagically, thanks @kneath */
+.column-row:after, .row:after, .clearfix:after { content: "."; display: block; height: 0; clear: both; visibility: hidden; }
+. * html .column-row, * html .row, * html .clearfix { height: 1%; }
+.column-row, .row, .clearfix { display: inline-block; }
+.column-row, .row, .clearfix { display: block; }
+
+ /* IE6 Problems ---------- */
+body.ie .column-row { width: 960px; }
+body.ie .eight .column-row { width: 480px; }
+body.ie .nine .column-row { width: 540px; }
+body.ie .ten .column-row { width: 600px; }
+body.ie .eleven .column-row { width: 660px; }
+body.ie .twelve .column-row { width: 720px; }
+body.ie .thirteen .column-row { width: 780px; }
+body.ie .fourteen .column-row { width: 840px; }
+body.ie .fifteen .column-row { width: 900px; }
+body.ie .two-thirds .column-row { width: 640px; }
+/* end zurb */
+.panel { float: left; }
+body { font: normal normal normal 1em/1.5em 'Lucida Grande', sans-serif }
+h1 { font-size: 2em; font-weight: bold; margin: 0.5em 0em; }
+h2 { font-size: 1.5em; font-weight: bold; margin: 0.3em 0em; }
+
+.code { background-color: black; color: lime; font: normal normal normal 1.0em 'Courier', monospace }

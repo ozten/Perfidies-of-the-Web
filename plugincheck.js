@@ -216,7 +216,6 @@
                     <td class="action"><a class="orange button"><span>Update Now</span></a></td>
                 </tr>*/
     }
-    
     var browserPlugins = Pfs.UI.browserPlugins(navigator.plugins);
     /* track plugins in the UI */
     var total = 0; var disabled = 0; var vulnerables = 0; var outdated = 0;
@@ -328,6 +327,7 @@
         }
         Pfs.endpoint = window.location.protocol + "//" + endpoint;
         Pfs.UI.navInfo = Pfs.UI.browserInfo();
+
         Pfs.findPluginInfos(Pfs.UI.navInfo, browserPlugins, incrementalCallbackFn, finishedCallbackFn);
     }
 })();

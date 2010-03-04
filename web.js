@@ -50,13 +50,19 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
         var detected = BrowserDetect.detect(),
             appID, version_detection_scheme;
 
-        if ('Firefox' == detected.browser || 'Minefield' == detected.browser) {
+        if ('Firefox' === detected.browser || 'Minefield' === detected.browser) {
             appID = '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}';
         } else {
             // TODO: More appIDs here?
             appID = detected.browser;
         }
-
+        if ('Explorer' === detected.browser) {
+	    // Two issues with BrowserDetect 
+	    // 1) 7.0; and 8.0; get rid of ';'
+            // 2) detected.build is currently '???', give it something decent
+            detected.version = '' + parseFloat(detected.version, 10);
+            detected.build = detected.version;
+	}
         // TODO: invent more schemes here, eg. Firefox 3.6 has plugin versions
         version_detection_scheme = 'original';
 
@@ -118,7 +124,7 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
                         mimes.push(m);
                     } 
                 }            
-            }            
+            }
             pluginInfo = Pfs.UI.namePlusVersion(rawPlugin.name, rawPlugin.description, mimes);            
             if (Pfs.UI.hasVersionInfo(pluginInfo) === false) {
                 Pfs.UI.unknownVersionPlugins.push(rawPlugin);
