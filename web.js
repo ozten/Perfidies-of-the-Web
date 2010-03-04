@@ -224,21 +224,6 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
             } else {
                 return name;
             }
-        } else if(/.*BrowserPlus.*/.test(name)) {
-            var q = "";
-            if (mimes) {
-                re_trailing_version = /_([0-9]+\.[0-9]+\.[0-9]+)$/;
-                for (mime in mimes) {
-                    mime = mimes[mime];
-                    var r = re_trailing_version.exec(mime)
-                    if (r) {
-                        q = r[1];
-                        break;
-                    }
-                }
-            }
-            q = name + " " + q;
-            return q;
         } else {
             // General case
             if (name && this.hasVersionInfo(name)) {                
