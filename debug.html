@@ -3,15 +3,16 @@
 <html>
 <head><title>Perfidies Debugging for Browsers and Plugins</title>
   <script src="lib/jquery-1.3.2.min.js"></script>
+  
   <script src="lib/browserdetect.js"></script>
   <script src="lib/plugindetect.js"></script>
-  <script src="lib/jquery-1.3.2.min.js"></script>
   <script src="lib/jquery.jsonp-1.1.0.js"></script>
   <script src="perfidies.js"></script>
   <script src="messages.js"></script>
   <script src="web.js"></script>
   <script src="plugincheck.js"></script>
 
+  <script src="lib/jquery-1.3.2.min.js"></script>
   <script src="tools/json2.js"></script>
   <script>
 $(document).ready(function(){
@@ -25,6 +26,14 @@ $(document).ready(function(){
     for (var key in ppkBrowserInfo) {
         $('#ppk-' + key).text(ppkBrowserInfo[key]);
     }
+
+    $($.browser).each(function(i, o){
+        for (var key in o) {
+	    if (o[key]) {
+                $('#jquery-browser').append("<dt>" + key + "</dt><dd>" + o[key] + "</dd>");
+	    }
+	}
+    });
 
     var findOrMakePluginInfo = function(plugin, pluginInfos) {
 	// There are the pluginInfos that perfidies prepares
@@ -74,20 +83,20 @@ $(document).ready(function(){
 		}
                 var metaRow = $('#meta').clone().attr('id', 'plugin' + i);
 	        var mimeTypeRow = $('#mime').clone().attr('id', 'pluginmime' + i);
-
-                var nameVersion = Pfs.UI.namePlusVersion(pluginInfo.raw.name, pluginInfo.raw.description, pluginInfo.raw.mimes);
-		var detectedVersion = Pfs.parseVersion(nameVersion);
+		//TODO semantics have changed.. do we really want to call browserPlugin?
+                var wrappedPlugin = Pfs.UI.browserPlugin(pluginInfo.raw, pluginInfo.raw.mimes);
+		var detectedVersion = Pfs.parseVersion(wrappedPlugin.plugin);
 
                 $('.name',            metaRow).html(pluginInfo.raw.name);
 		$('.versionchain',    metaRow).html(JSON.stringify(detectedVersion));
                 $('.versionproperty', metaRow).html(pluginInfo.raw.version);
-                $('.nameversion',     metaRow).html(nameVersion);
+                $('.nameversion',     metaRow).html(wrappedPlugin.plugin);
                 $('.filename',        metaRow).html(pluginInfo.raw.filename);
                 
                 var mimeRow = "Batches:<ul><li>" + pluginInfo.mimes.join('</li><li>') + "</li></ul>";
                 $('.mimes', mimeTypeRow).html(mimeRow);
 
-                var testParams = 'plugins=' + escape(nameVersion) + '&mimes=' + escape(pluginInfo.mimes.join(' '))
+                var testParams = 'plugins=' + escape(wrappedPlugin.plugin) + '&mimes=' + escape(pluginInfo.mimes.join(' '))
                 $('.test-link a', mimeTypeRow).attr('href', 'tester.html#' + testParams);
 
                 $('table').append(metaRow);
@@ -165,17 +174,29 @@ td, th
  </dl>
    </div>
    <div class="panel">
+ <h2>jQuery browser</h2>
+ <dl id="jquery-browser">
+  
+ </dl>
+ <dl>
+  <dt>browser</dt><dd id="ppk-browser"></dd>
+  <dt>build</dt><dd id="ppk-build"></dd>
+  <dt>os</dt><dd id="ppk-os"></dd>
+  <dt>version</dt><dd id="ppk-version"></dd>
+ </dl>
+   </div>
+   <div class="panel">
   <h2>Plugins</h2>
   <p>This is Perfidies concept of the plugins, before contancting plugindir. 
      <strong>versionproperty</strong> is a Fx 3.6 feature where vendors can populate
      <code>navigator.plugins[0].version</code>.
-     <strong>namePlusVersion</strong> is a combination of name, description, and mimes
+     <strong>bestVersionString</strong> is a combination of name, versionproperty, description, and mimes
      which is used to create the Version Chain. </p>
  <table>
   <thead>
   <tr id="heading">
     <th></th> <th>Name</th>
-    <th>Version Chain</th> <th>versionproperty</th> <th>namePlusVersion</th> <th>filename</th>
+    <th>Version Chain</th> <th>versionproperty</th> <th>bestVersionString</th> <th>filename</th>
   </tr><tr id="meta">
     <th>Metadata</th> <td class="name"></td> <td class="versionchain"></td>
     <td class="versionproperty"></td> <td class="nameversion"></td> <td class="filename"></td>

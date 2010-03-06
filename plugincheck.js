@@ -83,8 +83,12 @@
         }
         var plugin = pInfo.raw;
         var reportData = {name: plugin.name, description: plugin.description};
-        var detectedVersion = Pfs.parseVersion(
-                                Pfs.UI.namePlusVersion(plugin.name, plugin.description)).join('.');
+        
+        //TODO we don't really want to call browserPlugin here... the semantics have changed
+        //Don't we want to use pInfo instead?
+        var wrappedPlugin = Pfs.UI.browserPlugin(plugin, plugin.mimes);
+        var detectedVersion = Pfs.parseVersion(wrappedPlugin.plugin).join('.');
+        
         Pfs.$.extend(reportData, Pfs.UI.navInfo, {version: detectedVersion, mimes: pInfo.mimes});        
         if (plugin) { 
             Pfs.$('body').append("<img src='" + Pfs.endpoint + status + "_plugin.gif?" + Pfs.$.param(reportData) +
@@ -327,7 +331,7 @@
         }
         Pfs.endpoint = window.location.protocol + "//" + endpoint;
         Pfs.UI.navInfo = Pfs.UI.browserInfo();
-
+        
         Pfs.findPluginInfos(Pfs.UI.navInfo, browserPlugins, incrementalCallbackFn, finishedCallbackFn);
     }
 })();

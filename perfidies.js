@@ -79,7 +79,7 @@ Pfs = {
      * vulnerability, so it should be disbaled as soon
      * as possible. No newer release is known to exist.
      */
-    DISABLE:    "should_disble",
+    DISABLE:    "should_disable",
     /**
      * Status Code for incremental callback.
      *
@@ -91,6 +91,17 @@ Pfs = {
      */
     VULNERABLE: "vulnerable",
     /**
+     * Status Code for incremental callback.
+     *
+     * Version detection for this plugin is imprecise,
+     * and at least one plugin detected with this version
+     * has been reported as vulnerable. Manual inspection
+     * is suggested.
+     * 
+     * Also can be used as a constant with PFS2Info status field
+     */
+    MAYBE_VULNERABLE: "maybe_vulnerable",
+    /**
      * Status Code for incremental callback
      *
      * This browser has an older version of the plugin installed.
@@ -100,6 +111,17 @@ Pfs = {
      * Also can be used as a constant with PFS2Info status field
      */
     OUTDATED:    "outdated",
+    /**
+     * Status Code for incremental callback.
+     *
+     * Version detection for this plugin is imprecise,
+     * and at least one plugin detected with this version
+     * has been reported as outdated. Manual inspection
+     * is suggested.
+     * 
+     * Also can be used as a constant with PFS2Info status field
+     */
+    MAYBE_OUTDATED: "maybe_outdated",
     /**
      * Status Code for incremental callback
      *
@@ -197,8 +219,11 @@ Pfs = {
                 var mime = this.currentPlugin.mimes[this.currentMime];
                     
                 var that = this;
-                this.callPfs2(mime, function(){ that.pfs2Success.apply(that, arguments);},                                
-                                    function(){ that.pfs2Error.apply(that, arguments);});  
+                this.callPfs2(
+                    { detection: this.currentPlugin.detection_type, mimetype: mime },
+                    function(){ that.pfs2Success.apply(that, arguments);},
+                    function(){ that.pfs2Error.apply(that, arguments);}
+                );  
             },
             /**
              * Stops the finder from continuing to work it's way through plugins in the queue
@@ -214,12 +239,12 @@ Pfs = {
                this.running = false;
             },
             /************* PFS2 below *************/
-            callPfs2: function(mimeType, successFn, errorFn) {
+            callPfs2: function(args_in, successFn, errorFn) {
                 if (Pfs.endpoint == "error set me before using") {                    
                     Pfs.e("You must configure Pfs.endpoint before using this library");
                     return false;
                 }
-                var args = Pfs.$.extend({}, {mimetype: mimeType}, navigatorInfo);
+                var args = Pfs.$.extend({}, navigatorInfo, args_in);
                 
                 Pfs.$.jsonp({
                     cache: true,
@@ -279,9 +304,9 @@ Pfs = {
                 var pluginInfo;
 
                 for (var i =0; i < data.length; i++) {
-                    if (! searchingResults) {
-                        break;
-                    }
+                    if (! searchingResults) { break; }
+                    
+                    // Grab the current PFS info, and ensure it's well-formed and usable.
                     var pfsInfo = data[i];
                     if (! pfsInfo.aliases ||
                        (! pfsInfo.aliases.literal  && ! pfsInfo.aliases.regex )) {
@@ -318,104 +343,113 @@ Pfs = {
                             }
                         }
                     }
-                    if (pluginMatch === true) {
-                        var searchPluginRelease = true;
-                        if (pfsInfo.releases.latest) {                            
-                            switch(Pfs.compVersion(this.currentPlugin.plugin, pfsInfo.releases.latest.version)) {
+                    // This does not appear to be the plugin we're looking for,
+                    // so continue.
+                    if (!pluginMatch) { continue; }
+                    
+                    var searchPluginRelease = true;
+                    
+                    // Prepare a result to be reported to detection callback
+                    var to_report = {
+                        pluginInfo: this.currentPlugin,
+                        pfsInfo: pfsInfo,
+                        status: null,
+                        url: pfsInfo.releases.latest ?  
+                            pfsInfo.releases.latest.url : ''
+                    };
+                    
+                    if (pfsInfo.releases.latest) {
+                        to_report.url = pfsInfo.releases.latest.url;
+                        
+                        // If a detected_version is available, use it.
+                        // Otherwise, fall back to just plain version.
+                        var pfs_version = (pfsInfo.releases.latest.detected_version) ?
+                            pfsInfo.releases.latest.detected_version :
+                            pfsInfo.releases.latest.version;
+                        var pl_version = (this.currentPlugin.detected_version) ?
+                            this.currentPlugin.detected_version :
+                            this.currentPlugin.plugin
+                        
+                        switch(Pfs.compVersion(pl_version, pfs_version)) {
+
+                            // Installed is newer than the latest in PFS
+                            case 1:
+                                if (Pfs.reportPluginFn) {
+                                    Pfs.reportPluginFn([pfsInfo], 'newer');
+                                }
+                                to_report.status = Pfs.NEWER;
+                                this.currentPlugin.classified = true;
+                                searchPluginRelease = false;
+                                break;
+
+                            // Installed version matches latest in PFS
+                            case 0:
+                                // Now, let's see what the status of the latest is...
+                                switch (pfsInfo.releases.latest.status) {
+                                    case Pfs.VULNERABLE:
+                                    case Pfs.DISABLE:
+                                        to_report.status = Pfs.DISABLE;
+                                        break;
+                                    case Pfs.MAYBE_VULNERABLE:
+                                        to_report.status = Pfs.MAYBE_VULNERABLE;
+                                        break;
+                                    case Pfs.MAYBE_OUTDATED:
+                                        to_report.status = Pfs.MAYBE_OUTDATED;
+                                        break;
+                                    default:
+                                        to_report.status = Pfs.CURRENT;
+                                        break;
+                                }
+                                this.currentPlugin.classified = true;
+                                searchPluginRelease = false;
+                                break;
+
+                            // Installed may be older than latest, keep looking...
+                            default: 
+                                break;
+                        }
+                    }                        
+                    if (this.running && searchPluginRelease && pfsInfo.releases.others) {
+                        var others = pfsInfo.releases.others;
+                        for (var k=0; searchPluginRelease && k < others.length; k++) {
+                            var c_version = (others[k].detected_version) ?
+                                others[k].detected_version : others[k].version;
+                            if (!c_version) {
+                                continue;
+                            }
+                            switch(Pfs.compVersion(this.currentPlugin.plugin, c_version)) {
                                 case 1:
-                                    if (Pfs.reportPluginFn) {
-                                        Pfs.reportPluginFn([pfsInfo], 'newer');
-                                    }                                    
-                                    this.incrementalCallbackFn({
-                                            pluginInfo: this.currentPlugin,
-                                            pfsInfo: pfsInfo,
-                                            status: Pfs.NEWER,
-                                            url: pfsInfo.releases.latest.url
-                                    });
-                                    this.currentPlugin.classified = true;
-                                    
-                                    searchPluginRelease = false;
+                                    //older than ours, keep looking
                                     break;
-                                case 0:                                    
-                                    if (pfsInfo.releases.latest.status == Pfs.VULNERABLE) {
-                                        this.incrementalCallbackFn({
-                                            pluginInfo: this.currentPlugin,
-                                            pfsInfo: pfsInfo,
-                                            status: Pfs.DISABLE,
-                                            url: pfsInfo.releases.latest.url
-                                        });
+                                case 0:                                        
+                                    if (others[k].status == Pfs.VULNERABLE) {
+                                        to_report.status = Pfs.VULNERABLE;
                                         this.currentPlugin.classified = true;
-                                    } else {
-                                        this.incrementalCallbackFn({
-                                            pluginInfo: this.currentPlugin,
-                                            pfsInfo: pfsInfo,
-                                            status: Pfs.CURRENT,
-                                            url: pfsInfo.releases.latest.url
-                                        });
+                                    } else {                                            
+                                        to_report.status = Pfs.OUTDATED;
                                         this.currentPlugin.classified = true;
-                                    }                            
+                                    }
                                     searchPluginRelease = false;
                                     break;
                                 case -1:
-                                    //keep looking
+                                    //newer than ours, keep looking
                                     break;
                                 default:
                                     //keep looking
                                     break;
-                            }                    
-                        }                        
-                        if (this.running && searchPluginRelease && pfsInfo.releases.others) {
-                            var others = pfsInfo.releases.others;
-                            for (var k=0; searchPluginRelease && k < others.length; k++) {                                 
-                                if (! others[k].version) {
-                                    continue;
-                                }
-                                switch(Pfs.compVersion(this.currentPlugin.plugin, others[k].version)) {
-                                    case 1:
-                                        //older than ours, keep looking
-                                        break;
-                                    case 0:                                        
-                                        if (others[k].status == Pfs.VULNERABLE) {
-                                            this.incrementalCallbackFn({
-                                                pluginInfo: this.currentPlugin,
-                                                pfsInfo: pfsInfo,
-                                                status: Pfs.VULNERABLE,
-                                                url: pfsInfo.releases.latest.url
-                                            });
-                                            this.currentPlugin.classified = true;
-                                        } else {                                            
-                                            this.incrementalCallbackFn({
-                                                pluginInfo: this.currentPlugin,
-                                                pfsInfo: pfsInfo,
-                                                status: Pfs.OUTDATED,
-                                                url: pfsInfo.releases.latest.url
-                                            });
-                                            this.currentPlugin.classified = true;
-                                        }
-                                        
-                                        searchPluginRelease = false;
-                                        break;
-                                    case -1:
-                                        //newer than ours, keep looking
-                                        break;
-                                    default:
-                                        //keep looking
-                                        break;
-                                }
-                            }
-                            if (this.currentPlugin.classified !== true) {
-                                // Sparse matrix of version numbers...
-                                // we know about 1.0.1 and 1.0.3 in db and this browser has 1.0.2, etc
-                                this.incrementalCallbackFn({
-                                            pluginInfo: this.currentPlugin,
-                                            pfsInfo: pfsInfo,
-                                            status: Pfs.OUTDATED,
-                                            url: pfsInfo.releases.latest.url
-                                });
-                                this.currentPlugin.classified = true;
                             }
                         }
-                    } 
+                        if (this.currentPlugin.classified !== true) {
+                            // Sparse matrix of version numbers...
+                            // we know about 1.0.1 and 1.0.3 in db and this browser has 1.0.2, etc
+                            to_report.status = Pfs.OUTDATED;
+                            this.currentPlugin.classified = true;
+                        }
+                    }
+
+                    if (this.currentPlugin.classified) {
+                        this.incrementalCallbackFn(to_report);
+                    }
                     
                 }//for over the pfs2 JSON data
 
@@ -535,6 +569,8 @@ Pfs = {
                         }
                         inNumericVersion = true;
                         currentVersionPart += token[j];                
+                    } else if(isSeperator(token[j])) {
+                        finishVersionPart();
                     } else if(j != 0 && isChar(token[j])) {
                         //    j != 0 - We are mid-token right? 3.0pre OK 3.0 Pre BAD
                         if (inNumericVersion) {
@@ -586,10 +622,25 @@ Pfs = {
             }
         }
         if (vc1.length != vc2.length) {
+            // Okay there is extra version info... is the difference significant?
             if (vc1.length > vc2.length) {
-                return 1;
+                for (var i = vc2.length; i < vc1.length; i++) {
+                    var version = parseInt(vc1[i], 10);
+                    if (isNaN(version) ||
+                        version > 0) {
+                        return 1;
+                    }
+                }
+                return 0;
             } else {
-                return -1;
+                for (var i = vc1.length; i < vc2.length; i++) {
+                    var version = parseInt(vc2[i], 10);
+                    if (isNaN(version) ||
+                        version > 0) {
+                        return -1;
+                    }
+                }
+                return 0;
             }
         }
         return 0;

@@ -2,24 +2,24 @@
                     "http://www.w3.org/TR/html4/loose.dtd">
 <html>
 <head>
+  <!-- Tests Perfidies Directory... Not the minified script -->
+  <script src="../lib/jquery-1.3.2.min.js"></script>
+  <script src="../lib/browserdetect.js"></script>
+  <script src="../lib/plugindetect.js"></script>
+  <script src="../perfidies.js"></script>
+  <script src="../messages.js"></script>
+  <script src="../web.js"></script>
+  <script src="../plugincheck.js"></script>
+  
   <script src="qunit/jquery.js"></script>
-  <script src="../lib/jquery.jsonp-1.1.0.js"></script>
   <link rel="stylesheet" href="qunit/testsuite.css" type="text/css" media="screen" />
   <script type="text/javascript" src="qunit/testrunner.js"></script>
 
-  <!-- test dev files quickly -->
-  <!--script src="../perfidies.js"></script>
-  <script src="../lib/plugindetect.js"></script>
-  <script src="../lib/browserdetect.js"></script>
-  <script src="../web.js"></script>
-  <script src="../messages.js"></script>
-  <script src="../plugincheck.js"></script-->
-  <!-- test the build -->
-  <script src="/js/plugincheck.js"></script>
+
   
+
   <script>
-/* Point this at an endpoint that had the PFS2 unit tests run on it */
-Pfs.endpoint = 'http://pfs2.ubuntu/';
+Pfs.endpoint = 'NOT USED FOR UNIT TEST! Going over the wire? Sounds like an integration test pal.';
 
 $(document).ready(function(){
     module("Pfs General Comparison");
@@ -43,10 +43,13 @@ $(document).ready(function(){
         
         equals(Pfs.compVersionChain([7, 6], [7, 6, 1]), -1, "First version chain is older and has fewer version components");
         equals(Pfs.compVersionChain([7, 9], [7, 6, 1]), 1, "First version chain is newer and has fewer version components");
+        
+        equals(Pfs.compVersionChain([1, 2], [1, 2, 0]), 0, "Extra Version Chain components that are zero should be treated as equal");
     });
     test("compVersion", function(){
         equals(Pfs.compVersion("QuickTime Plug-in 7.6.2", "QuickTime Plug-in 7.6.1"), 1, "Comparing a newer plugin should return a 1");
     });
+    
     
     module("Mime normalization");
     test("MasterMime", function(){
@@ -103,6 +106,7 @@ $(document).ready(function(){
                           { "plugin": "iPhoto6", "mimes": ["application/photo"],
                             "classified": false, "raw":  testBrowserNavigatorPlugins[3] },
                           { "plugin": "Java Embedding Plugin 1.5.0.19", "mimes": ["application/x-java-applet"],
+                          "detection_type": "original",
                           "classified": false, "raw": testBrowserNavigatorPlugins[4]}
                         ];
     

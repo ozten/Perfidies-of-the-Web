@@ -30,11 +30,10 @@ Pfs.$(document).ready(function(){
     
     var aHash = window.location.hash.substring(1);
     var paramsParts = aHash.split('&');
+    window.testmimes = '';
     for (var i=0; i < paramsParts.length; i++) {
         var eachParts = paramsParts[i].split('=');
-        if ('plugins' === eachParts[0]) {
-            window.testplugin = unescape(eachParts[1]);
-	} else if ('mimes' === eachParts[0]) {
+        if ('mimes' === eachParts[0]) {
             window.testmimes = unescape(eachParts[1]);
 	}
 
@@ -42,18 +41,11 @@ Pfs.$(document).ready(function(){
 
 
     Pfs.endpoint = Pfs.$('select[name=endpoint]').val();
-    // Data format is from perfidies.js findPluginInfos 
-    // plugins - nameAndVersion
-    // mimes - a space delimited list of mime types
-    var browserPlugins = [
-        {'plugins': testplugin,
-	 'mimes': [testmimes]}
-    ];
-    Pfs.$('input[name=testplugins]').val(testplugin);
     Pfs.$('textarea[name=mimes]').val(testmimes);
     Pfs.$('form').submit(function() {
-            var args = Pfs.$.extend({}, Pfs.UI.browserInfo(), {mimetype: Pfs.$('textarea[name=mimes]').val()});
-
+	console.info('Using the detection scheme', Pfs.$('select[name=detection]').val());
+            var args = Pfs.$.extend({}, Pfs.UI.browserInfo(), {detection: Pfs.$('select[name=detection]').val(), mimetype: Pfs.$('textarea[name=mimes]').val()});
+	    console.info(args);
             Pfs.i('going for', Pfs.$('textarea[name=mimes]').val());
             Pfs.i(Pfs.endpoint);
             var requestOptions = {
@@ -96,7 +88,11 @@ Pfs.$(document).ready(function(){
     <option value="http://plugins.stage.mozilla.com/en-us/pfs/v2">Staging</option>
     <option value="http://plugins.mozilla.com/en-us/pfs/v2">Production</option>
   </select>
-  <input name="testplugins" value="" />
+  <select name="detection">
+    <option value="original" selected>Original</option>
+    <option value="version_available">Version Available</option>
+  </select>
+  
   <textarea name="mimes" cols="30" rows="8" class="code" spellcheck="false"></textarea>
      <br /><input type="submit" value="Test" /> or <a href="debug.html">Back to the Debug page</a>
 </form>
