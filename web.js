@@ -228,13 +228,14 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
                 newPlugin.plugin = rawPlugin.name + " " + q.replace(/,/g, '.');
             }
         }
+        
         if (newPlugin.plugin === undefined) {
             // General case
-            if (rawPlugin.versionproperty !== undefined && this.hasVersionInfo(rawPlugin.versionproperty)) {
+            if (rawPlugin.version !== undefined && this.hasVersionInfo(rawPlugin.version)) {
                 // TODO - Note: no name or description... to avoid multiple versions
                 // Example: name 'QuickTime Plug-in 7.6.5' versionproperty '7.6.5.0'
                 // we'll return only '7.6.5.0'
-                newPlugin.plugin = versionproperty;
+                newPlugin.plugin = rawPlugin.version;
                 newPlugin.detection_type = 'version_available';
             } else if (rawPlugin.name && this.hasVersionInfo(newPlugin.name)) {                
                 newPlugin.plugin = rawPlugin.name;
