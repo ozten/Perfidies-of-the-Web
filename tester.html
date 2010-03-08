@@ -43,10 +43,7 @@ Pfs.$(document).ready(function(){
     Pfs.endpoint = Pfs.$('select[name=endpoint]').val();
     Pfs.$('textarea[name=mimes]').val(testmimes);
     Pfs.$('form').submit(function() {
-	console.info('Using the detection scheme', Pfs.$('select[name=detection]').val());
             var args = Pfs.$.extend({}, Pfs.UI.browserInfo(), {detection: Pfs.$('select[name=detection]').val(), mimetype: Pfs.$('textarea[name=mimes]').val()});
-	    console.info(args);
-            Pfs.i('going for', Pfs.$('textarea[name=mimes]').val());
             Pfs.i(Pfs.endpoint);
             var requestOptions = {
                     cache: false,

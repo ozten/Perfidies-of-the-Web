@@ -220,7 +220,13 @@
                     <td class="action"><a class="orange button"><span>Update Now</span></a></td>
                 </tr>*/
     }
-    var browserPlugins = Pfs.UI.browserPlugins(navigator.plugins);
+    
+    /* Pfs.UI.browserPlugins gives us a subset of the user's
+           the navigator.plugins object has many more, including duplicates.
+           Since this is a debugging view.... We'll show both */
+    var pluginsObject = window.iePlugins || window.navigator.plugins || {};
+    var browserPlugins = Pfs.UI.browserPlugins(pluginsObject);
+    
     /* track plugins in the UI */
     var total = 0; var disabled = 0; var vulnerables = 0; var outdated = 0;
     
@@ -331,7 +337,6 @@
         }
         Pfs.endpoint = window.location.protocol + "//" + endpoint;
         Pfs.UI.navInfo = Pfs.UI.browserInfo();
-        
         Pfs.findPluginInfos(Pfs.UI.navInfo, browserPlugins, incrementalCallbackFn, finishedCallbackFn);
     }
 })();

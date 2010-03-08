@@ -3,13 +3,13 @@
 <html>
 <head><title>Perfidies Debugging for Browsers and Plugins</title>
   <script src="lib/jquery-1.3.2.min.js"></script>
-  
   <script src="lib/browserdetect.js"></script>
   <script src="lib/plugindetect.js"></script>
   <script src="lib/jquery.jsonp-1.1.0.js"></script>
   <script src="perfidies.js"></script>
   <script src="messages.js"></script>
   <script src="web.js"></script>
+  <script src="exploder.js"></script>
   <script src="plugincheck.js"></script>
 
   <script src="lib/jquery-1.3.2.min.js"></script>
@@ -59,19 +59,19 @@ $(document).ready(function(){
         /* Pfs.UI.browserPlugins gives us a subset of the user's
            the navigator.plugins object has many more, including duplicates.
            Since this is a debugging view.... We'll show both */
-        
-        var pluginInfos = Pfs.UI.browserPlugins(navigator.plugins);
+        var pluginsObject = window.iePlugins || window.navigator.plugins || {};
+        var pluginInfos = Pfs.UI.browserPlugins(pluginsObject);
         var pluginNamesSeen = {};
-        for(var i=0; i<= navigator.plugins.length; i++) {
-            if (!navigator.plugins[i]) {
+        for(var i=0; i<= pluginsObject.length; i++) {
+            if (!pluginsObject[i]) {
                 continue;
 	    }
-            if (pluginNamesSeen[navigator.plugins[i].name]) {
+            if (pluginNamesSeen[pluginsObject[i].name]) {
                 continue;
 	    } else {
-                pluginNamesSeen[navigator.plugins[i].name] = true;
+                pluginNamesSeen[pluginsObject[i].name] = true;
 	    }
-	    var pluginInfo = findOrMakePluginInfo(navigator.plugins[i], pluginInfos);
+	    var pluginInfo = findOrMakePluginInfo(pluginsObject[i], pluginInfos);
             
             if (pluginInfo && pluginInfo.raw) {
                 $('#nav').append("<li><a href='#plugin" + i + "'>" + pluginInfo.raw.name + "</a></li>");
@@ -161,7 +161,7 @@ td, th
   <dt>appVersion</dt><dd id="appVersion"></dd>
   <dt>chromeLocale</dt><dd id="chromeLocale"></dd>
   <dt>clientOS</dt><dd id="clientOS"></dd>
-  <dt title="The detection scheme that will be used">detection</dt><dd id="detection"></dd>
+  
  </dl>
    </div>
    <div class="panel">

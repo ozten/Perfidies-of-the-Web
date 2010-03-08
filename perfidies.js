@@ -533,10 +533,10 @@ Pfs = {
         function isSeperator(c) { return c === '.'; }
     
         function startVersion(token, j) {
-            if (isNumeric(token[j])) {
+            if (isNumeric(token.charAt(j))) {
                 inVersion = true;
                 inNumericVersion = true;
-                currentVersionPart += token[j];
+                currentVersionPart += token.charAt(j);
             } /* else {
                 skip we are in the description
             }*/
@@ -557,28 +557,28 @@ Pfs = {
         }
         
         for(var i=0; i < tokens.length; i++){
-            var token = Pfs.$.trim(tokens[i]);
+            var token = Pfs.$.trim(tokens[i]);            
             if (token.length === 0) {
                 continue;
             }
-            for(var j=0; j < token.length; j++) {            
+            for(var j=0; j < token.length; j++) {                
                 if (inVersion) {
-                    if (isNumeric(token[j])) {
+                    if (isNumeric(token.charAt(j))) {
                         if (inCharVersion) {
                             finishVersionPart();
                         }
                         inNumericVersion = true;
-                        currentVersionPart += token[j];                
-                    } else if(isSeperator(token[j])) {
+                        currentVersionPart += token.charAt(j);                
+                    } else if(isSeperator(token.charAt(j))) {
                         finishVersionPart();
-                    } else if(j != 0 && isChar(token[j])) {
+                    } else if(j != 0 && isChar(token.charAt(j))) {
                         //    j != 0 - We are mid-token right? 3.0pre OK 3.0 Pre BAD
                         if (inNumericVersion) {
                             finishVersionPart();
                         }
                         inCharVersion = true;
-                        currentVersionPart += token[j];
-                    } else if(isSeperator(token[j])) {
+                        currentVersionPart += token.charAt(j);
+                    } else if(isSeperator(token.charAt(j))) {
                         finishVersionPart();
                     } else {
                         if (inNumericVersion) {
@@ -594,10 +594,10 @@ Pfs = {
                 //clean up previous token
                 finishVersionPart();
             }
-        }
-        if (! inVersion) {        
+        }                
+        if (! inVersion) {            
             Pfs.w("Unable to parseVersion from " + v);
-        }
+        }        
         return versionChain;    
     },
     /**
@@ -650,7 +650,12 @@ Pfs = {
      * @private
      */
     shouldSkipPluginNamed: function(name) {
-        return this.skipPluginsNamed.indexOf(Pfs.$.trim(name)) >= 0;
+        // IEBug [].indexOf is undefined
+        if (this.skipPluginsNamed.indexOf) {
+            return this.skipPluginsNamed.indexOf(Pfs.$.trim(name)) >= 0;    
+        } else {
+            return this.skipPluginsNamed.join(', ').indexOf(Pfs.$.trim(name)) >= 0;
+        }
     },
      
     /**
@@ -696,7 +701,18 @@ if (window.opera) {
     console.info || (console.error = opera.postError)
     console.info || (console.warn = opera.postError)
     console.info || (console.info = opera.postError)
-}
+}/* else if (! window.console) {
+    var ul = $('body').append('Ghetto Console: <ul id="console"></ul>');
+    
+    window.ielog = function(msg) {
+        ul.append('<li>' + msg + '</li>');
+    };
+    window.console = {};
+    console.error = window.ielog;
+    console.warn = window.ielog;
+    console.info = window.ielog;
+    
+}*/
 //Bug#535030 - All PFS scripts will use Pfs.$ to access jQuery, so that additional inclusions of
 // jQuery or a conflicting  library won't break jQuery or it's plugins
 Pfs.$ = jQuery.noConflict();

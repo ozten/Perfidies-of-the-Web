@@ -21,6 +21,7 @@ cat $PERFIDIES/lib/jquery.jsonp-1.1.0.js >> js/plugincheck.js
 cat $PERFIDIES/perfidies.js >>              js/plugincheck.js
 cat $PERFIDIES/messages.js >>               js/plugincheck.js
 cat $PERFIDIES/web.js >>                    js/plugincheck.js
+cat $PERFIDIES/exploder.js >>               js/plugincheck.js
 cat $PERFIDIES/plugincheck.js >>            js/plugincheck.js
 
 cp  $PERFIDIES/notice.txt js/plugincheck.min.js
@@ -38,6 +39,7 @@ cat $PERFIDIES/lib/jquery.jsonp-1.1.0.js >> js/plugincheck_badge.js
 cat $PERFIDIES/perfidies.js >>              js/plugincheck_badge.js
 # TODO do I need +cat $PERFIDIES/messages.js >>               js/plugincheck.js
 cat $PERFIDIES/web.js >>                    js/plugincheck_badge.js
+cat $PERFIDIES/exploder.js >>               js/plugincheck.js
 cat $PERFIDIES/plugincheck_badge.js >>      js/plugincheck_badge.js
 
 cp  $PERFIDIES/notice.txt js/plugincheck_badge.min.js

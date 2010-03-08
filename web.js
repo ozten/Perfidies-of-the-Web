@@ -63,14 +63,22 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
             detected.version = '' + parseFloat(detected.version, 10);
             detected.build = detected.version;
 	}
-        
+        // TODO IEBug navigator.language is undefined, fallback to IE specific browserLanguage
         return {
             appID:        appID,
             appRelease:   detected.version,
             appVersion:   detected.build,
             clientOS:     navigator.oscpu || navigator.platform,
-            chromeLocale: navigator.language
+            chromeLocale: navigator.language || navigator.browserLanguage || 'en-US'
         };
+    },
+    inList: function(pluginsSeen, name) {
+        // IEBug
+        if (pluginsSeen.indexOf) {
+            return pluginsSeen.indexOf(name) >= 0    
+        } else {
+            return pluginsSeen.join(', ').indexOf(name) >= 0
+        }        
     },
     /**
      * Cleans up the navigator.plugins object into a list of plugin2mimeTypes
@@ -96,7 +104,7 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
             var rawPlugin = plugins[i];
             if (Pfs.shouldSkipPluginNamed(plugins[i].name) ||
                 this.shouldSkipPluginFileNamed(plugins[i].filename) ||
-                pluginsSeen.indexOf(plugins[i].name) >= 0) {
+                Pfs.UI.inList(pluginsSeen, plugins[i].name)) {
                 continue;
             }
             // Linux Totem acts like QuickTime, DivX, VLC, etc Bug#520041
@@ -169,7 +177,12 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
                             "libtotem-narrowspace-plugin.so",
                             "libtotem-gmp-plugin.so"],
     shouldSkipPluginFileNamed: function(filename) {
-        return this.skipPluginsFilesNamed.indexOf(Pfs.$.trim(filename)) >= 0;
+        // IEBug [].indexOf is undefined
+        if (this.skipPluginsFilesNamed.indexOf) {
+            return this.skipPluginsFilesNamed.indexOf(Pfs.$.trim(filename)) >= 0;    
+        } else {
+            return this.skipPluginsFilesNamed.join(', ').indexOf(Pfs.$.trim(filename)) >= 0;
+        }
     },
     /**
      * @private
@@ -181,6 +194,7 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
             return false;
         }
     },
+    usePinladyDetection: true,
     /**
      * Cleans up a browser's plugin info based on it's
      * name, plugin.version property (Fx 3.6 only), description, 
@@ -206,29 +220,30 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
                 classified: false,
                 raw: rawPlugin
         };
-        if (/Java.*/.test(rawPlugin.name)) {
-            //Bug#519823 If we want to start using Applets again
-            var j =  PluginDetect.getVersion('Java', 'getJavaInfo.jar', [0, 0, 0]);
-            if (j !== null) {
-                newPlugin.plugin = "Java Embedding Plugin " + j.replace(/,/g, '.').replace(/_/g, '.');
-            } 
-        } else if(/.*Flash/.test(rawPlugin.name)) {
-            var f = PluginDetect.getVersion('Flash');
-            if (f !== null) {
-                newPlugin.plugin = rawPlugin.name + " " + f.replace(/,/g, '.');    
-            } 
-        } else if(/.*QuickTime.*/.test(rawPlugin.name)) {
-            var q = PluginDetect.getVersion('QuickTime');
-            if (q !== null) {
-                newPlugin.plugin = "QuickTime Plug-in " + q.replace(/,/g, '.');            
-            }
-        } else if(/Windows Media Player Plug-in.*/.test(rawPlugin.name)) {
-            var q = PluginDetect.getVersion('WindowsMediaPlayer');
-            if (q !== null) {
-                newPlugin.plugin = rawPlugin.name + " " + q.replace(/,/g, '.');
+        if (Pfs.UI.usePinladyDetection) {
+            if (/Java.*/.test(rawPlugin.name)) {
+                //Bug#519823 If we want to start using Applets again
+                var j =  PluginDetect.getVersion('Java', 'getJavaInfo.jar', [0, 0, 0]);
+                if (j !== null) {
+                    newPlugin.plugin = "Java Embedding Plugin " + j.replace(/,/g, '.').replace(/_/g, '.');
+                } 
+            } else if(/.*Flash/.test(rawPlugin.name)) {
+                var f = PluginDetect.getVersion('Flash');
+                if (f !== null) {
+                    newPlugin.plugin = rawPlugin.name + " " + f.replace(/,/g, '.');    
+                } 
+            } else if(/.*QuickTime.*/.test(rawPlugin.name)) {
+                var q = PluginDetect.getVersion('QuickTime');
+                if (q !== null) {
+                    newPlugin.plugin = "QuickTime Plug-in " + q.replace(/,/g, '.');            
+                }
+            } else if(/Windows Media Player Plug-in.*/.test(rawPlugin.name)) {
+                var q = PluginDetect.getVersion('WindowsMediaPlayer');
+                if (q !== null) {
+                    newPlugin.plugin = rawPlugin.name + " " + q.replace(/,/g, '.');
+                }
             }
         }
-        
         if (newPlugin.plugin === undefined) {
             // General case
             if (rawPlugin.version !== undefined && this.hasVersionInfo(rawPlugin.version)) {
