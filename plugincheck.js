@@ -65,15 +65,20 @@
     };
     
     var loadingCopy = Pfs_internal[0];
-    var loadingAlt = Pfs_internal[1];
-    Pfs.$('#pfs-status').html(loadingCopy + " <img class='progress' src='/img/tignish/plugincheck/ajax-loader.gif' alt='" + loadingAlt + "' />");    
+    var loadingAlt = Pfs_internal[1];    
+    Pfs.$('#pfs-status').html(loadingCopy + " <img class='progress' src='/img/tignish/plugincheck/ajax-loader.gif' alt='" + loadingAlt + "' />");
+    
+    // Copy below... s: Text in Status area  l: Button Label in Action area
+    // PFs_internal is defined in messages.js
     var states = {};
-    states[Pfs.VULNERABLE] = {c:"orange", l: Pfs_internal[5],  s: Pfs_internal[6], code:  Pfs.VULNERABLE};
-    states[Pfs.DISABLE] =    {c:"orange", l: Pfs_internal[3],  s: Pfs_internal[4], code:  Pfs.DISABLE};
-    states[Pfs.OUTDATED] =   {c:"yellow", l: Pfs_internal[7],  s: Pfs_internal[8], code:  Pfs.OUTDATED};
+    states[Pfs.VULNERABLE]       = {c:"orange", l: Pfs_internal[5],  s: Pfs_internal[6],  code: Pfs.VULNERABLE};
+    states[Pfs.MAYBE_VULNERABLE] = {c:"orange", l: Pfs_internal[20], s: Pfs_internal[21], code: Pfs.MAYBE_VULNERABLE};
+    states[Pfs.DISABLE]          = {c:"orange", l: Pfs_internal[3],  s: Pfs_internal[4],  code: Pfs.DISABLE};    
+    states[Pfs.OUTDATED]         = {c:"yellow", l: Pfs_internal[7],  s: Pfs_internal[8],  code: Pfs.OUTDATED};
+    states[Pfs.MAYBE_OUTDATED]   = {c:"yellow", l: Pfs_internal[22], s: Pfs_internal[23], code: Pfs.MAYBE_OUTDATED};
     // no plugin_latest_status... It is set to the Version number detected
-    states[Pfs.CURRENT] =    {c:"green",  l: Pfs_internal[9],  s: undefined, code:        Pfs.CURRENT}; 
-    states[Pfs.UNKNOWN] =    {c:"grey",   l: Pfs_internal[10], s: Pfs_internal[11], code: Pfs.UNKNOWN};
+    states[Pfs.CURRENT]          = {c:"green",  l: Pfs_internal[9],  s: undefined,        code: Pfs.CURRENT}; 
+    states[Pfs.UNKNOWN]          = {c:"grey",   l: Pfs_internal[10], s: Pfs_internal[11], code: Pfs.UNKNOWN};
     
     var reportPlugins = function(pInfo, status) {
         if (status == Pfs.NEWER) {

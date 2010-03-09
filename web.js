@@ -231,18 +231,20 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
                 var f = PluginDetect.getVersion('Flash');
                 if (f !== null) {
                     newPlugin.plugin = rawPlugin.name + " " + f.replace(/,/g, '.');    
-                } 
+                }
             } else if(/.*QuickTime.*/.test(rawPlugin.name)) {
                 var q = PluginDetect.getVersion('QuickTime');
                 if (q !== null) {
                     newPlugin.plugin = "QuickTime Plug-in " + q.replace(/,/g, '.');            
                 }
             } else if(/Windows Media Player Plug-in.*/.test(rawPlugin.name)) {
-                var q = PluginDetect.getVersion('WindowsMediaPlayer');
-                if (q !== null) {
-                    newPlugin.plugin = rawPlugin.name + " " + q.replace(/,/g, '.');
+                var w = PluginDetect.getVersion('WindowsMediaPlayer');
+                if (w !== null) {
+                    newPlugin.plugin = rawPlugin.name + " " + w.replace(/,/g, '.');
                 }
             }
+            /* Note: Shockwave, DevalVR, Silverlight, and VLC pinlady detection only used in exploder.js
+               this is because general version detection works as well w/o instaniating the plugin */
         }
         if (newPlugin.plugin === undefined) {
             // General case

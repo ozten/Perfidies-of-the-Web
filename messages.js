@@ -7,20 +7,20 @@ Pfs_internal[1] = "Loading Data";
 Pfs_internal[2] = "View All Your Plugins";
 
 // label and status for plugin detection table 
-Pfs_internal[3] = "Disable Now";
-Pfs_internal[4] = "Vulnerable No Fix";
+Pfs_internal[3] = "Disable Now"; //DISABLE
+Pfs_internal[4] = "Vulnerable No Fix"; //DISABLE
 
-Pfs_internal[5] = "Update Now";
-Pfs_internal[6] = "Vulnerable";
+Pfs_internal[5] = "Update Now"; //VULNERABLE
+Pfs_internal[6] = "Vulnerable"; //VULNERABLE
 	
-Pfs_internal[7] = "Update";
-Pfs_internal[8] = "Outdated Version";
+Pfs_internal[7] = "Update"; //OUTDATED
+Pfs_internal[8] = "Outdated Version"; //OUTDATED
 	
-Pfs_internal[9] = "Up to Date";
+Pfs_internal[9] = "Up to Date"; //CURRENT
 // no plugin_latest_status... It is set to the Version number detected
 
-Pfs_internal[10] = "Research";
-Pfs_internal[11] = "Unable to Detect Plugin Version";
+Pfs_internal[10] = "Research"; //UNKNOWN
+Pfs_internal[11] = "Unable to Detect Plugin Version"; //UNKNOWN
 
 /* At the top of the table is an overall summary about the "worst"
    plugin situation you have. Examples:
@@ -43,6 +43,13 @@ Pfs_internal[18] = "http://www.google.com/search?q=";
  Example if there was a plugin named "DivX Media Player" that we couldn't detect, then we would
  search google for "current version plugin DivX Media Player */
 Pfs_internal[19] = "current version plugin";
+
+// more labels and status for plugin detection table 
+Pfs_internal[20] = "Update Now" //MAYBE_VULNERABLE
+Pfs_internal[21] = "Potentially Vulnerable" //MAYBE_VULNERABLE
+
+Pfs_internal[22] = "Update" //MAYBE_OUTDATED
+Pfs_internal[23] = "Potentially Outdated Version" //MAYBE_OUTDATED
 
 if (window.Pfs_external && Pfs_external.length) {
     for( var i=0; i < Pfs_external.length; i++) {
