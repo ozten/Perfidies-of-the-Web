@@ -7,13 +7,13 @@
 source build.conf
 cd $MOZILLA_COM
 echo "Checking for bad uses of jQuery"
-grep "$." $PERFIDIES/*.js | grep -v "Pfs.$."
+# We shouldn't use $,  we have Pfs.$ instead,  Regex OK
+grep "$." $PERFIDIES/*.js | grep -v "Pfs.$." | grep -v "$/"
 
 echo "building plugincheck.js"
 rm -f js/plugincheck.js
 
 cat $PERFIDIES/lib/plugindetect.js >>       js/plugincheck.js
-
 # Bug#535030 use mozilla.com's jquery
 cat $PERFIDIES/lib/browserdetect.js >>      js/plugincheck.js
 cat $PERFIDIES/lib/plugindetect.js >>       js/plugincheck.js
@@ -25,8 +25,9 @@ cat $PERFIDIES/exploder.js >>               js/plugincheck.js
 cat $PERFIDIES/plugincheck.js >>            js/plugincheck.js
 
 cp  $PERFIDIES/notice.txt js/plugincheck.min.js
+echo -ne '// Version: ' >> js/plugincheck.min.js;
+echo -ne `cat ${PERFIDIES}/*.js | md5sum` >> js/plugincheck.min.js
 ~/bin/jsmin < js/plugincheck.js >> js/plugincheck.min.js
-
 mv js/plugincheck.min.js js/plugincheck.js
 
 echo "building plugincheck_badge.js"
@@ -37,12 +38,15 @@ cat $PERFIDIES/lib/plugindetect.js >>       js/plugincheck_badge.js
 cat $PERFIDIES/lib/jquery-1.3.2.min.js >>   js/plugincheck_badge.js
 cat $PERFIDIES/lib/jquery.jsonp-1.1.0.js >> js/plugincheck_badge.js
 cat $PERFIDIES/perfidies.js >>              js/plugincheck_badge.js
-# TODO do I need +cat $PERFIDIES/messages.js >>               js/plugincheck.js
+# Badge uses images outside of JS, so no localization in messages.js
+# $PERFIDIES/messages.js >>               js/plugincheck.js
 cat $PERFIDIES/web.js >>                    js/plugincheck_badge.js
-cat $PERFIDIES/exploder.js >>               js/plugincheck.js
+cat $PERFIDIES/exploder.js >>               js/plugincheck_badge.js
 cat $PERFIDIES/plugincheck_badge.js >>      js/plugincheck_badge.js
 
 cp  $PERFIDIES/notice.txt js/plugincheck_badge.min.js
+echo -ne '// Version: ' >> js/plugincheck_badge.min.js;
+echo -ne `cat ${PERFIDIES}/*.js | md5sum` >> js/plugincheck_badge.min.js
 
 # Pick one of the two following minimizers...
 # Used Google Closure Compiler for a release, but then on 11/23 with no

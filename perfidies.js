@@ -702,7 +702,7 @@ if (window.opera) {
     console.info || (console.warn = opera.postError)
     console.info || (console.info = opera.postError)
 }/* else if (! window.console) {
-    var ul = $('body').append('Ghetto Console: <ul id="console"></ul>');
+    var ul = Pfs.$('body').append('IE Console: <ul id="console"></ul>');
     
     window.ielog = function(msg) {
         ul.append('<li>' + msg + '</li>');
