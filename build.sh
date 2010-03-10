@@ -10,57 +10,46 @@ echo "Checking for bad uses of jQuery"
 # We shouldn't use $,  we have Pfs.$ instead,  Regex OK
 grep "$." $PERFIDIES/*.js | grep -v "Pfs.$." | grep -v "$/"
 
-echo "building plugincheck.js"
+echo "building plugincheck.js ================================================"
 rm -f js/plugincheck.js
-
-cat $PERFIDIES/lib/plugindetect.js >>       js/plugincheck.js
-# Bug#535030 use mozilla.com's jquery
-cat $PERFIDIES/lib/browserdetect.js >>      js/plugincheck.js
-cat $PERFIDIES/lib/plugindetect.js >>       js/plugincheck.js
-cat $PERFIDIES/lib/jquery.jsonp-1.1.0.js >> js/plugincheck.js
-cat $PERFIDIES/perfidies.js >>              js/plugincheck.js
-cat $PERFIDIES/messages.js >>               js/plugincheck.js
-cat $PERFIDIES/web.js >>                    js/plugincheck.js
-cat $PERFIDIES/exploder.js >>               js/plugincheck.js
-cat $PERFIDIES/plugincheck.js >>            js/plugincheck.js
-
 cp  $PERFIDIES/notice.txt js/plugincheck.min.js
-echo -ne '// Version: ' >> js/plugincheck.min.js;
-echo -ne `cat ${PERFIDIES}/*.js | md5sum` >> js/plugincheck.min.js
-~/bin/jsmin < js/plugincheck.js >> js/plugincheck.min.js
+echo -ne '// Version: '                            >> js/plugincheck.min.js;
+echo `cat ${PERFIDIES}/*.js | md5sum`              >> js/plugincheck.min.js
+
+~/bin/jsmin < $PERFIDIES/lib/browserdetect.js      >> js/plugincheck.min.js
+# So it turns out that plugindetect can't be passed through jsmin or IE 7 will barf
+cat $PERFIDIES/lib/plugindetect.js                 >> js/plugincheck.min.js
+# Bug#535030 use mozilla.com's jquery
+#             $PERFIDIES/lib/jquery-1.3.2.min.js
+~/bin/jsmin < $PERFIDIES/lib/jquery.jsonp-1.1.0.js >> js/plugincheck.min.js
+~/bin/jsmin < $PERFIDIES/perfidies.js              >> js/plugincheck.min.js
+~/bin/jsmin < $PERFIDIES/messages.js               >> js/plugincheck.min.js
+~/bin/jsmin < $PERFIDIES/web.js                    >> js/plugincheck.min.js
+~/bin/jsmin < $PERFIDIES/exploder.js               >> js/plugincheck.min.js
+~/bin/jsmin < $PERFIDIES/plugincheck.js            >> js/plugincheck.min.js
+
 mv js/plugincheck.min.js js/plugincheck.js
 
-echo "building plugincheck_badge.js"
+
+
+echo "building plugincheck_badge.js ================================================"
 rm -f js/plugincheck_badge.js
+cp  $PERFIDIES/notice.txt                              js/plugincheck_badge.min.js
+echo -ne '// Version: '                             >> js/plugincheck_badge.min.js
 
-cat $PERFIDIES/lib/browserdetect.js >>      js/plugincheck_badge.js
-cat $PERFIDIES/lib/plugindetect.js >>       js/plugincheck_badge.js
-cat $PERFIDIES/lib/jquery-1.3.2.min.js >>   js/plugincheck_badge.js
-cat $PERFIDIES/lib/jquery.jsonp-1.1.0.js >> js/plugincheck_badge.js
-cat $PERFIDIES/perfidies.js >>              js/plugincheck_badge.js
+echo `cat ${PERFIDIES}/*.js | md5sum`               >> js/plugincheck_badge.min.js
+~/bin/jsmin < $PERFIDIES/lib/browserdetect.js       >> js/plugincheck_badge.min.js
+
+# So it turns out that plugindetect can't be passed through jsmin or IE 7 will barf
+cat $PERFIDIES/lib/plugindetect.js                  >> js/plugincheck_badge.min.js
+
+~/bin/jsmin <  $PERFIDIES/lib/jquery-1.3.2.min.js   >> js/plugincheck_badge.js
+~/bin/jsmin <  $PERFIDIES/lib/jquery.jsonp-1.1.0.js >> js/plugincheck_badge.js
+~/bin/jsmin <  $PERFIDIES/perfidies.js              >> js/plugincheck_badge.js
 # Badge uses images outside of JS, so no localization in messages.js
-# $PERFIDIES/messages.js >>               js/plugincheck.js
-cat $PERFIDIES/web.js >>                    js/plugincheck_badge.js
-cat $PERFIDIES/exploder.js >>               js/plugincheck_badge.js
-cat $PERFIDIES/plugincheck_badge.js >>      js/plugincheck_badge.js
+# $PERFIDIES/messages.js
+~/bin/jsmin <  $PERFIDIES/web.js                    >> js/plugincheck_badge.js
+~/bin/jsmin <  $PERFIDIES/exploder.js               >> js/plugincheck_badge.js
+~/bin/jsmin <  $PERFIDIES/plugincheck_badge.js      >> js/plugincheck_badge.js
 
-cp  $PERFIDIES/notice.txt js/plugincheck_badge.min.js
-echo -ne '// Version: ' >> js/plugincheck_badge.min.js;
-echo -ne `cat ${PERFIDIES}/*.js | md5sum` >> js/plugincheck_badge.min.js
-
-# Pick one of the two following minimizers...
-# Used Google Closure Compiler for a release, but then on 11/23 with no
-# code change, it's output broke the script ;)
-
-# BEGIN Using jsmin
-~/bin/jsmin < js/plugincheck_badge.js >> js/plugincheck_badge.min.js
 mv js/plugincheck_badge.min.js js/plugincheck_badge.js
-# END Using jsmin
-
-# BEGIN Using Google Closure Compiler...
-# remove whitespace for HTTP POST
-#~/bin/jsmin < js/plugincheck_badge.js >> js/plugincheck_badge.post.js
-#$PERFIDIES/closure_compiler.php /home/aking/mozilla.com/js/plugincheck_badge.post.js >> js/plugincheck_badge.min.js
-#rm js/plugincheck_badge.post.js
-#mv js/plugincheck_badge.min.js js/plugincheck_badge.js
-# END Using Google Closure Compiler...

@@ -35,10 +35,15 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
+/*jslint browser: true, plusplus: false */
+/*global Pfs, Pfs_internal, PluginDetect, BrowserDetect, window, escape*/
+// jslint that we should fix below
+/*jslint eqeqeq: false*/
+
 /**
  * UI code for http://mozilla.com/en-US/plugincheck/
  */
-(function(){
+(function () {
     
     var icons = {
         flash:     "/img/tignish/plugincheck/icon-flash.png",
@@ -48,16 +53,16 @@
         totem: "/img/tignish/plugincheck/icon-totem.png",
         generic: "/img/tignish/plugincheck/icon-flip.png"
     };
-    var iconFor = function(pluginName) {
+    var iconFor = function (pluginName) {
         if (pluginName.indexOf("Flash") >= 0) {
             return icons.flash;
         } else if (pluginName.indexOf("Java") >= 0) {
             return icons.java;
         } else if (pluginName.indexOf("QuickTime") >= 0) {
             return icons.quicktime;
-        } else if(pluginName.indexOf("DivX") >= 0) {
+        } else if (pluginName.indexOf("DivX") >= 0) {
             return icons.divx;
-        } else if(pluginName.indexOf("Totem") >= 0) {
+        } else if (pluginName.indexOf("Totem") >= 0) {
             return icons.totem;
         } else {
             return icons.generic;
@@ -71,18 +76,18 @@
     // Copy below... s: Text in Status area  l: Button Label in Action area
     // PFs_internal is defined in messages.js
     var states = {};
-    states[Pfs.VULNERABLE]       = {c:"orange", l: Pfs_internal[5],  s: Pfs_internal[6],  code: Pfs.VULNERABLE};
-    states[Pfs.MAYBE_VULNERABLE] = {c:"orange", l: Pfs_internal[20], s: Pfs_internal[21], code: Pfs.MAYBE_VULNERABLE};
-    states[Pfs.DISABLE]          = {c:"orange", l: Pfs_internal[3],  s: Pfs_internal[4],  code: Pfs.DISABLE};    
-    states[Pfs.OUTDATED]         = {c:"yellow", l: Pfs_internal[7],  s: Pfs_internal[8],  code: Pfs.OUTDATED};
-    states[Pfs.MAYBE_OUTDATED]   = {c:"yellow", l: Pfs_internal[22], s: Pfs_internal[23], code: Pfs.MAYBE_OUTDATED};
+    states[Pfs.VULNERABLE]       = {c: "orange", l: Pfs_internal[5],  s: Pfs_internal[6],  code: Pfs.VULNERABLE};
+    states[Pfs.MAYBE_VULNERABLE] = {c: "orange", l: Pfs_internal[20], s: Pfs_internal[21], code: Pfs.MAYBE_VULNERABLE};
+    states[Pfs.DISABLE]          = {c: "orange", l: Pfs_internal[3],  s: Pfs_internal[4],  code: Pfs.DISABLE};    
+    states[Pfs.OUTDATED]         = {c: "yellow", l: Pfs_internal[7],  s: Pfs_internal[8],  code: Pfs.OUTDATED};
+    states[Pfs.MAYBE_OUTDATED]   = {c: "yellow", l: Pfs_internal[22], s: Pfs_internal[23], code: Pfs.MAYBE_OUTDATED};
     // no plugin_latest_status... It is set to the Version number detected
-    states[Pfs.CURRENT]          = {c:"green",  l: Pfs_internal[9],  s: undefined,        code: Pfs.CURRENT}; 
-    states[Pfs.UNKNOWN]          = {c:"grey",   l: Pfs_internal[10], s: Pfs_internal[11], code: Pfs.UNKNOWN};
+    states[Pfs.CURRENT]          = {c: "green",  l: Pfs_internal[9],  s: undefined,        code: Pfs.CURRENT}; 
+    states[Pfs.UNKNOWN]          = {c: "grey",   l: Pfs_internal[10], s: Pfs_internal[11], code: Pfs.UNKNOWN};
     
-    var reportPlugins = function(pInfo, status) {
+    var reportPlugins = function (pInfo, status) {
         if (status == Pfs.NEWER) {
-            Pfs.i("Report Weird, we are newer", browserPlugins, pInfo);
+            Pfs.i("Report Weird, we are newer", Pfs.UI.browserPlugins, pInfo);
         } else {
             Pfs.i("Report Unkown: ", status, pInfo);
         }
@@ -99,11 +104,11 @@
             Pfs.$('body').append("<img src='" + Pfs.endpoint + status + "_plugin.gif?" + Pfs.$.param(reportData) +
                              "' width='1' height='1' />");
         }           
-    }
+    };
     Pfs.reportPluginsFn = reportPlugins;
     var updateDisplayId = undefined;
     var showAll = false;
-    var updateDisplay = function() {
+    var updateDisplay = function () {
         if (updateDisplayId !== undefined) {
             var criticalPlugins = Pfs.$('tr.plugin.' + Pfs.DISABLE).add('tr.plugin.' + Pfs.VULNERABLE).add('tr.plugin.' + Pfs.OUTDATED);
             criticalPlugins.show();
@@ -114,32 +119,33 @@
             
             updateDisplayId = undefined;
         }
-    }
-    var addBySorting = function(el, status) {
+    };
+    var addBySorting = function (el, status) {
+        var r;
         if (Pfs.DISABLE == status) {
             //worst
-            var r = Pfs.$('tr.plugin.' + Pfs.DISABLE + ':first').before(el).size();
-            if (r == 0) {
+            r = Pfs.$('tr.plugin.' + Pfs.DISABLE + ':first').before(el).size();
+            if (r === 0) {
                 // no disabled yet, go before any other plugin
                 r = Pfs.$('tr.plugin:first').before(el).size();
-                if (r == 0) {
+                if (r === 0) {
                     //no other plugins, be the first plugin
                     Pfs.$('#plugin-template').parent().append(el);
                 }
             }
-        } else if(Pfs.VULNERABLE == status) {
+        } else if (Pfs.VULNERABLE == status) {
             //bad
-            var r = Pfs.$('tr.plugin.' + Pfs.DISABLE + ':last').after(el).size();
-            if (r == 0) {
+            r = Pfs.$('tr.plugin.' + Pfs.DISABLE + ':last').after(el).size();
+            if (r === 0) {
                 // no disabled yet, go before any other vulnerable plugin
                 r = Pfs.$('tr.plugin.' + Pfs.VULNERABLE + ':first').before(el).size();
-                if (r == 0) {
+                if (r === 0) {
                     // no vulnerable yet, go before any other outdated plugin
                     r = Pfs.$('tr.plugin.' + Pfs.OUTDATED + ':first').before(el).size();
-                    if (r==0) {
+                    if (r === 0) {
                         // no outdated yet, go before all others
-                        var r = Pfs.$('tr.plugin:first').before(el).size();
-                        if (r == 0) {
+                        r = Pfs.$('tr.plugin:first').before(el).size();
+                        if (r === 0) {
                             //no other plugins, be the first plugin
                             Pfs.$('#plugin-template').parent().append(el);                
                         }
@@ -147,34 +153,34 @@
                     
                 }
             }
-        } else if(Pfs.OUTDATED == status) {
+        } else if (Pfs.OUTDATED == status) {
             //meh
-            var r = Pfs.$('tr.plugin.' + Pfs.OUTDATED + ':first').before(el).size();
-            if (r == 0) {
-                var r = Pfs.$('tr.plugin.' + Pfs.CURRENT + ':first').before(el).size();
-                if (r == 0) {
+            r = Pfs.$('tr.plugin.' + Pfs.OUTDATED + ':first').before(el).size();
+            if (r === 0) {
+                r = Pfs.$('tr.plugin.' + Pfs.CURRENT + ':first').before(el).size();
+                if (r === 0) {
                     r = Pfs.$('tr.plugin:last').after(el).size();
-                    if (r == 0) {
+                    if (r === 0) {
                         //no other plugins, be the first plugin
                         Pfs.$('#plugin-template').parent().append(el);
                     }
                 }
             }
-        } else if(Pfs.CURRENT == status) {
+        } else if (Pfs.CURRENT == status) {
             //best case we are up to date, stick it after the last non unknown plugin in the list
-            var r = Pfs.$('tr.plugin').not('.' + Pfs.UNKNOWN).filter(':last').after(el).size();
-            if (r == 0) {
+            r = Pfs.$('tr.plugin').not('.' + Pfs.UNKNOWN).filter(':last').after(el).size();
+            if (r === 0) {
                 r = Pfs.$('tr.plugin').filter(':first').before(el).size();
-                if (r == 0) {
+                if (r === 0) {
                     //no other plugins, be the first plugin
                     Pfs.$('#plugin-template').parent().append(el);                    
                 }
                 
             }
-        } else if(Pfs.UNKNOWN == status) {
+        } else if (Pfs.UNKNOWN == status) {
             //unknown plugins go last, not much help to the user
-            var r = Pfs.$('tr.plugin:last').after(el).size();
-            if (r == 0) {
+            r = Pfs.$('tr.plugin:last').after(el).size();
+            if (r === 0) {
                 //no other plugins, be the first plugin
                 Pfs.$('#plugin-template').parent().append(el);                
             }
@@ -184,15 +190,15 @@
         if (updateDisplayId === undefined) {
             updateDisplayId = setTimeout(updateDisplay, 300);
         }
-    }
-    var displayPlugins = function(plugin, statusCopy, url, rowCount) {
+    };
+    var displayPlugins = function (plugin, statusCopy, url, rowCount) {
         var html = Pfs.$('#plugin-template').clone();
         html.removeAttr('id')
             .addClass('plugin')
             .addClass(statusCopy.code);
         var rowClass;
         
-        if (rowCount % 2 == 0) {
+        if (rowCount % 2 === 0) {
             html.addClass('odd');            
         }        
         
@@ -224,7 +230,7 @@
                     <td class="status">Vulnerable</td>
                     <td class="action"><a class="orange button"><span>Update Now</span></a></td>
                 </tr>*/
-    }
+    };
     
     /* Pfs.UI.browserPlugins gives us a subset of the user's
            the navigator.plugins object has many more, including duplicates.
@@ -238,7 +244,7 @@
     /**
      * incremental callback function
      */
-    var incrementalCallbackFn = function(data){
+    var incrementalCallbackFn = function (data) {
         if (data.status == Pfs.UNKNOWN) {
             //ping the server
             reportPlugins(data.pluginInfo, Pfs.UNKNOWN);
@@ -257,7 +263,7 @@
                 case Pfs.DISABLE:
                     disabled++;
                     // Anchor tag for instructions on how to disable a plugin
-                    url = "#howto-disable";
+                    data.url = "#howto-disable";
                     break;
                 case Pfs.VULNERABLE:
                     vulnerables++;
@@ -269,7 +275,7 @@
             
             var copy = states[data.status];
             if (Pfs.CURRENT === data.status) {
-                copy.s = Pfs.parseVersion(data.pluginInfo.plugin).join('.');;
+                copy.s = Pfs.parseVersion(data.pluginInfo.plugin).join('.');
             }
             var plugin = data.pluginInfo.raw;                
             displayPlugins(plugin, copy, data.url, total);
@@ -280,10 +286,12 @@
         }        
     };
         
-    var unknownPluginUrl = function(pluginName) { return Pfs_internal[18] + escape(Pfs_internal[19] + " " + pluginName);}
+    var unknownPluginUrl = function (pluginName) {
+        return Pfs_internal[18] + escape(Pfs_internal[19] + " " + pluginName);
+    };
     
-    var finishedCallbackFn = function(){
-        for(var i=0; i < Pfs.UI.unknownVersionPlugins.length; i++) {
+    var finishedCallbackFn = function () {
+        for (var i = 0; i < Pfs.UI.unknownVersionPlugins.length; i++) {
             var unknownPlugin = Pfs.UI.unknownVersionPlugins[i];
             displayPlugins(unknownPlugin, states[Pfs.UNKNOWN], unknownPluginUrl(unknownPlugin.name), total);
             total++;
@@ -307,13 +315,13 @@
         if (worstStatus !== undefined) {
             Pfs.$('#pfs-status').html(worstCount + " " + Pfs_internal[12] + " " + total + " " + worstStatus)
                             .addClass(Pfs.VULNERABLE);
-        } else if (Pfs.$('.plugin').size() == 0) {
+        } else if (Pfs.$('.plugin').size() === 0) {
             Pfs.$('#pfs-status').html(Pfs_internal[17]);
         } else {
             Pfs.$('#pfs-status').html(Pfs_internal[16]);
         }
         if (Pfs.$('.plugin:hidden').size() > 0) {
-            Pfs.$('.view-all-toggle').html("<a href='#'>" + Pfs_internal[2] + "</a>").click(function(){
+            Pfs.$('.view-all-toggle').html("<a href='#'>" + Pfs_internal[2] + "</a>").click(function () {
                 if (updateDisplayId === undefined) {
                     updateDisplayId = setTimeout(updateDisplay, 300);
                 }
@@ -324,7 +332,7 @@
             });    
         }
         //Bug#524460 adobe reader plugin updates
-        Pfs.$('tr.unknown').map(function(){
+        Pfs.$('tr.unknown').map(function () {
             var name = Pfs.$('h4.name a', this).text();            
             if (name.indexOf("Adobe Acrobat") >= 0 ||
                 name.indexOf("Adobe Reader") >= 0) {            
@@ -334,14 +342,14 @@
     //Used in regression testing
     Pfs.UI.displayPlugin = incrementalCallbackFn;
     
-    window.checkPlugins = function(endpoint) {        
-        if (endpoint.indexOf("http://") == 0) {
+    window.checkPlugins = function (endpoint) {        
+        if (endpoint.indexOf("http://") === 0) {
             endpoint = endpoint.substring(7);
-        } else if (endpoint.indexOf("https://") == 0) {
+        } else if (endpoint.indexOf("https://") === 0) {
             endpoint = endpoint.substring(8);
         }
         Pfs.endpoint = window.location.protocol + "//" + endpoint;
         Pfs.UI.navInfo = Pfs.UI.browserInfo();
         Pfs.findPluginInfos(Pfs.UI.navInfo, browserPlugins, incrementalCallbackFn, finishedCallbackFn);
-    }
+    };
 })();

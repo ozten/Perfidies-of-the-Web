@@ -1,6 +1,8 @@
 /* L10N Note: The following block of strings are used by JavaScript
    for the plugin detection part of the page */
-Pfs_internal = [];
+/*jslint browser: true, plusplus: false */
+/*global Pfs_external, window*/
+var Pfs_internal = [];
 // General Copy
 Pfs_internal[0] = "Checking with Mozilla on the status of your plugins";
 Pfs_internal[1] = "Loading Data";
@@ -45,15 +47,15 @@ Pfs_internal[18] = "http://www.google.com/search?q=";
 Pfs_internal[19] = "current version plugin";
 
 // more labels and status for plugin detection table 
-Pfs_internal[20] = "Update Now" //MAYBE_VULNERABLE
-Pfs_internal[21] = "Potentially Vulnerable" //MAYBE_VULNERABLE
+Pfs_internal[20] = "Update Now"; //MAYBE_VULNERABLE
+Pfs_internal[21] = "Potentially Vulnerable"; //MAYBE_VULNERABLE
 
-Pfs_internal[22] = "Update" //MAYBE_OUTDATED
-Pfs_internal[23] = "Potentially Outdated Version" //MAYBE_OUTDATED
+Pfs_internal[22] = "Update"; //MAYBE_OUTDATED
+Pfs_internal[23] = "Potentially Outdated Version"; //MAYBE_OUTDATED
 
 if (window.Pfs_external && Pfs_external.length) {
-    for( var i=0; i < Pfs_external.length; i++) {
-        if (typeof Pfs_external[i] != 'undefined') {
+    for (var i = 0; i < Pfs_external.length; i++) {
+        if (typeof Pfs_external[i] !== 'undefined') {
             Pfs_internal[i] = Pfs_external[i];
         }
     }    

@@ -35,18 +35,24 @@
  *
  * ***** END LICENSE BLOCK ***** */
 
-if (window.Pfs === undefined) { window.Pfs = {}; }
+/*jslint browser: true, plusplus: false */
+/*global Pfs, PluginDetect, BrowserDetect, window*/
+// jslint that we should fix below
+/*jslint eqeqeq: false*/
+if (window.Pfs === undefined) {
+    window.Pfs = {};
+}
 
 /**
  * Common JS for getting browsers ready for using PFS
  * via a web page.
  */
- Pfs.UI = {
+Pfs.UI = {
     unknownVersionPlugins: [],
     /**
      * Creates a navigatorInfo object from the browser's navigator object
      */
-    browserInfo: function() {
+    browserInfo: function () {
         var detected = BrowserDetect.detect(),
             appID;
 
@@ -62,7 +68,7 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
             // 2) detected.build is currently '???', give it something decent
             detected.version = '' + parseFloat(detected.version, 10);
             detected.build = detected.version;
-	}
+	    }
         // TODO IEBug navigator.language is undefined, fallback to IE specific browserLanguage
         return {
             appID:        appID,
@@ -72,12 +78,12 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
             chromeLocale: navigator.language || navigator.browserLanguage || 'en-US'
         };
     },
-    inList: function(pluginsSeen, name) {
+    inList: function (pluginsSeen, name) {
         // IEBug
         if (pluginsSeen.indexOf) {
-            return pluginsSeen.indexOf(name) >= 0    
+            return pluginsSeen.indexOf(name) >= 0;
         } else {
-            return pluginsSeen.join(', ').indexOf(name) >= 0
+            return pluginsSeen.join(', ').indexOf(name) >= 0;
         }        
     },
     /**
@@ -96,10 +102,10 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
      * @param plugins {object} The window.navigator.plugins object
      * @returns {array} A list of plugin2mimeTypes
      */
-    browserPlugins: function(plugins) {
+    browserPlugins: function (plugins) {
         var p = [];
         var pluginsSeen = [];
-        for (var i=0; i < plugins.length; i++) {
+        for (var i = 0; i < plugins.length; i++) {
             var pluginInfo;
             var rawPlugin = plugins[i];
             if (Pfs.shouldSkipPluginNamed(plugins[i].name) ||
@@ -110,23 +116,24 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
             // Linux Totem acts like QuickTime, DivX, VLC, etc Bug#520041
             if (plugins[i].filename == "libtotem-cone-plugin.so") {
                 rawPlugin = {
-                    name:"Totem", description: plugins[i].description,
+                    name: "Totem",
+                    description: plugins[i].description,
                     length: plugins[i].length,
                     filename: plugins[i].filename
                 };
-                for (var m=0; m < plugins[i].length; m++) {
+                for (var m = 0; m < plugins[i].length; m++) {
                     rawPlugin[m] = plugins[i][m];
                 }                
             }
             var mimes = [];
             var marcelMrceau = Pfs.createMasterMime(); /* I hate mimes */
-            for (var j=0; j < rawPlugin.length; j++) {
+            for (var j = 0; j < rawPlugin.length; j++) {
                 var mimeType = rawPlugin[j].type;
                 if (mimeType) {
-                    var m = marcelMrceau.normalize(mimeType);
-                    if (marcelMrceau.seen[m] === undefined) {
-                        marcelMrceau.seen[m] = true;
-                        mimes.push(m);
+                    var mm = marcelMrceau.normalize(mimeType);
+                    if (marcelMrceau.seen[mm] === undefined) {
+                        marcelMrceau.seen[mm] = true;
+                        mimes.push(mm);
                     } 
                 }            
             }
@@ -139,10 +146,10 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
             if (mimes.length > 0) {
                 var mimeValue = mimes[0];
                 var length = mimeValue.length;
-                for (var j=1; j < mimes.length; j++) {
-                    length += mimes[j].length;
+                for (var jj = 1; jj < mimes.length; jj++) {
+                    length += mimes[jj].length;
                     // mime types are space delimited
-                    mimeValue += " " + mimes[j];
+                    mimeValue += " " + mimes[jj];
                     if (length > Pfs.MAX_MIMES_LENGTH &&
                         (i + 1) < mimes.length) {                        
                         mimeValues.push(mimeValue);
@@ -176,7 +183,7 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
     skipPluginsFilesNamed: ["libtotem-mully-plugin.so",
                             "libtotem-narrowspace-plugin.so",
                             "libtotem-gmp-plugin.so"],
-    shouldSkipPluginFileNamed: function(filename) {
+    shouldSkipPluginFileNamed: function (filename) {
         // IEBug [].indexOf is undefined
         if (this.skipPluginsFilesNamed.indexOf) {
             return this.skipPluginsFilesNamed.indexOf(Pfs.$.trim(filename)) >= 0;    
@@ -187,7 +194,7 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
     /**
      * @private
      */
-    hasVersionInfo: function(versionedName) {
+    hasVersionInfo: function (versionedName) {
         if (versionedName) {
             return Pfs.parseVersion(versionedName).length > 0;
         } else {
@@ -212,14 +219,14 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
      *       It's not so much a name hook as override version detection
      * @returns {string} - The name of the plugin, it may be enhanced via PluginDetect or other hooks
      */
-    browserPlugin: function(rawPlugin, mimes) {
+    browserPlugin: function (rawPlugin, mimes) {
         var newPlugin = {
                 plugin: undefined,
                 mimes: undefined, // Gets set outside of this function
                 detection_type: 'original',
                 classified: false,
                 raw: rawPlugin
-        };
+            };
         if (Pfs.UI.usePinladyDetection) {
             if (/Java.*/.test(rawPlugin.name)) {
                 //Bug#519823 If we want to start using Applets again
@@ -227,17 +234,17 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
                 if (j !== null) {
                     newPlugin.plugin = "Java Embedding Plugin " + j.replace(/,/g, '.').replace(/_/g, '.');
                 } 
-            } else if(/.*Flash/.test(rawPlugin.name)) {
+            } else if (/.*Flash/.test(rawPlugin.name)) {
                 var f = PluginDetect.getVersion('Flash');
                 if (f !== null) {
                     newPlugin.plugin = rawPlugin.name + " " + f.replace(/,/g, '.');    
                 }
-            } else if(/.*QuickTime.*/.test(rawPlugin.name)) {
+            } else if (/.*QuickTime.*/.test(rawPlugin.name)) {
                 var q = PluginDetect.getVersion('QuickTime');
                 if (q !== null) {
                     newPlugin.plugin = "QuickTime Plug-in " + q.replace(/,/g, '.');            
                 }
-            } else if(/Windows Media Player Plug-in.*/.test(rawPlugin.name)) {
+            } else if (/Windows Media Player Plug-in.*/.test(rawPlugin.name)) {
                 var w = PluginDetect.getVersion('WindowsMediaPlayer');
                 if (w !== null) {
                     newPlugin.plugin = rawPlugin.name + " " + w.replace(/,/g, '.');
@@ -259,22 +266,22 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
             } else if (rawPlugin.description && this.hasVersionInfo(rawPlugin.description)) {                
                 newPlugin.plugin = rawPlugin.description;
             } else {
-                 if(/.*BrowserPlus.*/.test(rawPlugin.name)) {
+                if (/.*BrowserPlus.*/.test(rawPlugin.name)) {
                     // Only used for older versions of BrowserPlus
-                    var q = "";
+                    var bp = "";
                     if (mimes) {
-                        re_trailing_version = /_([0-9]+\.[0-9]+\.[0-9]+)$/;
-                        for (mime in mimes) {
+                        var re_trailing_version = /_([0-9]+\.[0-9]+\.[0-9]+)$/;
+                        for (var mime in mimes) {
                             mime = mimes[mime];
                             var r = re_trailing_version.exec(mime);
                             if (r) {
-                                q = r[1];
+                                bp = r[1];
                                 break;
                             }
                         }
                     }
-                    q = name + " " + q;
-                    newPlugin.plugin = q;
+                    bp = name + " " + bp;
+                    newPlugin.plugin = bp;
                 } else if (rawPlugin.name) {
                     newPlugin.plugin = rawPlugin.name;
                 } else {
@@ -283,7 +290,7 @@ if (window.Pfs === undefined) { window.Pfs = {}; }
             }
         }
         if (newPlugin.plugin === undefined) {
-            throw new Error('Assertion Failed', 'Attempting to return from browserPlugin without setting the plugin field with version info.')
+            throw new Error('Assertion Failed', 'Attempting to return from browserPlugin without setting the plugin field with version info.');
         }
         return newPlugin;
     }

@@ -1,6 +1,9 @@
+/*jslint browser: true */
+/*global Pfs, PluginDetect, window*/
+
 if (Pfs.$.browser.msie) {    
     window.iePlugins = [];
-    var alterNavigator = function(name, description, filename, mimeType) {        
+    var alterNavigator = function (name, description, filename, mimeType) {        
         window.iePlugins.push({
             name: name,
             description: description,
@@ -8,7 +11,7 @@ if (Pfs.$.browser.msie) {
             length: 1,
             "0": {type: mimeType }
         });        
-    }
+    };
     
     /* IE has no proper navigator.plugins, so we use the pinlady library
        to detect COM objects or plugins via <object> tags.
@@ -77,5 +80,5 @@ if (Pfs.$.browser.msie) {
                        'npvlc.dll', // FIXME
                        'video/mp4');
     }
-    
+    alert('Setup ' + window.iePlugins.length + ' plugins');
 }
