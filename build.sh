@@ -43,13 +43,13 @@ echo `cat ${PERFIDIES}/*.js | md5sum`               >> js/plugincheck_badge.min.
 # So it turns out that plugindetect can't be passed through jsmin or IE 7 will barf
 cat $PERFIDIES/lib/plugindetect.js                  >> js/plugincheck_badge.min.js
 
-~/bin/jsmin <  $PERFIDIES/lib/jquery-1.3.2.min.js   >> js/plugincheck_badge.js
-~/bin/jsmin <  $PERFIDIES/lib/jquery.jsonp-1.1.0.js >> js/plugincheck_badge.js
-~/bin/jsmin <  $PERFIDIES/perfidies.js              >> js/plugincheck_badge.js
+~/bin/jsmin <  $PERFIDIES/lib/jquery-1.3.2.min.js   >> js/plugincheck_badge.min.js
+~/bin/jsmin <  $PERFIDIES/lib/jquery.jsonp-1.1.0.js >> js/plugincheck_badge.min.js
+~/bin/jsmin <  $PERFIDIES/perfidies.js              >> js/plugincheck_badge.min.js
 # Badge uses images outside of JS, so no localization in messages.js
 # $PERFIDIES/messages.js
-~/bin/jsmin <  $PERFIDIES/web.js                    >> js/plugincheck_badge.js
-~/bin/jsmin <  $PERFIDIES/exploder.js               >> js/plugincheck_badge.js
-~/bin/jsmin <  $PERFIDIES/plugincheck_badge.js      >> js/plugincheck_badge.js
+~/bin/jsmin <  $PERFIDIES/web.js                    >> js/plugincheck_badge.min.js
+~/bin/jsmin <  $PERFIDIES/exploder.js               >> js/plugincheck_badge.min.js
+~/bin/jsmin <  $PERFIDIES/plugincheck_badge.js      >> js/plugincheck_badge.min.js
 
 mv js/plugincheck_badge.min.js js/plugincheck_badge.js

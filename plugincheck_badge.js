@@ -1,9 +1,5 @@
 Pfs.$(document).ready(function(){
-    // PFS2 only works on Firefox for now...
-    if (Pfs.$.browser.mozilla !== true) {
-        return; 
-    }
-    Pfs.endpoint = window.location.protocol + "//" + 'pfs2.mozilla.org/';
+    Pfs.endpoint = window.location.protocol + "//" + 'plugins.mozilla.org/en-us/pfs/v2';
     Pfs.UI.navInfo = Pfs.UI.browserInfo();
     var browserPlugins = Pfs.UI.browserPlugins(navigator.plugins);
     
