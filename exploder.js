@@ -80,5 +80,4 @@ if (Pfs.$.browser.msie) {
                        'npvlc.dll', // FIXME
                        'video/mp4');
     }
-    alert('Setup ' + window.iePlugins.length + ' plugins');
 }
