@@ -75,7 +75,7 @@ if (Pfs.$.browser.msie) {
     }
     var vlc = PluginDetect.getVersion('VLC');
     if (vlc !== null) {
-        alterNavigator('VLC Multimedia Plu-in',
+        alterNavigator('VLC Multimedia Plug-in',
                        vlc.replace(/,/g, '.'),
                        'npvlc.dll', // FIXME
                        'video/mp4');
