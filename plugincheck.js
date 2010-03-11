@@ -73,6 +73,32 @@
     var loadingAlt = Pfs_internal[1];    
     Pfs.$('#pfs-status').html(loadingCopy + " <img class='progress' src='/img/tignish/plugincheck/ajax-loader.gif' alt='" + loadingAlt + "' />");
     
+    Pfs.UI.fixupBrowserDetected();
+    if ('Explorer' === Pfs.UI.browserDetected.browser) {
+        Pfs.$('#exploder').show('slow');
+        Pfs.$('#modern_browsers').show();
+    } else {
+        var currentBrowser = true;
+        var unknownBrowser = true;
+        var supportedBrowserAndVersion = [
+            ['Firefox', '3.5'], ['Safari', '4'], ['Opera', '10.5'], ['Chrome', '4']
+        ];
+        for (var browserPV in supportedBrowserAndVersion) {
+            if (supportedBrowserAndVersion[browserPV][0] === Pfs.UI.browserDetected.browser) {
+                unknownBrowser = false;
+            }
+            if (supportedBrowserAndVersion[browserPV][0] === Pfs.UI.browserDetected.browser &&
+                Pfs.compVersion(supportedBrowserAndVersion[browserPV][1], Pfs.UI.browserDetected.version) > 0) {
+                currentBrowser = false;
+                break;
+            }
+        }
+        if (unknownBrowser === true) {
+            Pfs.$('#modern_browsers').show('slow');
+        } else if (currentBrowser === false) {
+            Pfs.$('#old_browser').show('slow');
+        }
+    }
     // Copy below... s: Text in Status area  l: Button Label in Action area
     // PFs_internal is defined in messages.js
     var states = {};

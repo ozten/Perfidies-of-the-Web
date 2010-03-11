@@ -50,30 +50,38 @@ if (window.Pfs === undefined) {
 Pfs.UI = {
     unknownVersionPlugins: [],
     /**
-     * Creates a navigatorInfo object from the browser's navigator object
+     * PPK browser detection
      */
-    browserInfo: function () {
-        var detected = BrowserDetect.detect(),
-            appID;
-
-        if ('Firefox' === detected.browser || 'Minefield' === detected.browser) {
-            appID = '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}';
-        } else {
-            // TODO: More appIDs here?
-            appID = detected.browser;
-        }
-        if ('Explorer' === detected.browser) {
+    browserDetected: BrowserDetect.detect(),
+    /**
+     * Enhancements to fix some bugs
+     */
+    fixupBrowserDetected: function() {
+        if ('Explorer' === Pfs.UI.browserDetected.browser) {
 	    // Two issues with BrowserDetect 
 	    // 1) 7.0; and 8.0; get rid of ';'
             // 2) detected.build is currently '???', give it something decent
-            detected.version = '' + parseFloat(detected.version, 10);
-            detected.build = detected.version;
+            Pfs.UI.browserDetected.version = '' + parseFloat(Pfs.UI.browserDetected.version, 10);
+            Pfs.UI.browserDetected.build = Pfs.UI.browserDetected.version;
 	    }
-        // TODO IEBug navigator.language is undefined, fallback to IE specific browserLanguage
+    },
+    /**
+     * Creates a navigatorInfo object from the browser's navigator objectj
+     */
+    browserInfo: function () {
+        var appID;
+        Pfs.UI.fixupBrowserDetected();
+        if ('Firefox' === Pfs.UI.browserDetected.browser || 'Minefield' === Pfs.UI.browserDetected.browser) {
+            appID = '{ec8030f7-c20a-464f-9b0e-13a3a9e97384}';
+        } else {
+            appID = Pfs.UI.browserDetected.browser;
+        }
+        
+        // IEBug navigator.language is undefined, fallback to IE specific browserLanguage
         return {
             appID:        appID,
-            appRelease:   detected.version,
-            appVersion:   detected.build,
+            appRelease:   Pfs.UI.browserDetected.version,
+            appVersion:   Pfs.UI.browserDetected.build,
             clientOS:     navigator.oscpu || navigator.platform,
             chromeLocale: navigator.language || navigator.browserLanguage || 'en-US'
         };
