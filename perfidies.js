@@ -38,8 +38,8 @@
  * Plugin Finder Service Client Library.
  * There are two layers to the mozilla.com/en-US/plugincheck/ page: The UI and the PFS2 API.
  *
- * The UI JavaScript which uses this in plugincheck.js
- *
+ * This file is the lower level code that talks to PFS2.
+ * 
  * The main entry point into the PFS2 Client API is the findPluginInfos function.
  * This funtion takes a NavigatorInfo, a list of PluginInfos, and a callback function.
  *
@@ -155,11 +155,11 @@ Pfs = {
      * during the incremental callback.
      * 
      * @param {object} - navigatorInfo - A suitable navigatorInfo object is created via
-     * the function browserInfo in plugincheck.js, but you can create one directly... {
+     * the function browserInfo in modern_browser.js, but you can create one directly... {
      *   clientOS: "Intel Mac OS X 10.5", chromeLocale: "en-US", appID: "...", appRelease: "3.5.3", appVersion: "20090824085414"
      * }
      * @param {object} - pluginInfos - A suitable pluginInfos array is created via
-     * the function browserPlugins in plugincheck.js, but you can create one directly... [{
+     * the function browserPlugins in modern_browser.js, but you can create one directly... [{
      *     plugin: {}, mimes: ["mime1 mime2"], classified: false
      * }]
      *

@@ -1,3 +1,6 @@
+/**
+ * UI code for a web badge served up from mozilla.com
+ */
 Pfs.$(document).ready(function(){
     Pfs.endpoint = window.location.protocol + "//" + 'plugins.mozilla.org/en-us/pfs/v2';
     Pfs.UI.navInfo = Pfs.UI.browserInfo();
