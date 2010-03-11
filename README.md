@@ -8,16 +8,17 @@ http://mozilla.com/en-US/plugincheck/ - Uses this project and has more informati
 
 ## Structure of Perfidies ##
 Perfidies is broken down into several source files. Prepare for ASCII Art...
-  ___________________________________________
- /                                           \
-| plugincheck_ui.js | plugincheck_badge_ui.js |
-|-------------------|                         |
-| messages.js       |                         |
-|-------------------------------------------- |
-|       modern_browser.js, exploder.js        |
-|-------------------------------------------- |
-|       perfidies.js                          |
-\_____________________________________________/
+      
+      ___________________________________________
+     /                                            \
+     | plugincheck_ui.js | plugincheck_badge_ui.js |
+     |-------------------|                         |
+     | messages.js       |                         |
+     |-------------------------------------------- |
+     |       modern_browser.js, exploder.js        |
+     |-------------------------------------------- |
+     |       perfidies.js                          |
+     \_____________________________________________/
 
 So the top layer is mozilla.com specific
 messages.js - Exists for L10n
