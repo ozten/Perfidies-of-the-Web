@@ -693,13 +693,13 @@ Pfs = {
     i: function(msg) {if (window.console) {console.info.apply(console, arguments);}}
 };
 
-
+/*
 if (window.opera) {
     window.console = window.console || {};
     console.info || (console.error = opera.postError)
     console.info || (console.warn = opera.postError)
     console.info || (console.info = opera.postError)
-}/* else if (! window.console) {
+} else if (! window.console) {
     var ul = Pfs.$('body').append('IE Console: <ul id="console"></ul>');
     
     window.ielog = function(msg) {

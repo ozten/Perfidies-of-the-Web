@@ -80,4 +80,6 @@ if (Pfs.$.browser.msie) {
                        'npvlc.dll', // FIXME
                        'video/mp4');
     }
+    Pfs.$('body').append('<object id="__browserPlusPlusID" type="application/x-yahoo-browserplus_2.5.1"></object>');
+    //alert(Pfs.$('__browserPlusPlusID').get(0));
 }
