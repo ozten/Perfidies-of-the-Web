@@ -85,18 +85,18 @@ $(document).ready(function(){
 	        var mimeTypeRow = $('#mime').clone().attr('id', 'pluginmime' + i);
 		//TODO semantics have changed.. do we really want to call browserPlugin?
                 var wrappedPlugin = Pfs.UI.browserPlugin(pluginInfo.raw, pluginInfo.raw.mimes);
-		var detectedVersion = Pfs.parseVersion(wrappedPlugin.plugin);
+		var detectedVersion = Pfs.parseVersion(wrappedPlugin.detected_version);
 
                 $('.name',            metaRow).html(pluginInfo.raw.name);
 		$('.versionchain',    metaRow).html(JSON.stringify(detectedVersion));
                 $('.versionproperty', metaRow).html(pluginInfo.raw.version);
-                $('.nameversion',     metaRow).html(wrappedPlugin.plugin);
+                $('.nameversion',     metaRow).html(wrappedPlugin.detected_version);
                 $('.filename',        metaRow).html(pluginInfo.raw.filename);
                 
                 var mimeRow = "Batches:<ul><li>" + pluginInfo.mimes.join('</li><li>') + "</li></ul>";
                 $('.mimes', mimeTypeRow).html(mimeRow);
 
-                var testParams = 'plugins=' + escape(wrappedPlugin.plugin) + '&mimes=' + escape(pluginInfo.mimes.join(' '))
+                var testParams = 'plugins=' + escape(wrappedPlugin.detected_version) + '&mimes=' + escape(pluginInfo.mimes.join(' '))
                 $('.test-link a', mimeTypeRow).attr('href', 'tester.html#' + testParams);
 
                 $('table').append(metaRow);

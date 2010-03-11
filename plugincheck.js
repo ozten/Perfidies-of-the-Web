@@ -97,7 +97,7 @@
         //TODO we don't really want to call browserPlugin here... the semantics have changed
         //Don't we want to use pInfo instead?
         var wrappedPlugin = Pfs.UI.browserPlugin(plugin, plugin.mimes);
-        var detectedVersion = Pfs.parseVersion(wrappedPlugin.plugin).join('.');
+        var detectedVersion = Pfs.parseVersion(wrappedPlugin.detected_version).join('.');
         
         Pfs.$.extend(reportData, Pfs.UI.navInfo, {version: detectedVersion, mimes: pInfo.mimes});        
         if (plugin) { 
@@ -275,7 +275,7 @@
             
             var copy = states[data.status];
             if (Pfs.CURRENT === data.status) {
-                copy.s = Pfs.parseVersion(data.pluginInfo.plugin).join('.');
+                copy.s = Pfs.parseVersion(data.pluginInfo.detected_version).join('.');
             }
             var plugin = data.pluginInfo.raw;                
             displayPlugins(plugin, copy, data.url, total);

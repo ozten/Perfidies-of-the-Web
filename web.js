@@ -138,7 +138,7 @@ Pfs.UI = {
                 }            
             }
             var wrappedPlugin = Pfs.UI.browserPlugin(rawPlugin, mimes);
-            if (Pfs.UI.hasVersionInfo(wrappedPlugin.plugin) === false) {
+            if (Pfs.UI.hasVersionInfo(wrappedPlugin.detected_version) === false) {
                 Pfs.UI.unknownVersionPlugins.push(rawPlugin);
                 continue;
             }
@@ -232,39 +232,39 @@ Pfs.UI = {
                 //Bug#519823 If we want to start using Applets again
                 var j =  PluginDetect.getVersion('Java', 'getJavaInfo.jar', [0, 0, 0]);
                 if (j !== null) {
-                    newPlugin.plugin = "Java Embedding Plugin " + j.replace(/,/g, '.').replace(/_/g, '.');
+                    newPlugin.detected_version = "Java Embedding Plugin " + j.replace(/,/g, '.').replace(/_/g, '.');
                 } 
             } else if (/.*Flash/.test(rawPlugin.name)) {
                 var f = PluginDetect.getVersion('Flash');
                 if (f !== null) {
-                    newPlugin.plugin = rawPlugin.name + " " + f.replace(/,/g, '.');    
+                    newPlugin.detected_version = rawPlugin.name + " " + f.replace(/,/g, '.');    
                 }
             } else if (/.*QuickTime.*/.test(rawPlugin.name)) {
                 var q = PluginDetect.getVersion('QuickTime');
                 if (q !== null) {
-                    newPlugin.plugin = "QuickTime Plug-in " + q.replace(/,/g, '.');            
+                    newPlugin.detected_version = "QuickTime Plug-in " + q.replace(/,/g, '.');            
                 }
             } else if (/Windows Media Player Plug-in.*/.test(rawPlugin.name)) {
                 var w = PluginDetect.getVersion('WindowsMediaPlayer');
                 if (w !== null) {
-                    newPlugin.plugin = rawPlugin.name + " " + w.replace(/,/g, '.');
+                    newPlugin.detected_version = rawPlugin.name + " " + w.replace(/,/g, '.');
                 }
             }
             /* Note: Shockwave, DevalVR, Silverlight, and VLC pinlady detection only used in exploder.js
                this is because general version detection works as well w/o instaniating the plugin */
         }
-        if (newPlugin.plugin === undefined) {
+        if (newPlugin.detected_version === undefined) {
             // General case
             if (rawPlugin.version !== undefined && this.hasVersionInfo(rawPlugin.version)) {
                 // TODO - Note: no name or description... to avoid multiple versions
                 // Example: name 'QuickTime Plug-in 7.6.5' versionproperty '7.6.5.0'
                 // we'll return only '7.6.5.0'
-                newPlugin.plugin = rawPlugin.version;
+                newPlugin.detected_version = rawPlugin.version;
                 newPlugin.detection_type = 'version_available';
             } else if (rawPlugin.name && this.hasVersionInfo(newPlugin.name)) {                
-                newPlugin.plugin = rawPlugin.name;
+                newPlugin.detected_version = rawPlugin.name;
             } else if (rawPlugin.description && this.hasVersionInfo(rawPlugin.description)) {                
-                newPlugin.plugin = rawPlugin.description;
+                newPlugin.detected_version = rawPlugin.description;
             } else {
                 if (/.*BrowserPlus.*/.test(rawPlugin.name)) {
                     // Only used for older versions of BrowserPlus
@@ -281,15 +281,15 @@ Pfs.UI = {
                         }
                     }
                     bp = name + " " + bp;
-                    newPlugin.plugin = bp;
+                    newPlugin.detected_version = bp;
                 } else if (rawPlugin.name) {
-                    newPlugin.plugin = rawPlugin.name;
+                    newPlugin.detected_version = rawPlugin.name;
                 } else {
-                    newPlugin.plugin = rawPlugin.description;
+                    newPlugin.detected_version = rawPlugin.description;
                 }
             }
         }
-        if (newPlugin.plugin === undefined) {
+        if (newPlugin.detected_version === undefined) {
             throw new Error('Assertion Failed', 'Attempting to return from browserPlugin without setting the plugin field with version info.');
         }
         return newPlugin;

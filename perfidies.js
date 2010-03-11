@@ -177,7 +177,7 @@ Pfs = {
         // PFS2 is JSONP and can't be called async using jQuery.ajax
         // We'll create a queue and manage our requests
         for(var i=0; i< pluginInfos.length; i++) {            
-            if (Pfs.shouldSkipPluginNamed(pluginInfos[i].plugin) !== true) {
+            if (Pfs.shouldSkipPluginNamed(pluginInfos[i].detected_version) !== true) {
                 finderState.findPluginQueue.push(pluginInfos[i]);    
             }
             
@@ -294,7 +294,7 @@ Pfs = {
              * ]
              */
             pfs2Success: function(data, status){
-                var currentPluginName = this.currentPlugin.plugin;
+                var currentPluginName = this.currentPlugin.detected_version;
                 if (this.currentPlugin.raw && this.currentPlugin.raw.name) {
                     currentPluginName = this.currentPlugin.raw.name;
                 }
@@ -366,9 +366,7 @@ Pfs = {
                         var pfs_version = (pfsInfo.releases.latest.detected_version) ?
                             pfsInfo.releases.latest.detected_version :
                             pfsInfo.releases.latest.version;
-                        var pl_version = (this.currentPlugin.detected_version) ?
-                            this.currentPlugin.detected_version :
-                            this.currentPlugin.plugin
+                        var pl_version = this.currentPlugin.detected_version;
                         
                         switch(Pfs.compVersion(pl_version, pfs_version)) {
 
@@ -417,7 +415,7 @@ Pfs = {
                             if (!c_version) {
                                 continue;
                             }
-                            switch(Pfs.compVersion(this.currentPlugin.plugin, c_version)) {
+                            switch(Pfs.compVersion(this.currentPlugin.detected_version, c_version)) {
                                 case 1:
                                     //older than ours, keep looking
                                     break;
