@@ -80,6 +80,16 @@ if (Pfs.$.browser.msie) {
                        'npvlc.dll', // FIXME
                        'video/mp4');
     }
-    Pfs.$('body').append('<object id="__browserPlusPlusID" type="application/x-yahoo-browserplus_2.5.1"></object>');
-    //alert(Pfs.$('__browserPlusPlusID').get(0));
+    
+    //BrowserPlus
+    var browserPlusMime = 'application/x-yahoo-browserplus_2';
+    Pfs.$('body').append('<div id="foo"><object id="__browserPlusPluginID" type="' + browserPlusMime + '"></object></div>');    
+    var bp = Pfs.$('#foo object').get(0);
+    if (bp && bp.Info) {
+        var browserPlusVersion = bp.Info().version;
+        alterNavigator('BrowserPlus (from Yahoo!)',
+                       'BrowserPlus ' + browserPlusVersion,
+                       'npybrowserplus_' + browserPlusVersion + '.dll',
+                       browserPlusMime);
+    }
 }
