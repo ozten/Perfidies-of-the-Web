@@ -83,8 +83,8 @@ if (Pfs.$.browser.msie) {
     
     //BrowserPlus
     var browserPlusMime = 'application/x-yahoo-browserplus_2';
-    Pfs.$('body').append('<div id="foo"><object id="__browserPlusPluginID" type="' + browserPlusMime + '"></object></div>');    
-    var bp = Pfs.$('#foo object').get(0);
+    Pfs.$('body').append('<object id="__browserPlusPluginID" type="' + browserPlusMime + '"></object>');
+    var bp = Pfs.$('#__browserPlusPluginID').get(0);
     if (bp && bp.Info) {
         var browserPlusVersion = bp.Info().version;
         alterNavigator('BrowserPlus (from Yahoo!)',
