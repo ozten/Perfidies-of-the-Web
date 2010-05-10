@@ -242,7 +242,7 @@ Pfs.UI = {
                 if (j !== null) {
                     newPlugin.detected_version = "Java Embedding Plugin " + j.replace(/,/g, '.').replace(/_/g, '.');
                 } 
-            } else if (/.*Flash/.test(rawPlugin.name)) {
+            } else if (/.*Flash/.test(rawPlugin.name) && ! rawPlugin.version) {
                 var f = PluginDetect.getVersion('Flash');
                 if (f !== null) {
                     newPlugin.detected_version = rawPlugin.name + " " + f.replace(/,/g, '.');    
