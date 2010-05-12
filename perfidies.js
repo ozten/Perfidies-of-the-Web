@@ -348,7 +348,7 @@ Pfs = {
                     if (!pluginMatch) { continue; }
                     
                     var searchPluginRelease = true;
-                    
+
                     // Prepare a result to be reported to detection callback
                     var to_report = {
                         pluginInfo: this.currentPlugin,
@@ -372,14 +372,16 @@ Pfs = {
 
                             // Installed is newer than the latest in PFS
                             case 1:
+				/* No exact match records 'newer', but keeplooking */
                                 if (Pfs.reportPluginFn) {
                                     Pfs.reportPluginFn([pfsInfo], 'newer');
                                 }
                                 to_report.status = Pfs.NEWER;
                                 this.currentPlugin.classified = true;
-                                searchPluginRelease = false;
+                                /* searchPluginRelease = false;
+                                Bug#565252 keep searching even if we are newer than
+                                the latest release, since this could be a data entry issue. */
                                 break;
-
                             // Installed version matches latest in PFS
                             case 0:
                                 // Now, let's see what the status of the latest is...
@@ -406,7 +408,7 @@ Pfs = {
                             default: 
                                 break;
                         }
-                    }                        
+                    }
                     if (this.running && searchPluginRelease && pfsInfo.releases.others) {
                         var others = pfsInfo.releases.others;
                         for (var k=0; searchPluginRelease && k < others.length; k++) {
@@ -417,12 +419,12 @@ Pfs = {
                             }
                             switch(Pfs.compVersion(this.currentPlugin.detected_version, c_version)) {
                                 case 1:
-                                    //older than ours, keep looking
+                                    //newer than ours, keep looking
                                     break;
-                                case 0:                                        
+                                case 0:
                                     if (others[k].status == Pfs.VULNERABLE) {
                                         to_report.status = Pfs.VULNERABLE;
-                                        this.currentPlugin.classified = true;
+                                        this.currentPlugin.classified = true; 
                                     } else {                                            
                                         to_report.status = Pfs.OUTDATED;
                                         this.currentPlugin.classified = true;
@@ -430,7 +432,7 @@ Pfs = {
                                     searchPluginRelease = false;
                                     break;
                                 case -1:
-                                    //newer than ours, keep looking
+                                    //older than ours, keep looking
                                     break;
                                 default:
                                     //keep looking
