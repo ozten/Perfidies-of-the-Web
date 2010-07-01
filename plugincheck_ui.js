@@ -81,8 +81,8 @@
         var currentBrowser = true;
         var unknownBrowser = true;
         var supportedBrowserAndVersion = [
-            ['Firefox', '3.5'], ['Safari', '4'], ['Opera', '10.5'], ['Chrome', '4']
-        ];
+            ['Firefox', '3.5'], ['Safari', '4'], ['Opera', '10.5'], ['Chrome', '4'], ['Minefield', '4']
+        ];        
         for (var browserPV in supportedBrowserAndVersion) {
             if (supportedBrowserAndVersion[browserPV][0] === Pfs.UI.browserDetected.browser) {
                 unknownBrowser = false;
