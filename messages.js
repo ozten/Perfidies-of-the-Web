@@ -25,15 +25,12 @@ Pfs_internal[10] = "Research"; //UNKNOWN
 Pfs_internal[11] = "Unable to Detect Plugin Version"; //UNKNOWN
 
 /* At the top of the table is an overall summary about the "worst"
-   plugin situation you have. Examples:
-   1 of 14 plugins are vulnerable with no update availble
-     or
-   1 of 2 plugins are potentially vulnerable */
-Pfs_internal[12] = "of";
+   plugin situation you have. */
+Pfs_internal[12] = ""; //Bug#523145
 
-Pfs_internal[13] = "plugins are vulnerable wih no update available";
-Pfs_internal[14] = "plugins are vulnerable";
-Pfs_internal[15] = "plugins are potentially vulnerable";
+Pfs_internal[13] = "Out of date plugins:";
+Pfs_internal[14] = "Vulnerable plugins:";
+Pfs_internal[15] = "Potentially vulnerable plugins:";
     
 //Or if there weren't any "bad" plugins we show one of these:
 Pfs_internal[16] = "The plugins listed below are up to date";

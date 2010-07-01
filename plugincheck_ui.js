@@ -313,7 +313,7 @@
     };
         
     var unknownPluginUrl = function (pluginName) {
-        return Pfs_internal[18] + escape(Pfs_internal[19] + " " + pluginName);
+        return Pfs_internal[18] + encodeURI(Pfs_internal[19] + " " + pluginName);
     };
     
     var finishedCallbackFn = function () {
@@ -339,8 +339,7 @@
         }
         
         if (worstStatus !== undefined) {
-            Pfs.$('#pfs-status').html(worstCount + " " + Pfs_internal[12] + " " + total + " " + worstStatus)
-                            .addClass(Pfs.VULNERABLE);
+            Pfs.$('#pfs-status').html(worstStatus).addClass(Pfs.VULNERABLE);
         } else if (Pfs.$('.plugin').size() === 0) {
             Pfs.$('#pfs-status').html(Pfs_internal[17]);
         } else {
