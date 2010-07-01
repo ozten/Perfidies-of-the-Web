@@ -313,7 +313,7 @@
     };
         
     var unknownPluginUrl = function (pluginName) {
-        return Pfs_internal[18] + escape(Pfs_internal[19] + " " + pluginName);
+        return Pfs_internal[18] + encodeURI(Pfs_internal[19] + " " + pluginName);
     };
     
     var finishedCallbackFn = function () {
