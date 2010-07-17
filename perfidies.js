@@ -164,7 +164,7 @@ Pfs = {
      * }]
      *
      * @param {function} - incrementalCallback - A function which takes one argument pfsResults. Called once
-     * each time a plugin is identified via the PFS2 service
+     * each time a plugin is identified via the PFS2 service.
      *
      * @param {function} - finishedCallback - A function with no arguments which is called once finding plugins
      * is completed. incremental Callback will not be called again, once this callback is invoked. It wil be invoked
@@ -259,7 +259,7 @@ Pfs = {
                 return true;
             },            
             
-            startFindingNextMimetypeOnCurrentPlugin: function(pfsInfo) {
+            startFindingNextMimetypeOnCurrentPlugin: function() {
                 this.currentMime += 1;
                 if (this.currentMime < this.currentPlugin.mimes.length) {
                     this.findPluginInfo();
@@ -460,7 +460,7 @@ Pfs = {
                     this.startFindingNextPlugin();    
                 } else {
                     //none of the plugins for this mime-type were a match... try the next mime-type
-                    this.startFindingNextMimetypeOnCurrentPlugin(pfsInfo);
+                    this.startFindingNextMimetypeOnCurrentPlugin();
                 }
             },
             /**
@@ -479,6 +479,89 @@ Pfs = {
             }            
         };
         return finder;
+    },
+    /**
+     * Discover 
+     */
+    knownPluginsByMimeType: function(navigatorInfo, mimeType, incrementalCallback, finishedCallback) {        
+        var pluginInfos = Pfs.simulatePlugins(mimeType);
+        Pfs.listPluginInfos(navigatorInfo, pluginInfos, incrementalCallback, finishedCallback);
+    },
+    /**
+     * @private
+     */
+    simulatePlugins: function(mimeType) {        
+        var simulatePlugin = { length: 1, "0": {
+                            name: "", description: "", version: "0",
+                            length: 1, "0": {type: mimeType}}};
+        return Pfs.UI.browserPlugins(simulatePlugin);
+    },
+    /**
+     * Given information about the browser and plugins mime-types required
+     * the function contacts the PFS2 Service and lists known
+     * plugins. When completed it uses two callback functions to
+     * communicate progress and completion.
+     *
+     * The pluginInfos is a list of PluginInfo obejcts. The PluginInfo object
+     * has a mimes property. This is a space delimited list of all the mime-types the
+     * plugin accepts. You may want to include your own properties on each pluginInfo object for use
+     * during the incremental callback.
+     * 
+     * @param {object} - navigatorInfo - A suitable navigatorInfo object is created via
+     * the function browserInfo in modern_browser.js, but you can create one directly... {
+     *   clientOS: "Intel Mac OS X 10.5", chromeLocale: "en-US", appID: "...", appRelease: "3.5.3", appVersion: "20090824085414"
+     * }
+     * @param {object} - pluginInfos - A suitable pluginInfos array is created via
+     * the function browserPlugins in modern_browser.js, but you can create one directly... [{
+     *     plugin: {}, mimes: ["mime1 mime2"], classified: false
+     * }]
+     *
+     * @param {function} - incrementalCallback - A function which takes one argument pfsResults. Called once
+     * each time a plugin is listed via the PFS2 service.
+     *
+     * @param {function} - finishedCallback - A function with no arguments which is called once finding plugins
+     * is completed. incremental Callback will not be called again, once this callback is invoked. It wil be invoked
+     * only once.
+     */
+    listPluginInfos: function(navigatorInfo, pluginInfos, incrementalCallback, finishedCallback) {
+        var listerState = this.createPluginLister(navigatorInfo, incrementalCallback, finishedCallback);        
+        for(var i=0; i< pluginInfos.length; i++) {
+            listerState.findPluginQueue.push(pluginInfos[i]);    
+        }
+        listerState.startFindingNextPlugin();
+    },
+    /**
+     * Creates an instance of the PluginLister object, which returns
+     * known plugins based on mime-types.
+     * 
+     * @private
+     * @returns {object}
+     */
+    createPluginLister: function(navigatorInfo, incrementalCallback, finishedCallback) {
+        var lister = this.createFinder(navigatorInfo, incrementalCallback, finishedCallback);
+        /**
+         * override createFinder's pfs2Success
+         */
+        lister.pfs2Success = function(data, status){
+            for (var i =0; i < data.length; i++) {                    
+                // Grab the current PFS info, and ensure it's well-formed and usable.
+                var pfsInfo = data[i];
+                if (! pfsInfo.aliases ||
+                   (! pfsInfo.aliases.literal  && ! pfsInfo.aliases.regex )) {
+                        Pfs.e("Malformed PFS2 plugin info, no aliases");
+                        break;
+                }
+                if (! pfsInfo.releases ||
+                    ! pfsInfo.releases.latest) {
+                        Pfs.e("Malformed PFS2 plugin info, no latest release");
+                        break;
+                }
+                pfsInfo.releases.latest.name = pfsInfo.aliases.literal[0];
+                this.incrementalCallbackFn(pfsInfo.releases.latest);
+            }
+            this.startFindingNextPlugin();
+        };
+        return lister;
     },
     /**
      * Compares the description of two plugin versions and returns
@@ -680,19 +763,19 @@ Pfs = {
      * @variadic
      * @param {object} or {string}
      */
-    e: function(msg) {if (window.console) {console.error.apply(console, arguments);}},
+    e: function(msg) {if (window.console && console.error && console.error.apply) {console.error.apply(console, arguments);}},
     /**
      * Log a warning if there is a console
      * @variadic
      * @param {object} or {string}
      */
-    w: function(msg) {if (window.console) {console.warn.apply(console, arguments);}},
+    w: function(msg) {if (window.console && console.warn && console.warn.apply) {window.console.warn.apply(window.console, arguments);}},
     /**
      * Log a warning if there is a console
      * @variadic
      * @param {object} or {string}
      */
-    i: function(msg) {if (window.console) {console.info.apply(console, arguments);}}
+    i: function(msg) {if (window.console && console.info && console.info.apply) {console.info.apply(console, arguments);}}
 };
 
 /*

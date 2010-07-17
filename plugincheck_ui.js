@@ -376,5 +376,6 @@
         Pfs.endpoint = window.location.protocol + "//" + endpoint;
         Pfs.UI.navInfo = Pfs.UI.browserInfo();
         Pfs.findPluginInfos(Pfs.UI.navInfo, browserPlugins, incrementalCallbackFn, finishedCallbackFn);
+        
     };
 })();

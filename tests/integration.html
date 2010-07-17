@@ -12,7 +12,6 @@
   <script src="../messages.js"></script>
   <script src="../modern_browser.js"></script>
   <script src="../exploder.js"></script>
-  <script src="../plugincheck.js"></script>
   
   <script src="qunit/jquery.js"></script>
   
@@ -21,7 +20,8 @@
   
   <script>
 /* Point this at an endpoint that had the PFS2 unit tests run on it */
-Pfs.endpoint = 'http://plugindir.haskwhal/pfs/v2';
+Pfs.endpoint = //'http://plugindir.haskwhal/pfs/v2';
+              'http://plugins.stage.mozilla.com/pfs/v2';
 function notNull(o) {
     if (o) {
         return true;
@@ -71,7 +71,7 @@ $(document).ready(function(){
         Pfs.findPluginInfos(navigatorInfo, vulnerablePlugins, function(pfsResponse){
             incCallbackCount++;
             same(pfsResponse.status, Pfs.VULNERABLE, "This plugin should seen as vulnerable");                        
-          }, function(){            
+          }, function(){
             start();
             equals(incCallbackCount, 1, "One plugin queried, only once callback expected");
           });
@@ -99,14 +99,132 @@ $(document).ready(function(){
       ok(notNull(window.navigator.plugins), "We have a plugins object");
     });
     
-  });      
+    module("listPluginInfos");
+    test("list plugins for a mime-type pfs2 callback", function() {
+        var incCallbackCount = 0;
+        var currentPlugins = Pfs.UI.browserPlugins({ length: 1, "0": {
+                            name: "", description: "", version: "0",
+                            length: 1, "0": {type: "audio/x-foobar-audio"}}});
+        Pfs.listPluginInfos(navigatorInfo, currentPlugins, function(pfsResponse){
+            incCallbackCount++;
+            same(pfsResponse.name, "Foobar Media Viewer", "Given audio/x-foobar-audio we should list Foobar plugin");
+            same(pfsResponse.url, "http://example.com/foobar.zip", "Given audio/x-foobar-audio we should list Foobar install url");
+            //same(pfsResponse.status, Pfs.CURRENT, "This plugin should seen as current");                        
+          }, function(){
+            start();
+            equals(incCallbackCount, 1, "One plugin queried, only once callback expected");
+          });
+        stop(30000);
+    });
+    
+    test("list multiple plugins for multiple different mime-types", function() {
+        var incCallbackCount = 0;
+        var sawFlash = false,
+            sawFoobar = false;
+        var currentPlugins = Pfs.UI.browserPlugins({ length: 1, "0": {
+                            name: "", description: "", version: "0",
+                            length: 3, "0": {type: "audio/x-foobar-audio"}, "1": {type: "application/x-shockwave-flash"},
+                                       "2": {type: "fake/mime-type"}}});
+        
+        Pfs.listPluginInfos(navigatorInfo, currentPlugins, function(pfsResponse){            
+            incCallbackCount++;
+            if (pfsResponse.name == "Foobar Media Viewer") {
+                sawFoobar = true;
+                same(pfsResponse.url, "http://example.com/foobar.zip", "Given audio/x-foobar-audio we should list Foobar plugin url");
+            } else if (pfsResponse.name == "Adobe Flash Player") {
+                sawFlash = true;
+                same(pfsResponse.url, "http://www.adobe.com/go/getflashplayer", "Given application/x-shockwave-flash we should list Flash plugin url");
+            }
+          }, function(){
+            start();
+            equals(incCallbackCount, 2, "One plugin queried, only once callback expected");
+            equals(sawFlash, true, "We should have seen flash");
+            equals(sawFoobar, true, "We should have seen Foobar");
+          });
+        stop(30000);
+    });
+    
+    module("knownPluginsByMimeTypes flash");
+    var makeIncCallTest = function(mimeType, expected){
+      return function(pfsResponse) {
+        expected.incCallbackCount++;
+        var literalMatch = false;
+              for (var j=0; j < expected.names.length; j++) {
+                  if (pfsResponse.name == expected.names[j]) {
+                      literalMatch = true;
+                      if (expected.lastName != expected.names[0]) {
+                          ok(pfsResponse.name != expected.lastName, "We shouldn't see the same plugin twice");  
+                      }
+                      expected.lastName = expected.names[j];
+                      break;
+                  } 
+              }
+              ok(literalMatch, "Given " + mimeType + " we should see one of " + expected.names);
+              if (literalMatch) {
+                  var urlMatch = false;
+                  for (var j=0; j < expected.urls.length; j++) {
+                      if (pfsResponse.url == expected.urls[j]) {
+                          urlMatch = true;
+                          break;
+                      }
+                  }
+                  ok(urlMatch, "Given " + mimeType + " we should see one of these urls " + expected.urls);
+                  
+              }
+      };
+    };
+    var makeFinalCallTest = function(mimeType, expected) {
+      return function() {
+        equals(expected.incCallbackCount, expected.totalCallbacks, "We should get the correct number of callbacks");
+        start();
+      };
+    };
+    var testKnownPluginByMimeType = function(mimeType, expected) {
+      Pfs.knownPluginsByMimeType(navigatorInfo, mimeType,
+                                 makeIncCallTest(mimeType, expected),
+                                 makeFinalCallTest(mimeType, expected));
+      stop(30000);
+    };
+    var flashExpected = {names: ["Adobe Flash Player"], totalCallbacks: 1, lastName: "",
+                           urls: ["http://www.adobe.com/go/getflashplayer"], lastUrl: "",
+                           incCallbackCount: 0};
+    test("Demonstrates high level API for finding plugins by mime-type", function() {      
+      testKnownPluginByMimeType("application/x-shockwave-flash", flashExpected);      
+    });
+    test("same plugin different mime-type", function() {      
+      flashExpected['incCallbackCount'] = 0;
+      flashExpected['lastName'] = "";
+      flashExpected['lastUrl'] = "";
+      testKnownPluginByMimeType("application/futuresplash", flashExpected);
+    });
+    test("divx 2 mime-type2 to 2 plugins", function() {
+      var expected = { names: ["DivX Web Player", "VLC Multimedia Plug-in"], totalCallbacks: 2, lastName: "",
+                            urls: ["http://www.divx.com/en/products/software/mac/divx", "http://www.videolan.org/vlc/"],
+                            lastUrl: "", incCallbackCount: 0 };
+      testKnownPluginByMimeType("video/divx", expected);
+    });
+    test("java 2 mime-type2 to 2 plugins", function() {
+      var expected = { names: ["Java Runtime Environment", "IcedTea Java Web Browser Plugin"], totalCallbacks: 2,
+                      lastName: "",
+                      urls: ["http://www.java.com/en/download/manual.jsp", "http://icedtea.classpath.org/wiki/Main_Page"],
+                      lastUrl: "", incCallbackCount: 0 };
+      testKnownPluginByMimeType("application/x-java-vm", expected);
+    });
+    test("quicktime 2 mime-type2 to 2 plugins", function() {
+      var expected = { names: ["VLC Multimedia Plug-in", "QuickTime Plug-in"], totalCallbacks: 2,
+                       lastName: "",
+                       urls: ["http://www.videolan.org/vlc/", "http://www.apple.com/quicktime/download/"],
+                       lastUrl: "", incCallbackCount: 0 };
+      testKnownPluginByMimeType("video/quicktime", expected);
+    });
+  });
   </script>
 </head>
 <body>
   
  <h1>PerFidieS Integration Tests</h1>
  <h2 id="banner"></h2>
- <p><strong>Tests failing?</strong> Did you import <a href="integration-test-foobar-plugin.json">integration-test-foobar-plugin.json</a> into your dev plugindir instance?</p>
+ 
  <h2 id="userAgent"></h2>
  <ol id="tests"></ol>
  <div id="main"></div>

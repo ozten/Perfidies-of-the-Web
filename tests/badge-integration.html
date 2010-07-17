@@ -12,7 +12,6 @@
   <script src="../messages.js"></script>
   <script src="../modern_browser.js"></script>
   <script src="../exploder.js"></script>
-  <script src="../plugincheck.js"></script>
   
   
   <script src="qunit/jquery.js"></script>
@@ -21,7 +20,8 @@
   
   <script>
 /* Point this at an endpoint that had the PFS2 unit tests run on it */
-Pfs.endpoint = 'http://plugindir.haskwhal/pfs/v2';
+Pfs.endpoint = //'http://plugindir.haskwhal/pfs/v2';
+              'http://plugins.stage.mozilla.com/pfs/v2';
 function notNull(o) {
     if (o) {
         return true;
