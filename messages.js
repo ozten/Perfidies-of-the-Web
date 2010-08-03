@@ -22,7 +22,7 @@ Pfs_internal[9] = "Up to Date"; //CURRENT
 // no plugin_latest_status... It is set to the Version number detected
 
 Pfs_internal[10] = "Research"; //UNKNOWN
-Pfs_internal[11] = "Unable to Detect Plugin Version"; //UNKNOWN
+Pfs_internal[11] = "Unknown plugin"; //UNKNOWN
 
 /* At the top of the table is an overall summary about the "worst"
    plugin situation you have. */
