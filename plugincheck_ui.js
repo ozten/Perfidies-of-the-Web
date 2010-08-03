@@ -231,8 +231,12 @@
         Pfs.$('.name a', html).text(plugin.name);        
         Pfs.$('.version', html).html(plugin.description);
         Pfs.$('.icon', html).attr('src', iconFor(plugin.name));
-        
-        Pfs.$('.status .copy', html).text(statusCopy.s + Pfs_internal[25]);
+        if (moreInfo != null) {
+            Pfs.$('.status .copy', html).text(statusCopy.s + Pfs_internal[25]);
+	} else {
+            Pfs.$('.status .copy', html).text(statusCopy.s);
+	}
+
         if (moreInfo != null) {
 	    var moreInfoEl = Pfs.$(moreInfo);
             if (data) {
