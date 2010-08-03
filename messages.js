@@ -50,6 +50,10 @@ Pfs_internal[21] = "Potentially Vulnerable"; //MAYBE_VULNERABLE
 Pfs_internal[22] = "Update"; //MAYBE_OUTDATED
 Pfs_internal[23] = "Potentially Outdated Version"; //MAYBE_OUTDATED
 
+// Bug#553661 Vulnerability details
+Pfs_internal[24] = "<p>This plugin version has a security vulnerability that websites can exploit and potentially harm your computer. It is recommended that you update this plugin or if an update is not available, <a href='#howto-disable'>disable it</a>.</p><p>For more information, read the <a href='#' class='vulner-url'>plugin vendor's vulnerability information</a>.</p><p><a class='qtip-closer'>Close</a></p>";
+Pfs_internal[25] = " (more info)";
+
 if (window.Pfs_external && Pfs_external.length) {
     for (var i = 0; i < Pfs_external.length; i++) {
         if (typeof Pfs_external[i] !== 'undefined') {

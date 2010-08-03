@@ -217,7 +217,7 @@
             updateDisplayId = setTimeout(updateDisplay, 300);
         }
     };
-    var displayPlugins = function (plugin, statusCopy, url, rowCount) {
+    var displayPlugins = function (plugin, statusCopy, moreInfo, url, rowCount) {
         var html = Pfs.$('#plugin-template').clone();
         html.removeAttr('id')
             .addClass('plugin')
@@ -232,7 +232,26 @@
         Pfs.$('.version', html).html(plugin.description);
         Pfs.$('.icon', html).attr('src', iconFor(plugin.name));
         
-        Pfs.$('.status', html).text(statusCopy.s);
+        Pfs.$('.status .copy', html).text(statusCopy.s + Pfs_internal[25]);
+        if (moreInfo != null) {
+	    var moreInfoEl = Pfs.$(moreInfo);
+            if (data) {
+		
+	        moreInfoEl.find('.vulner-url').attr('href', data.vulnerability_url);
+	    }
+            Pfs.$('.status .copy', html).qtip(
+                  {
+		      content: moreInfoEl,
+			  show: 'mouseover', 
+			  hide: 'unfocus',
+			  api: {
+			      onRender: function(){
+			          this.elements.content.find('.qtip-closer').click(this.hide);
+			  }},
+			  position:{corner: {target:'bottomMiddle', tooltip: 'topMiddle'}},
+			  style: {tip: 'topMiddle'}});
+	}
+	    
          
         Pfs.$('.action a', html).addClass(statusCopy.c);
         Pfs.$('.action a span', html).text(statusCopy.l);
@@ -271,13 +290,13 @@
      * incremental callback function
      */
     var incrementalCallbackFn = function (data) {
+        var moreInfo = null;
         if (data.status == Pfs.UNKNOWN) {
             //ping the server
             reportPlugins(data.pluginInfo, Pfs.UNKNOWN);
             if (data.pluginInfo.raw && data.pluginInfo.raw.name) {
                 data.url = unknownPluginUrl(data.pluginInfo.raw.name);    
             }
-            
         }
         if (data.status == Pfs.NEWER) {
             //ping the server and then treat as current
@@ -288,7 +307,10 @@
             switch (data.status) {
                 case Pfs.DISABLE:
                     disabled++;
-                    // Anchor tag for instructions on how to disable a plugin
+                    // Tooltip and anchor tag for instructions on how to disable a plugin
+                    if ('vulnerability_url' in data) {
+		        moreInfo = Pfs_internal[24];
+		    }
                     data.url = "#howto-disable";
                     break;
                 case Pfs.VULNERABLE:
@@ -304,7 +326,7 @@
                 copy.s = Pfs.parseVersion(data.pluginInfo.detected_version).join('.');
             }
             var plugin = data.pluginInfo.raw;                
-            displayPlugins(plugin, copy, data.url, total);
+            displayPlugins(plugin, copy, moreInfo, data.url, total);
             total++;
             
         } else {
@@ -319,7 +341,7 @@
     var finishedCallbackFn = function () {
         for (var i = 0; i < Pfs.UI.unknownVersionPlugins.length; i++) {
             var unknownPlugin = Pfs.UI.unknownVersionPlugins[i];
-            displayPlugins(unknownPlugin, states[Pfs.UNKNOWN], unknownPluginUrl(unknownPlugin.name), total);
+            displayPlugins(unknownPlugin, states[Pfs.UNKNOWN], null, unknownPluginUrl(unknownPlugin.name), total);
             total++;
         }
         

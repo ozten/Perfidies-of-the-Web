@@ -22,6 +22,7 @@ cat $PERFIDIES/lib/plugindetect.js                 >> plugincheck.min.js
 # Bug#535030 use mozilla.com's jquery
 #             $PERFIDIES/lib/jquery-1.3.2.min.js
 ~/bin/jsmin < $PERFIDIES/lib/jquery.jsonp-1.1.0.js >> plugincheck.min.js
+~/bin/jsmin < $PERFIDIES/lib/jquery.qtip-1.0.0.js  >> plugincheck.min.js
 ~/bin/jsmin < $PERFIDIES/perfidies.js              >> plugincheck.min.js
 ~/bin/jsmin < $PERFIDIES/messages.js               >> plugincheck.min.js
 ~/bin/jsmin < $PERFIDIES/modern_browser.js         >> plugincheck.min.js
