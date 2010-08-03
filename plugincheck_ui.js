@@ -239,10 +239,7 @@
 
         if (moreInfo != null) {
 	    var moreInfoEl = Pfs.$(moreInfo);
-            if (data) {
-		
-	        moreInfoEl.find('.vulner-url').attr('href', data.vulnerability_url);
-	    }
+            moreInfoEl.find('.vulner-url').attr('href', url);
             Pfs.$('.status .copy', html).qtip(
                   {
 		      content: moreInfoEl,
@@ -319,6 +316,10 @@
                     break;
                 case Pfs.VULNERABLE:
                     vulnerables++;
+                    // Tooltip and anchor tag for instructions on how to disable a plugin
+                    if ('release_info' in data && 'vulnerability_url' in data.release_info) {
+		        moreInfo = Pfs_internal[24];
+		    }
                     break;
                 case Pfs.OUTDATED:
                     outdated++;
@@ -329,8 +330,12 @@
             if (Pfs.CURRENT === data.status) {
                 copy.s = Pfs.parseVersion(data.pluginInfo.detected_version).join('.');
             }
-            var plugin = data.pluginInfo.raw;                
-            displayPlugins(plugin, copy, moreInfo, data.url, total);
+            var plugin = data.pluginInfo.raw;         
+            var url = null;
+	    if ('release_info' in data && 'vulnerability_url' in data.release_info) {
+                url = data.release_info.vulnerability_url;
+	    }
+            displayPlugins(plugin, copy, moreInfo, url, total);
             total++;
             
         } else {

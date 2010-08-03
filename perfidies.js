@@ -360,7 +360,7 @@ Pfs = {
                     
                     if (pfsInfo.releases.latest) {
                         to_report.url = pfsInfo.releases.latest.url;
-                        
+                        to_report.release_info = pfsInfo.releases.latest;
                         // If a detected_version is available, use it.
                         // Otherwise, fall back to just plain version.
                         var pfs_version = (pfsInfo.releases.latest.detected_version) ?
@@ -417,6 +417,7 @@ Pfs = {
                             if (!c_version) {
                                 continue;
                             }
+                            to_report.release_info = others[k];
                             switch(Pfs.compVersion(this.currentPlugin.detected_version, c_version)) {
                                 case 1:
                                     //newer than ours, keep looking
@@ -798,4 +799,5 @@ if (window.opera) {
 }*/
 //Bug#535030 - All PFS scripts will use Pfs.$ to access jQuery, so that additional inclusions of
 // jQuery or a conflicting  library won't break jQuery or it's plugins
+
 Pfs.$ = jQuery.noConflict();
