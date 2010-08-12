@@ -72,7 +72,12 @@
     var loadingCopy = Pfs_internal[0];
     var loadingAlt = Pfs_internal[1];    
     Pfs.$('#pfs-status').html(loadingCopy + " <img class='progress' src='/img/tignish/plugincheck/ajax-loader.gif' alt='" + loadingAlt + "' />");
-    
+    Pfs.UI.DISABLE_LINK = "#howto-disable";
+    Pfs.UI.disabledClick = function() {
+	Pfs.$('.howto-disable-plugin')
+            .css({backgroundColor: 'lightyellow'})
+            .animate({backgroundColor: 'white'}, 3000);
+    }
     Pfs.UI.fixupBrowserDetected();
     if ('Explorer' === Pfs.UI.browserDetected.browser) {
         Pfs.$('#exploder').show('slow');
@@ -257,14 +262,11 @@
         Pfs.$('.action a', html).addClass(statusCopy.c);
         Pfs.$('.action a span', html).text(statusCopy.l);
         if (url !== undefined) {
-            Pfs.$('.name a', html).attr('href', url);
-            Pfs.$('.action a', html).attr('href', url);                
-        }            
-        
+            Pfs.$('.name a, .action a', html).attr('href', url)
+		.filter('[href=' + Pfs.UI.DISABLE_LINK + ']').click(Pfs.UI.disabledClick);
+        }
         
         addBySorting(html, statusCopy.code);
-        
-        
         
         html.show();                
                 
@@ -305,14 +307,14 @@
             data.status = Pfs.CURRENT;
         }
         if (states[data.status]) {
-            switch (data.status) {
+            switch (data.status) { 
                 case Pfs.DISABLE:
                     disabled++;
                     // Tooltip and anchor tag for instructions on how to disable a plugin
                     if ('vulnerability_url' in data) {
 		        moreInfo = Pfs_internal[24];
 		    }
-                    data.url = "#howto-disable";
+                    data.url = Pfs.UI.DISABLE_LINK;
                     break;
                 case Pfs.VULNERABLE:
                     vulnerables++;
