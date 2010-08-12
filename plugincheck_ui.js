@@ -217,7 +217,7 @@
             updateDisplayId = setTimeout(updateDisplay, 300);
         }
     };
-    var displayPlugins = function (plugin, statusCopy, moreInfo, url, rowCount) {
+    var displayPlugins = function (plugin, statusCopy, moreInfo, url, vulnerabilityUrl, rowCount) {
         var html = Pfs.$('#plugin-template').clone();
         html.removeAttr('id')
             .addClass('plugin')
@@ -239,7 +239,7 @@
 
         if (moreInfo != null) {
 	    var moreInfoEl = Pfs.$(moreInfo);
-            moreInfoEl.find('.vulner-url').attr('href', url);
+            moreInfoEl.find('.vulner-url').attr('href', vulnerabilityUrl);
             Pfs.$('.status .copy', html).qtip(
                   {
 		      content: moreInfoEl,
@@ -330,12 +330,13 @@
             if (Pfs.CURRENT === data.status) {
                 copy.s = Pfs.parseVersion(data.pluginInfo.detected_version).join('.');
             }
-            var plugin = data.pluginInfo.raw;         
-            var url = null;
+            var plugin = data.pluginInfo.raw;
+            var url = data.url;
+            vulnerabilityUrl = null;
 	    if ('release_info' in data && 'vulnerability_url' in data.release_info) {
-                url = data.release_info.vulnerability_url;
+                vulnerabilityUrl = data.release_info.vulnerability_url;
 	    }
-            displayPlugins(plugin, copy, moreInfo, url, total);
+            displayPlugins(plugin, copy, moreInfo, url, vulnerabilityUrl, total);
             total++;
             
         } else {
@@ -346,11 +347,10 @@
     var unknownPluginUrl = function (pluginName) {
         return Pfs_internal[18] + encodeURI(Pfs_internal[19] + " " + pluginName);
     };
-    
     var finishedCallbackFn = function () {
         for (var i = 0; i < Pfs.UI.unknownVersionPlugins.length; i++) {
             var unknownPlugin = Pfs.UI.unknownVersionPlugins[i];
-            displayPlugins(unknownPlugin, states[Pfs.UNKNOWN], null, unknownPluginUrl(unknownPlugin.name), total);
+            displayPlugins(unknownPlugin, states[Pfs.UNKNOWN], null, null, unknownPluginUrl(unknownPlugin.name), total);
             total++;
         }
         
