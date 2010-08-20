@@ -304,7 +304,6 @@ Pfs = {
                 var pluginInfo;
 
                 for (var i =0; i < data.length; i++) {
-                    console.info(i, data[i]);
                     if (! searchingResults) { break; }
                     
                     // Grab the current PFS info, and ensure it's well-formed and usable.
