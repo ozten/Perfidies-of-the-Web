@@ -184,7 +184,7 @@
                     
                 }
             }
-        } else if (Pfs.OUTDATED == status || Pfs.MAYBE_OUTDATED) {
+        } else if (Pfs.OUTDATED == status || Pfs.MAYBE_OUTDATED == status) {
             //meh
             r = Pfs.$('tr.plugin.' + Pfs.OUTDATED + ':first').before(el).size();
             if (r === 0) {
