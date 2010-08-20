@@ -164,7 +164,7 @@
                     Pfs.$('#plugin-template').parent().append(el);
                 }
             }
-        } else if (Pfs.VULNERABLE == status) {
+        } else if (Pfs.VULNERABLE == status || Pfs.MAYBE_VULNERABLE == status) {
             //bad
             r = Pfs.$('tr.plugin.' + Pfs.DISABLE + ':last').after(el).size();
             if (r === 0) {
@@ -184,7 +184,7 @@
                     
                 }
             }
-        } else if (Pfs.OUTDATED == status) {
+        } else if (Pfs.OUTDATED == status || Pfs.MAYBE_OUTDATED) {
             //meh
             r = Pfs.$('tr.plugin.' + Pfs.OUTDATED + ':first').before(el).size();
             if (r === 0) {
