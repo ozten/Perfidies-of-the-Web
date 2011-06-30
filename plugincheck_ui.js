@@ -46,12 +46,21 @@
 (function () {
     
     var icons = {
-        flash:     "/img/tignish/plugincheck/icon-flash.png",
-        java:      "/img/tignish/plugincheck/icon-java.png",
-        quicktime: "/img/tignish/plugincheck/icon-quicktime.png",
-        divx: "/img/tignish/plugincheck/icon-divx.png",
-        totem: "/img/tignish/plugincheck/icon-totem.png",
-        generic: "/img/tignish/plugincheck/icon-flip.png"
+        flash:     "/img/covehead/plugincheck/icon-flash.png",
+        java:      "/img/covehead/plugincheck/icon-java.png",
+        quicktime: "/img/covehead/plugincheck/icon-quicktime.png",
+        divx: "/img/covehead/plugincheck/icon-divx.png",
+        totem: "/img/covehead/plugincheck/icon-totem.png",
+        flip4mac: "/img/covehead/plugincheck/icon-flip4mac.png",
+        wmp: "/img/covehead/plugincheck/icon-wmp.png",
+        vlc: "/img/covehead/plugincheck/icon-vlc.png",
+        silverlight: "/img/covehead/plugincheck/icon-silverlight.png",
+        shockwave: "/img/covehead/plugincheck/icon-shockwave.png",
+        real: "/img/covehead/plugincheck/icon-real.png",
+        acrobat: "/img/covehead/plugincheck/icon-acrobat.png",
+        officelive: "/img/covehead/plugincheck/icon-officelive.png",
+        iphoto: "/img/covehead/plugincheck/icon-iphoto.png",
+        generic: "/img/covehead/plugincheck/icon-flip.png"
     };
     var iconFor = function (pluginName) {
         if (pluginName.indexOf("Flash") >= 0) {
@@ -64,6 +73,24 @@
             return icons.divx;
         } else if (pluginName.indexOf("Totem") >= 0) {
             return icons.totem;
+        } else if (pluginName.indexOf("Flip4Mac") >= 0) {
+            return icons.flip4mac;
+        } else if (pluginName.indexOf("WindowsMediaPlayer") >= 0) {
+            return icons.wpm;
+        } else if (pluginName.indexOf("VLC") >= 0) {
+            return icons.vlc;
+        } else if (pluginName.indexOf("Silverlight") >= 0) {
+            return icons.wmp;
+        } else if (pluginName.indexOf("Shockwave") >= 0) {
+            return icons.shockwave;
+        } else if (pluginName.indexOf("RealPlayer") >= 0) {
+            return icons.real;
+        } else if (pluginName.indexOf("Adobe Acrobat") >= 0) {
+            return icons.acrobat;
+        } else if (pluginName.indexOf("Office Live") >= 0) {
+            return icons.officelive;
+        } else if (pluginName.indexOf("iPhoto") >= 0) {
+            return icons.iphoto;
         } else {
             return icons.generic;
         }
@@ -71,7 +98,7 @@
     
     var loadingCopy = Pfs_internal[0];
     var loadingAlt = Pfs_internal[1];    
-    Pfs.$('#pfs-status').html(loadingCopy + " <img class='progress' src='/img/tignish/plugincheck/ajax-loader.gif' alt='" + loadingAlt + "' />");
+    Pfs.$('#pfs-status').html(loadingCopy + " <img class='progress' src='/img/covehead/plugincheck/ajax-loader.gif' alt='" + loadingAlt + "' />");
     Pfs.UI.DISABLE_LINK = "#howto-disable";
     Pfs.UI.disabledClick = function() {
 	Pfs.$('.howto-disable-plugin')
@@ -272,7 +299,7 @@
                 
         /*<tr id="plugin-template" class="odd" style="display: none">
                     <td>
-                        <img class="icon" src="/img/tignish/plugincheck/icon-divx.png" alt="DivX Icon" />
+                        <img class="icon" src="/img/covehead/plugincheck/icon-divx.png" alt="DivX Icon" />
                         <h4 class="name">DivX</h4><span class="version">6.0, DivX, Inc.</span>
                     </td>
                     <td class="status">Vulnerable</td>
