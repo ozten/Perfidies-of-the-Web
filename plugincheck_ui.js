@@ -80,7 +80,7 @@
         } else if (pluginName.indexOf("VLC") >= 0) {
             return icons.vlc;
         } else if (pluginName.indexOf("Silverlight") >= 0) {
-            return icons.wmp;
+            return icons.silverlight;
         } else if (pluginName.indexOf("Shockwave") >= 0) {
             return icons.shockwave;
         } else if (pluginName.indexOf("RealPlayer") >= 0) {
